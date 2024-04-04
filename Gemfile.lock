@@ -1,0 +1,21 @@
+PATH
+  remote: .
+  specs:
+    rbs-inline (0.1.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.22.3)
+    rake (13.2.0)
+
+PLATFORMS
+  arm64-darwin-22
+
+DEPENDENCIES
+  minitest (~> 5.0)
+  rake (~> 13.0)
+  rbs-inline!
+
+BUNDLED WITH
+   2.4.18
