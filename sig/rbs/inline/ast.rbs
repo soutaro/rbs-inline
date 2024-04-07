@@ -1,0 +1,12 @@
+module RBS
+  module Inline
+    module AST
+      module Member
+        type t = MethodDefinition
+      end
+
+      module Declaration
+      end
+    end
+  end
+end
