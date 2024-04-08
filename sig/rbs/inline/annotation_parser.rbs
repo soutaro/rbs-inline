@@ -1,0 +1,42 @@
+module RBS
+  module Inline
+    class AnnotationParser
+      # Group of consecutive comments, with detected annotations
+      #
+      class ParsingResult
+        attr_reader comments: Array[Prism::Comment]
+        attr_reader annotations: Array[AST::Annotations::t]
+        attr_reader first_comment_offset: Integer
+
+        def initialize: (Prism::Comment first_comment) -> void
+
+        def line_range: () -> Range[Integer]
+
+        def last_comment: () -> Prism::Comment
+
+        # Add given comment to the result
+        #
+        # * Returns `self` if the comment can be added to the result
+        # * Returns `nil` if not
+        #
+        def add_comment: (Prism::Comment) -> self?
+
+        def lines: () -> Array[[String, Prism::Comment]]
+
+        def content: () -> String
+      end
+
+      attr_reader input: Array[Prism::Comment]
+
+      def self.parse: (Array[Prism::Comment]) -> Array[ParsingResult]
+
+      def initialize: (Array[Prism::Comment]) -> void
+
+      def parse: () -> Array[ParsingResult]
+
+      def each_annotation_paragraph: (ParsingResult) { (String, Array[Prism::Comment]) -> void } -> void
+
+      def parse_annotation: (String, Array[Prism::Comment]) -> AST::Annotations::t?
+    end
+  end
+end

@@ -2,9 +2,13 @@
 
 require_relative "inline/version"
 
-module Rbs
+require "prism"
+require "strscan"
+
+require "rbs/inline/annotation_parser"
+require "rbs/inline/ast/annotations"
+
+module RBS
   module Inline
-    class Error < StandardError; end
-    # Your code goes here...
   end
 end

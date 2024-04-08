@@ -1,0 +1,153 @@
+module RBS
+  module Inline
+    module AST
+      module Annotations
+        type t = VarType | ReturnType | BlockType | MethodType
+               | Use
+               | Def
+               | AttrReader | AttrWriter | AttrAccessor
+               | Include | Extend | Prepend
+               | Inherits | Generic | ModuleSelf
+               | Alias | Skip
+
+        class Base
+          attr_reader source: Array[Prism::Comment]
+        end
+
+        module WithComment
+          attr_reader comment: String
+        end
+
+        # `@rbs x : T`
+        class VarType < Base
+          include WithComment
+
+          attr_reader name: Symbol?
+          attr_reader type: RBS::Types::t?
+
+          def initialize: (Symbol?, Types::t?, Array[Prism::Comment]) -> void
+
+          def complete?: () -> bool
+        end
+
+        # `@rbs return: T`
+        class ReturnType < Base
+          include WithComment
+
+          attr_reader type: RBS::Types::t?
+        end
+
+        # `@rbs block: T [optional]`
+        class BlockType < Base
+          include WithComment
+
+          attr_reader type: RBS::Types::t?
+
+          attr_reader optional: bool
+        end
+
+        # `@rbs method: () -> T`
+        class MethodType < Base
+          type commented_method_type = [RBS::MethodType, String?]
+
+          attr_reader types: Array[commented_method_type]?
+        end
+
+        # `@rbs use USE`
+        class Use < Base
+          attr_reader clauses: Array[RBS::AST::Directives::Use::clause]
+        end
+
+        # `@rbs def NAME : () -> T`
+        class Def < Base
+          attr_reader kind: RBS::AST::Members::MethodDefinition::kind
+
+          attr_reader method_name: Symbol
+
+          attr_reader types: Array[RBS::MethodType]
+        end
+
+        class Attribute < Base
+          include WithComment
+
+          attr_reader name: Symbol
+          attr_reader type: Types::t
+          attr_reader kind: RBS::AST::Members::Attribute::kind
+          attr_reader ivar_name: Symbol | false | nil
+        end
+
+        # `@rbs attr_reader NAME : TYPE`
+        class AttrReader < Attribute
+        end
+
+        # `@rbs attr_writer NAME : TYPE`
+        class AttrWriter < Attribute
+        end
+
+        # `@rbs attr_accessor NAME : TYPE`
+        class AttrAccessor < Attribute
+        end
+
+        # `@rbs inherits SUPER`
+        class Inherits < Base
+          include WithComment
+
+          attr_reader super_name: TypeName
+
+          attr_reader args: Array[Types::t]
+        end
+
+        # `@rbs module-self SUPER`
+        class ModuleSelf < Base
+          include WithComment
+
+          attr_reader super_name: TypeName
+
+          attr_reader args: Array[Types::t]
+        end
+
+        class Mixin < Base
+          include WithComment
+
+          attr_reader module_name: TypeName
+
+          attr_reader args: Array[Types::t]
+        end
+
+        # `@rbs include MIXIN`
+        class Include < Mixin
+        end
+
+        # `@rbs extend MIXIN`
+        class Extend < Mixin
+        end
+
+        # `@rbs prepend MIXIN`
+        class Prepend < Mixin
+        end
+
+        # `@rbs alias OLD NEW`
+        class Alias < Base
+          include WithComment
+
+          attr_reader kind: RBS::AST::Members::Alias::kind
+
+          attr_reader old_name: Symbol
+
+          attr_reader new_name: Symbol
+        end
+
+        # `@rbs generic TYPE-PARAM`
+        class Generic < Base
+          include WithComment
+
+          attr_reader type_param: RBS::AST::TypeParam
+        end
+
+        # `@rbs skip`
+        class Skip < Base
+        end
+      end
+    end
+  end
+end

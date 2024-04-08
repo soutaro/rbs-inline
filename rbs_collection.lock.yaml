@@ -57,6 +57,10 @@ gems:
   version: '0'
   source:
     type: stdlib
+- name: strscan
+  version: '0'
+  source:
+    type: stdlib
 - name: tsort
   version: '0'
   source:

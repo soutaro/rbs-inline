@@ -82,6 +82,7 @@ DEPENDENCIES
   rake (~> 13.0)
   rbs-inline!
   steep
+  strscan
 
 BUNDLED WITH
    2.4.18
