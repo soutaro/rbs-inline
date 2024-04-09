@@ -32,4 +32,18 @@ class RBS::Inline::AST::CommentLinesTest < Minitest::Test
       Another code:
     TEXT
   end
+
+  def test_comment_location
+    comments = parse_comments(<<~RUBY)
+      # Sample code:
+      #   Hello World
+    RUBY
+    lines = AST::CommentLines.new(comments)
+
+    assert_equal [comments[0], 2], lines.comment_location(0)
+    assert_equal [comments[0], 14], lines.comment_location(12)
+    assert_equal [comments[1], 2], lines.comment_location(13)
+    assert_equal [comments[1], 15], lines.comment_location(26)
+    assert_nil lines.comment_location(27)
+  end
 end

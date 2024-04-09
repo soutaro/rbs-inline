@@ -89,8 +89,8 @@ module RBS
         end
 
         results.each do |result|
-          each_annotation_paragraph(result) do |source, comments|
-            if annot = parse_annotation(source, comments)
+          each_annotation_paragraph(result) do |comments|
+            if annot = parse_annotation(AST::CommentLines.new(comments))
               result.annotations << annot
             end
           end
@@ -112,27 +112,25 @@ module RBS
             line_offset = line.index(/\S/) || raise
 
             comments = [comment]
-            source_lines = [line]
 
             while true
               break unless next_line && next_comment
               next_offset = next_line.index(/\S/) || 0
               break unless next_offset > line_offset
 
-              source_lines << next_line
               comments << next_comment
               lines.shift
 
               next_line, next_comment = lines.first
             end
 
-            yield source_lines.join("\n"), comments
+            yield comments
           end
         end
       end
 
-      def parse_annotation(source, comments)
-        scanner = StringScanner.new(source)
+      def parse_annotation(comments)
+        scanner = StringScanner.new(comments.string)
 
         AST::Annotations::VarType.new(nil, nil, comments)
       end

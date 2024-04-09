@@ -30,6 +30,18 @@ module RBS
         end
 
         def comment_location(index)
+          comments.each do |comment, offset|
+            comment_length = comment.location.length
+
+            if index + offset <= comment_length
+              return [comment, index + offset]
+            else
+              index = index - comment_length + offset - 1
+              return if index < 0
+            end
+          end
+
+          nil
         end
       end
     end

@@ -34,9 +34,11 @@ module RBS
 
       def parse: () -> Array[ParsingResult]
 
-      def each_annotation_paragraph: (ParsingResult) { (String, Array[Prism::Comment]) -> void } -> void
+      private
 
-      def parse_annotation: (String, Array[Prism::Comment]) -> AST::Annotations::t?
+      def each_annotation_paragraph: (ParsingResult) { (Array[Prism::Comment]) -> void } -> void
+
+      def parse_annotation: (AST::CommentLines) -> AST::Annotations::t?
     end
   end
 end

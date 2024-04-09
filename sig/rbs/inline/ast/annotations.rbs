@@ -11,9 +11,7 @@ module RBS
                | Alias | Skip
 
         class Base
-          attr_reader source: Array[Prism::Comment]
-
-          def to_comment_location: (Integer index) -> [Prism::Comment, Integer]?
+          attr_reader source: CommentLines
         end
 
         module WithComment
@@ -27,7 +25,7 @@ module RBS
           attr_reader name: Symbol?
           attr_reader type: RBS::Types::t?
 
-          def initialize: (Symbol?, Types::t?, Array[Prism::Comment]) -> void
+          def initialize: (Symbol?, Types::t?, CommentLines) -> void
 
           def complete?: () -> bool
         end
