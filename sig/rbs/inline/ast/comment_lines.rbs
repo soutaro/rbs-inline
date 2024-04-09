@@ -1,0 +1,27 @@
+module RBS
+  module Inline
+    module AST
+      # CommentLines represents consecutive comments
+      #
+      # The comments construct one String.
+      #
+      # ```ruby
+      # # Hello       <-- Comment1
+      # # World       <-- Comment2
+      # ```
+      #
+      # We want to get a String of comment1 and comment2, `"Hello\nWorld".
+      # And want to translate a location in the string into the location in comment1 and comment2.
+      #
+      class CommentLines
+        attr_reader comments: Array[[Prism::Comment, Integer]]
+
+        def initialize: (Array[Prism::Comment]) -> void
+
+        def string: () -> String
+
+        def comment_location: (Integer index) -> [Prism::Comment, Integer]?
+      end
+    end
+  end
+end

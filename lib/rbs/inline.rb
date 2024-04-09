@@ -7,6 +7,7 @@ require "strscan"
 
 require "rbs/inline/annotation_parser"
 require "rbs/inline/ast/annotations"
+require "rbs/inline/ast/comment_lines"
 
 module RBS
   module Inline

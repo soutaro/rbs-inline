@@ -12,6 +12,8 @@ module RBS
 
         class Base
           attr_reader source: Array[Prism::Comment]
+
+          def to_comment_location: (Integer index) -> [Prism::Comment, Integer]?
         end
 
         module WithComment
