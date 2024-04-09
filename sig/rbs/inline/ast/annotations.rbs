@@ -12,35 +12,29 @@ module RBS
 
         class Base
           attr_reader source: CommentLines
-        end
-
-        module WithComment
-          attr_reader comment: String
+          attr_reader tree: Tree
         end
 
         # `@rbs x : T`
         class VarType < Base
-          include WithComment
+          def initialize: (Tree, CommentLines) -> void
 
           attr_reader name: Symbol?
-          attr_reader type: RBS::Types::t?
 
-          def initialize: (Symbol?, Types::t?, CommentLines) -> void
+          attr_reader type: Types::t?
+
+          attr_reader comment: String?
 
           def complete?: () -> bool
         end
 
         # `@rbs return: T`
         class ReturnType < Base
-          include WithComment
-
           attr_reader type: RBS::Types::t?
         end
 
         # `@rbs block: T [optional]`
         class BlockType < Base
-          include WithComment
-
           attr_reader type: RBS::Types::t?
 
           attr_reader optional: bool
@@ -68,8 +62,6 @@ module RBS
         end
 
         class Attribute < Base
-          include WithComment
-
           attr_reader name: Symbol
           attr_reader type: Types::t
           attr_reader kind: RBS::AST::Members::Attribute::kind
@@ -90,8 +82,6 @@ module RBS
 
         # `@rbs inherits SUPER`
         class Inherits < Base
-          include WithComment
-
           attr_reader super_name: TypeName
 
           attr_reader args: Array[Types::t]
@@ -99,16 +89,12 @@ module RBS
 
         # `@rbs module-self SUPER`
         class ModuleSelf < Base
-          include WithComment
-
           attr_reader super_name: TypeName
 
           attr_reader args: Array[Types::t]
         end
 
         class Mixin < Base
-          include WithComment
-
           attr_reader module_name: TypeName
 
           attr_reader args: Array[Types::t]
@@ -128,8 +114,6 @@ module RBS
 
         # `@rbs alias OLD NEW`
         class Alias < Base
-          include WithComment
-
           attr_reader kind: RBS::AST::Members::Alias::kind
 
           attr_reader old_name: Symbol
@@ -139,8 +123,6 @@ module RBS
 
         # `@rbs generic TYPE-PARAM`
         class Generic < Base
-          include WithComment
-
           attr_reader type_param: RBS::AST::TypeParam
         end
 

@@ -34,11 +34,37 @@ module RBS
 
       def parse: () -> Array[ParsingResult]
 
+      class Tokenizer
+        type token = [Symbol, String]
+
+        attr_reader current_token: token?
+
+        attr_reader scanner: StringScanner
+
+        def initialize: (StringScanner) -> void
+
+        # Returns next non-trivia token
+        #
+        # Trivia tokens are appended into the given tree.
+        #
+        def advance: (AST::Tree?) -> [Symbol, String]?
+
+        def type?: (Symbol) -> bool
+
+        def skip_to_comment: () -> String?
+      end
+
       private
 
       def each_annotation_paragraph: (ParsingResult) { (Array[Prism::Comment]) -> void } -> void
 
       def parse_annotation: (AST::CommentLines) -> AST::Annotations::t?
+
+      def parse_var_decl: (Tokenizer) -> AST::Tree
+
+      def parse_type: (Tokenizer, AST::Tree parent_tree) -> (AST::Tree | Types::t | nil)
+
+      def parse_comment: (Tokenizer) -> AST::Tree
     end
   end
 end

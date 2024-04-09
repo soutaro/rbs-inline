@@ -1,0 +1,39 @@
+module RBS
+  module Inline
+    module AST
+      class Tree
+        type token = [Symbol, String]
+
+        attr_reader trees: Array[token | Tree | Types::t | nil]
+
+        attr_reader type: Symbol
+
+        def initialize: (Symbol type) -> void
+
+        def <<: (token | Tree | Types::t | nil) -> self
+
+        def non_trivia_trees: () -> Array[token | Tree | Types::t | nil]
+
+        def nth_token: (Integer) -> token?
+
+        def nth_token?: (Integer) -> token?
+
+        def nth_token!: (Integer) -> token
+
+        def nth_tree: (Integer) -> Tree?
+
+        def nth_tree?: (Integer) -> Tree?
+
+        def nth_tree!: (Integer) -> Tree
+
+        def nth_type: (Integer) -> Types::t?
+
+        def nth_type?: (Integer) -> Types::t?
+
+        def nth_type!: (Integer) -> Types::t
+
+        def to_s: () -> String
+      end
+    end
+  end
+end

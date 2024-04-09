@@ -129,10 +129,145 @@ module RBS
         end
       end
 
+      class Tokenizer
+        attr_reader :scanner
+        attr_reader :current_token
+
+        def initialize(scanner)
+          @scanner = scanner
+          @current_token = nil
+        end
+
+        def advance(tree)
+          last = current_token
+
+          case
+          when s = scanner.scan(/\s+/)
+            tree << [:tWHITESPACE, s] if tree
+            advance(tree)
+          when s = scanner.scan(/@rbs/)
+            @current_token = [:kRBS, s]
+          when s = scanner.scan(/[a-z]\w*/)
+            @current_token = [:tLVAR, s]
+          when s = scanner.scan(/:/)
+            @current_token = [:kCOLON, s]
+          when s = scanner.scan(/--/)
+            @current_token = [:kMINUS2, s]
+          else
+            @current_token = nil
+          end
+
+          last
+        end
+
+        def type?(type)
+          if current_token && current_token[0] == type
+            true
+          else
+            false
+          end
+        end
+
+        def skip_to_comment
+          return "" if type?(:kMINUS2)
+
+          rest = scanner.matched || ""
+
+          if scanner.scan_until(/--/)
+            @current_token = [:kMINUS2, "--"]
+            rest + scanner.pre_match
+          else
+            rest += scanner.scan(/.*/) || ""
+            rest
+          end
+        end
+      end
+
       def parse_annotation(comments)
         scanner = StringScanner.new(comments.string)
+        tokenizer = Tokenizer.new(scanner)
 
-        AST::Annotations::VarType.new(nil, nil, comments)
+        tree = AST::Tree.new(:rbs_annotation)
+        tokenizer.advance(tree)
+
+        raise unless tokenizer.type?(:kRBS)
+
+        tree << tokenizer.current_token
+
+        tokenizer.advance(tree)
+
+        case
+        when tokenizer.type?(:tLVAR)
+          tree << parse_var_decl(tokenizer)
+          AST::Annotations::VarType.new(tree, comments)
+        end
+      end
+
+      def parse_var_decl(tokenizer)
+        tree = AST::Tree.new(:var_decl)
+
+        if tokenizer.type?(:tLVAR)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        else
+          tree << nil
+        end
+
+        if tokenizer.type?(:kCOLON)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        else
+          tree << nil
+        end
+
+        tree << parse_type(tokenizer, tree)
+
+        if tokenizer.type?(:kMINUS2)
+          tree << parse_comment(tokenizer)
+        else
+          tree << nil
+        end
+
+        tree
+      end
+
+      def parse_comment(tokenizer)
+        tree = AST::Tree.new(:comment)
+
+        if tokenizer.type?(:kMINUS2)
+          tree << tokenizer.current_token
+          tokenizer.scanner.scan(/.*/)
+          tree << [:tCOMMENT, tokenizer.scanner.matched || ""]
+        else
+          tree << nil
+          tree << nil
+        end
+
+        tokenizer.scanner.skip(/.*/)
+
+        tree
+      end
+
+      def parse_type(tokenizer, parent_tree)
+        buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
+        range = (tokenizer.scanner.charpos - (tokenizer.scanner.matched_size || 0) ..)
+        if type = RBS::Parser.parse_type(buffer, range: range, require_eof: false)
+          loc = type.location or raise
+          size = loc.end_pos - loc.start_pos
+          (size - (tokenizer.scanner.matched_size || 0)).times do
+            tokenizer.scanner.skip(/./)
+          end
+          tokenizer.advance(parent_tree)
+          type
+        else
+          tokenizer.advance(parent_tree)
+          nil
+        end
+      rescue RBS::ParsingError
+        content = tokenizer.skip_to_comment || ""
+        tree = AST::Tree.new(:type_syntax_error)
+        tree << [:tSOURCE, content]
+        tree
       end
     end
   end
