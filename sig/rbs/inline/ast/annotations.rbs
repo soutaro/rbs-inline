@@ -2,7 +2,7 @@ module RBS
   module Inline
     module AST
       module Annotations
-        type t = VarType | ReturnType | BlockType | MethodType
+        type t = VarType | ReturnType
                | Use
                | Def
                | AttrReader | AttrWriter | AttrAccessor
@@ -30,21 +30,13 @@ module RBS
 
         # `@rbs return: T`
         class ReturnType < Base
-          attr_reader type: RBS::Types::t?
-        end
+          def initialize: (Tree, CommentLines) -> void
 
-        # `@rbs block: T [optional]`
-        class BlockType < Base
           attr_reader type: RBS::Types::t?
 
-          attr_reader optional: bool
-        end
+          attr_reader comment: String?
 
-        # `@rbs method: () -> T`
-        class MethodType < Base
-          type commented_method_type = [RBS::MethodType, String?]
-
-          attr_reader types: Array[commented_method_type]?
+          def complete?: () -> bool
         end
 
         # `@rbs use USE`

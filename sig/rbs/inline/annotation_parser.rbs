@@ -62,6 +62,8 @@ module RBS
 
       def parse_var_decl: (Tokenizer) -> AST::Tree
 
+      def parse_return_type_decl: (Tokenizer) -> AST::Tree
+
       def parse_type: (Tokenizer, AST::Tree parent_tree) -> (AST::Tree | Types::t | nil)
 
       def parse_comment: (Tokenizer) -> AST::Tree

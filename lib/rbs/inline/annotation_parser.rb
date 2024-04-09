@@ -147,6 +147,8 @@ module RBS
             advance(tree)
           when s = scanner.scan(/@rbs/)
             @current_token = [:kRBS, s]
+          when s = scanner.scan(/return/)
+            @current_token = [:kRETURN, s]
           when s = scanner.scan(/[a-z]\w*/)
             @current_token = [:tLVAR, s]
           when s = scanner.scan(/:/)
@@ -200,6 +202,9 @@ module RBS
         when tokenizer.type?(:tLVAR)
           tree << parse_var_decl(tokenizer)
           AST::Annotations::VarType.new(tree, comments)
+        when tokenizer.type?(:kRETURN)
+          tree << parse_return_type_decl(tokenizer)
+          AST::Annotations::ReturnType.new(tree, comments)
         end
       end
 
@@ -207,6 +212,34 @@ module RBS
         tree = AST::Tree.new(:var_decl)
 
         if tokenizer.type?(:tLVAR)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        else
+          tree << nil
+        end
+
+        if tokenizer.type?(:kCOLON)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        else
+          tree << nil
+        end
+
+        tree << parse_type(tokenizer, tree)
+
+        if tokenizer.type?(:kMINUS2)
+          tree << parse_comment(tokenizer)
+        else
+          tree << nil
+        end
+
+        tree
+      end
+
+      def parse_return_type_decl(tokenizer)
+        tree = AST::Tree.new(:return_type_decl)
+
+        if tokenizer.type?(:kRETURN)
           tree << tokenizer.current_token
           tokenizer.advance(tree)
         else

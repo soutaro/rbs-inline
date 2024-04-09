@@ -9,10 +9,8 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     Prism.parse_comments(src, filepath: "a.rb")
   end
 
-  def test_result_group
+  def test_lvar_decl_annotation
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
-      # test2
-      #
       # @rbs size: Integer -- size of something
       # @rbs keyword: Symbol
       # @rbs block
@@ -25,7 +23,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     annots[0].annotations[0].tap do |annotation|
       assert_equal :size, annotation.name
       assert_equal "Integer", annotation.type.to_s
-      assert_equal " size of something", annotation.comment
+      assert_equal "-- size of something", annotation.comment
     end
     annots[0].annotations[1].tap do |annotation|
       assert_equal :keyword, annotation.name
@@ -40,7 +38,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     annots[0].annotations[3].tap do |annotation|
       assert_equal :x, annotation.name
       assert_nil annotation.type
-      assert_equal " Hello world", annotation.comment
+      assert_equal "-- Hello world", annotation.comment
     end
     annots[0].annotations[4].tap do |annotation|
       assert_equal :y, annotation.name
@@ -50,7 +48,39 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     annots[0].annotations[5].tap do |annotation|
       assert_equal :z, annotation.name
       assert_nil annotation.type
-      assert_equal " something", annotation.comment
+      assert_equal "-- something", annotation.comment
+    end
+  end
+
+  def test_return_type_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs return: Integer -- size of something
+      # @rbs return: Symbol
+      # @rbs return
+      # @rbs return: Array[
+      # @rbs return: Array[  -- something
+      RUBY
+
+    assert_equal 5, annots[0].annotations.size
+    annots[0].annotations[0].tap do |annotation|
+      assert_equal "Integer", annotation.type.to_s
+      assert_equal "-- size of something", annotation.comment
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_equal "Symbol", annotation.type.to_s
+      assert_nil annotation.comment
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_nil annotation.type
+      assert_nil annotation.comment
+    end
+    annots[0].annotations[3].tap do |annotation|
+      assert_nil annotation.type
+      assert_nil annotation.comment
+    end
+    annots[0].annotations[4].tap do |annotation|
+      assert_nil annotation.type
+      assert_equal "-- something", annotation.comment
     end
   end
 end

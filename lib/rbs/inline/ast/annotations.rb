@@ -27,12 +27,41 @@ module RBS
             end
 
             if comment = lvar_tree.nth_tree(3)
-              @comment = comment.nth_token!(1)[1]
+              @comment = comment.to_s
             end
           end
 
           def complete?
             if name && type
+              true
+            else
+              false
+            end
+          end
+        end
+
+        class ReturnType < Base
+          attr_reader :type
+
+          attr_reader :comment
+
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            return_type_decl = tree.nth_tree!(1)
+
+            if type = return_type_decl.nth_type?(2)
+              @type = type
+            end
+
+            if comment = return_type_decl.nth_tree(3)
+              @comment = comment.to_s
+            end
+          end
+
+          def complete?
+            if type
               true
             else
               false
