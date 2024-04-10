@@ -17,7 +17,7 @@ module RBS
 
         def to_s
           buf = +""
-          
+
           trees.each do |tree|
             case tree
             when Array
@@ -96,7 +96,7 @@ module RBS
         def nth_type(index)
           tok = non_trivia_trees[index]
           case tok
-          when Array, Tree
+          when Array, Tree, MethodType
             raise
           else
             tok
@@ -106,7 +106,7 @@ module RBS
         def nth_type?(index)
           tok = non_trivia_trees[index]
           case tok
-          when Array, Tree, nil
+          when Array, Tree, nil, MethodType
             nil
           else
             tok
@@ -115,6 +115,30 @@ module RBS
 
         def nth_type!(index)
           nth_type(index) || raise
+        end
+
+        def nth_method_type(index)
+          tok = non_trivia_trees[index]
+          case tok
+          when MethodType, nil
+            tok
+          else
+            raise
+          end
+        end
+
+        def nth_method_type?(index)
+          tok = non_trivia_trees[index]
+          case tok
+          when MethodType
+            tok
+          else
+            nil
+          end
+        end
+
+        def nth_method_type!(index)
+          nth_method_type(index) || raise
         end
       end
     end

@@ -108,7 +108,7 @@ module RBS
 
           next_line, next_comment = lines.first
 
-          if line.start_with?('@rbs')
+          if line.start_with?('@rbs', '::')
             line_offset = line.index(/\S/) || raise
 
             comments = [comment]
@@ -142,6 +142,8 @@ module RBS
           last = current_token
 
           case
+          when s = scanner.scan(/::/)
+            @current_token = [:kCOLON2, s]
           when s = scanner.scan(/\s+/)
             tree << [:tWHITESPACE, s] if tree
             advance(tree)
@@ -192,19 +194,25 @@ module RBS
         tree = AST::Tree.new(:rbs_annotation)
         tokenizer.advance(tree)
 
-        raise unless tokenizer.type?(:kRBS)
-
-        tree << tokenizer.current_token
-
-        tokenizer.advance(tree)
-
         case
-        when tokenizer.type?(:tLVAR)
-          tree << parse_var_decl(tokenizer)
-          AST::Annotations::VarType.new(tree, comments)
-        when tokenizer.type?(:kRETURN)
-          tree << parse_return_type_decl(tokenizer)
-          AST::Annotations::ReturnType.new(tree, comments)
+        when tokenizer.type?(:kRBS)
+          tree << tokenizer.current_token
+
+          tokenizer.advance(tree)
+
+          case
+          when tokenizer.type?(:tLVAR)
+            tree << parse_var_decl(tokenizer)
+            AST::Annotations::VarType.new(tree, comments)
+          when tokenizer.type?(:kRETURN)
+            tree << parse_return_type_decl(tokenizer)
+            AST::Annotations::ReturnType.new(tree, comments)
+          end
+        when tokenizer.type?(:kCOLON2)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+          tree << parse_type_method_type(tokenizer, tree)
+          AST::Annotations::Assertion.new(tree, comments)
         end
       end
 
@@ -280,6 +288,46 @@ module RBS
         tokenizer.scanner.skip(/.*/)
 
         tree
+      end
+
+      def parse_type_method_type(tokenizer, parent_tree)
+        buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
+        range = (tokenizer.scanner.charpos - (tokenizer.scanner.matched_size || 0) ..)
+        begin
+          if type = RBS::Parser.parse_method_type(buffer, range: range, require_eof: false)
+            loc = type.location or raise
+            size = loc.end_pos - loc.start_pos
+            (size - (tokenizer.scanner.matched_size || 0)).times do
+              tokenizer.scanner.skip(/./)
+            end
+            tokenizer.advance(parent_tree)
+            type
+          else
+            tokenizer.advance(parent_tree)
+            nil
+          end
+        rescue RBS::ParsingError
+          begin
+            if type = RBS::Parser.parse_type(buffer, range: range, require_eof: false)
+              loc = type.location or raise
+              size = loc.end_pos - loc.start_pos
+              (size - (tokenizer.scanner.matched_size || 0)).times do
+                tokenizer.scanner.skip(/./)
+              end
+              tokenizer.advance(parent_tree)
+              type
+            else
+              tokenizer.advance(parent_tree)
+              nil
+            end
+          rescue RBS::ParsingError
+            content = (tokenizer.scanner.matched || "") + (tokenizer.scanner.rest || "")
+            tree = AST::Tree.new(:type_syntax_error)
+            tree << [:tSOURCE, content]
+            tokenizer.scanner.terminate
+            tree
+          end
+        end
       end
 
       def parse_type(tokenizer, parent_tree)

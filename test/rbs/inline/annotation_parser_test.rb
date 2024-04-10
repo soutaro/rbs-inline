@@ -85,4 +85,29 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_equal "-- something", annotation.comment
     end
   end
+
+  def test_return_type_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      #:: (String) -> void
+      #:: [Integer, String]
+      #:: [Integer
+      #:: (
+      #    String,
+      #    Integer,
+      #   ) -> void
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_equal "(String) -> void", annotation.type.to_s
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_equal "[ Integer, String ]", annotation.type.to_s
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_nil annotation.type
+    end
+    annots[0].annotations[3].tap do |annotation|
+      assert_equal "(String, Integer) -> void", annotation.type.to_s
+    end
+  end
 end

@@ -4,15 +4,17 @@ module RBS
       class Tree
         type token = [Symbol, String]
 
-        attr_reader trees: Array[token | Tree | Types::t | nil]
+        type tree = token | Tree | Types::t | MethodType | nil
+
+        attr_reader trees: Array[tree]
 
         attr_reader type: Symbol
 
         def initialize: (Symbol type) -> void
 
-        def <<: (token | Tree | Types::t | nil) -> self
+        def <<: (tree) -> self
 
-        def non_trivia_trees: () -> Array[token | Tree | Types::t | nil]
+        def non_trivia_trees: () -> Array[tree]
 
         def nth_token: (Integer) -> token?
 
@@ -31,6 +33,12 @@ module RBS
         def nth_type?: (Integer) -> Types::t?
 
         def nth_type!: (Integer) -> Types::t
+
+        def nth_method_type: (Integer) -> MethodType?
+
+        def nth_method_type?: (Integer) -> MethodType?
+
+        def nth_method_type!: (Integer) -> MethodType
 
         def to_s: () -> String
       end

@@ -68,6 +68,25 @@ module RBS
             end
           end
         end
+
+        class Assertion < Base
+          attr_reader :type
+
+          def initialize(tree, source)
+            @source = source
+            @tree = tree
+
+            @type = tree.nth_method_type?(1) || tree.nth_type?(1)
+          end
+
+          def complete?
+            if type
+              true
+            else
+              false
+            end
+          end
+        end
       end
     end
   end

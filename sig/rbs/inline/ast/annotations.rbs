@@ -9,6 +9,7 @@ module RBS
                | Include | Extend | Prepend
                | Inherits | Generic | ModuleSelf
                | Alias | Skip
+               | Assertion
 
         class Base
           attr_reader source: CommentLines
@@ -120,6 +121,15 @@ module RBS
 
         # `@rbs skip`
         class Skip < Base
+        end
+
+        # `:: TYPE`
+        class Assertion < Base
+          attr_reader type: Types::t | RBS::MethodType | nil
+
+          def initialize: (Tree, CommentLines) -> void
+
+          def complete?: () -> bool
         end
       end
     end
