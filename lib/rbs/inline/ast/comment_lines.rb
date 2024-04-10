@@ -19,14 +19,7 @@ module RBS
         end
 
         def string
-          buffer = +""
-
-          comments.each do |comment, offset|
-            buffer << (comment.location.slice[offset..] || "")
-            buffer << "\n"
-          end
-
-          buffer
+          comments.map {|comment, offset| comment.location.slice[offset..] }.join("\n")
         end
 
         def comment_location(index)

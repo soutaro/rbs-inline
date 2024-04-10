@@ -269,8 +269,9 @@ module RBS
 
         if tokenizer.type?(:kMINUS2)
           tree << tokenizer.current_token
-          tokenizer.scanner.scan(/.*/)
-          tree << [:tCOMMENT, tokenizer.scanner.matched || ""]
+          rest = tokenizer.scanner.rest || ""
+          tokenizer.scanner.terminate
+          tree << [:tCOMMENT, rest]
         else
           tree << nil
           tree << nil

@@ -14,7 +14,7 @@ class RBS::Inline::AST::CommentLinesTest < Minitest::Test
       # Sample code
     RUBY
 
-    assert_equal "Sample code\n", lines.string
+    assert_equal "Sample code", lines.string
   end
 
   def test_string__multiline
@@ -25,7 +25,7 @@ class RBS::Inline::AST::CommentLinesTest < Minitest::Test
       # Another code:
     RUBY
 
-    assert_equal <<~TEXT, lines.string
+    assert_equal <<~TEXT.chop, lines.string
       Sample code:
         Hello World
 

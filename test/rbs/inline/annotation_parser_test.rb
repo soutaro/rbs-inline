@@ -16,7 +16,9 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       # @rbs block
       # @rbs x -- Hello world
       # @rbs y: Array[
-      # @rbs z: Array[  -- something
+      # @rbs z: Array[  --
+      #   something
+      #   More comments
       RUBY
 
     assert_equal 6, annots[0].annotations.size
@@ -48,7 +50,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     annots[0].annotations[5].tap do |annotation|
       assert_equal :z, annotation.name
       assert_nil annotation.type
-      assert_equal "-- something", annotation.comment
+      assert_equal "--\n  something\n  More comments", annotation.comment
     end
   end
 
