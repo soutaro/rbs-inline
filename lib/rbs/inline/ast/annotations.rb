@@ -87,6 +87,34 @@ module RBS
             end
           end
         end
+
+        class Application < Base
+          attr_reader :types
+
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            if ts = tree.nth_tree(0)
+              if types = ts.nth_tree(1)
+                @types = types.non_trivia_trees.each_slice(2).map do |type, comma|
+                  # @type break: nil
+
+                  case type
+                  when AST::Tree, MethodType, Array, nil
+                    break
+                  else
+                    type
+                  end
+                end
+              end
+            end
+          end
+
+          def complete?
+            types ? true : false
+          end
+        end
       end
     end
   end

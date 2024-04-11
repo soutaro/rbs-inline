@@ -10,6 +10,7 @@ module RBS
                | Inherits | Generic | ModuleSelf
                | Alias | Skip
                | Assertion
+               | Application
 
         class Base
           attr_reader source: CommentLines
@@ -126,6 +127,15 @@ module RBS
         # `:: TYPE`
         class Assertion < Base
           attr_reader type: Types::t | RBS::MethodType | nil
+
+          def initialize: (Tree, CommentLines) -> void
+
+          def complete?: () -> bool
+        end
+
+        # `[TYPE, ..., TYPE]`
+        class Application < Base
+          attr_reader types: Array[Types::t]?
 
           def initialize: (Tree, CommentLines) -> void
 

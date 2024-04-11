@@ -94,6 +94,8 @@ module RBS
       def parse_type_method_type: (Tokenizer, AST::Tree parent_tree) -> (AST::Tree | Types::t | MethodType | nil)
 
       def parse_comment: (Tokenizer) -> AST::Tree
+
+      def parse_type_app: (Tokenizer) -> AST::Tree
     end
   end
 end

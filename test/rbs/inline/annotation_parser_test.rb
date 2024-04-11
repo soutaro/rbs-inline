@@ -110,4 +110,22 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_equal "(String, Integer) -> void", annotation.type.to_s
     end
   end
+
+  def test_return_type_application
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      #[String, Integer]
+      #[String[
+      #[]
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_equal ["String", "Integer"], annotation.types.map(&:to_s)
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_nil annotation.types
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_nil annotation.types
+    end
+  end
 end

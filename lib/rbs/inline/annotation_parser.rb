@@ -108,7 +108,7 @@ module RBS
 
           next_line, next_comment = lines.first
 
-          if line.start_with?('@rbs', '::')
+          if line.start_with?('@rbs', '::', '[')
             line_offset = line.index(/\S/) || raise
 
             comments = [comment]
@@ -142,11 +142,17 @@ module RBS
           last = current_token
 
           case
-          when s = scanner.scan(/::/)
-            @current_token = [:kCOLON2, s]
           when s = scanner.scan(/\s+/)
             tree << [:tWHITESPACE, s] if tree
             advance(tree)
+          when s = scanner.scan(/::/)
+            @current_token = [:kCOLON2, s]
+          when s = scanner.scan(/\[/)
+            @current_token = [:kLBRACKET, "["]
+          when s = scanner.scan(/\]/)
+            @current_token = [:kRBRACKET, "]"]
+          when s = scanner.scan(/,/)
+            @current_token = [:kCOMMA, ","]
           when s = scanner.scan(/@rbs/)
             @current_token = [:kRBS, s]
           when s = scanner.scan(/return/)
@@ -213,6 +219,9 @@ module RBS
           tokenizer.advance(tree)
           tree << parse_type_method_type(tokenizer, tree)
           AST::Annotations::Assertion.new(tree, comments)
+        when tokenizer.type?(:kLBRACKET)
+          tree << parse_type_app(tokenizer)
+          AST::Annotations::Application.new(tree, comments)
         end
       end
 
@@ -283,6 +292,41 @@ module RBS
         else
           tree << nil
           tree << nil
+        end
+
+        tree
+      end
+
+      def parse_type_app(tokenizer)
+        tree = AST::Tree.new(:tapp)
+
+        if tokenizer.type?(:kLBRACKET)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        end
+
+        types = AST::Tree.new(:types)
+        while true
+          type = parse_type(tokenizer, types)
+          types << type
+
+          break unless type
+          break if type.is_a?(AST::Tree)
+
+          if tokenizer.type?(:kCOMMA)
+            types << tokenizer.current_token
+            tokenizer.advance(types)
+          end
+
+          if tokenizer.type?(:kRBRACKET)
+            break
+          end
+        end
+        tree << types
+
+        if tokenizer.type?(:kRBRACKET)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
         end
 
         tree
