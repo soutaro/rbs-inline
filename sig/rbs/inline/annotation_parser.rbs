@@ -51,7 +51,11 @@ module RBS
 
         def type?: (Symbol) -> bool
 
-        def skip_to_comment: () -> String?
+        # Advance the tokenizer to `--` token, and returns the skipped input
+        #
+        # If no `--` token found, the tokenizer will be at the end of the input.
+        #
+        def skip_to_comment: () -> String
       end
 
       private
@@ -64,8 +68,29 @@ module RBS
 
       def parse_return_type_decl: (Tokenizer) -> AST::Tree
 
+      # Parse a RBS type and returns it
+      #
+      # If parsing failed, it returns a Tree(`:type_syntax_error), consuming
+      #
+      # 1. All of the input with `--` token if exists (for comments)
+      # 2. All of the input (for anything else)
+      #
+      # ```
+      # Integer -- Foo        # => Returns `Integer`, tokenizer has `--` as its current token
+      # Integer[ -- Foo       # => Returns a tree for `Integer[`, tokenizer has `--` as its curren token
+      # Integer[ Foo          # => Returns a tree for `Integer[ Foo`, tokenizer is at the end of the input
+      # ```
+      #
       def parse_type: (Tokenizer, AST::Tree parent_tree) -> (AST::Tree | Types::t | nil)
 
+      # Parse a RBS method type or type and returns it
+      #
+      # It tries parsing a method type, and then parsing a type if failed.
+      #
+      # If both parsing failed, it returns a Tree(`:type_syntax_error), consuming all of the remaining input.
+      #
+      # Note that this doesn't recognize `--` comment unlike `parse_type`.
+      #
       def parse_type_method_type: (Tokenizer, AST::Tree parent_tree) -> (AST::Tree | Types::t | MethodType | nil)
 
       def parse_comment: (Tokenizer) -> AST::Tree

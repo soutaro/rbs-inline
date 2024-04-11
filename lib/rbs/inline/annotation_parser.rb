@@ -285,8 +285,6 @@ module RBS
           tree << nil
         end
 
-        tokenizer.scanner.skip(/.*/)
-
         tree
       end
 
@@ -346,7 +344,7 @@ module RBS
           nil
         end
       rescue RBS::ParsingError
-        content = tokenizer.skip_to_comment || ""
+        content = tokenizer.skip_to_comment
         tree = AST::Tree.new(:type_syntax_error)
         tree << [:tSOURCE, content]
         tree
