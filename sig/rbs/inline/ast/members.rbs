@@ -1,10 +1,12 @@
 module RBS
   module Inline
     module AST
-      module Member
+      module Members
         type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr
 
         type rbs = RBSDef | RBSAlias | RBSAttr
+
+        type t = ruby | rbs
 
         class RubyDef
         end

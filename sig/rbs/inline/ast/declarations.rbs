@@ -1,8 +1,24 @@
 module RBS
   module Inline
     module AST
-      module Declaration
-        
+      module Declarations
+        type t = ClassDecl
+
+        module ConstantUtil
+          def type_name: (Prism::Node) -> TypeName?
+        end
+
+        class ClassDecl
+          include ConstantUtil
+
+          attr_reader node: Prism::ClassNode
+
+          attr_reader members: Array[Members::t | t]
+
+          def initialize: (Prism::ClassNode) -> void
+
+          def class_name: () -> TypeName?
+        end
       end
     end
   end

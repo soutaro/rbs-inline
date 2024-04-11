@@ -10,6 +10,7 @@ require "rbs/inline/annotation_parser"
 require "rbs/inline/ast/annotations"
 require "rbs/inline/ast/comment_lines"
 require "rbs/inline/ast/tree"
+require "rbs/inline/ast/declarations"
 
 module RBS
   module Inline
