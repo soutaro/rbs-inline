@@ -86,7 +86,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
   end
 
-  def test_return_type_annotation
+  def test_type_assertion
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       #:: (String) -> void
       #:: [Integer, String]
@@ -111,7 +111,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
   end
 
-  def test_return_type_application
+  def test_type_application
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       #[String, Integer]
       #[String[
