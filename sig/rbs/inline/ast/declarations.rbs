@@ -15,9 +15,13 @@ module RBS
 
           attr_reader members: Array[Members::t | t]
 
-          def initialize: (Prism::ClassNode) -> void
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          def initialize: (Prism::ClassNode, AnnotationParser::ParsingResult?) -> void
 
           def class_name: () -> TypeName?
+
+          def super_class: () -> TypeName?
         end
       end
     end

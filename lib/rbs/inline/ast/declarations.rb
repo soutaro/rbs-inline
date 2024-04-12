@@ -15,15 +15,23 @@ module RBS
           include ConstantUtil
 
           attr_reader :node
+          attr_reader :comments
           attr_reader :members
 
-          def initialize(node)
+          def initialize(node, comments)
             @node = node
             @members = []
+            @comments = comments
           end
 
           def class_name
-             type_name(node.constant_path)
+            type_name(node.constant_path)
+          end
+
+          def super_class
+            if node.superclass
+              type_name(node.superclass)
+            end
           end
         end
       end
