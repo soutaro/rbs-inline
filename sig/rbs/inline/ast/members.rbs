@@ -1,3 +1,5 @@
+use RBS::AST::Members::MethodDefinition::Overload
+
 module RBS
   module Inline
     module AST
@@ -20,13 +22,15 @@ module RBS
 
           def method_name: () -> Symbol
 
-          def method_types: () -> Array[MethodType]
+          def method_overloads: () -> Array[Overload]
 
           def method_type_annotations: () -> Array[Annotations::Assertion]
 
           def return_type: () -> Types::t?
 
           def var_type_hash: () -> Hash[Symbol, Types::t?]
+
+          def method_annotations: () -> Array[RBS::AST::Annotation]
         end
 
         class RubyAlias < Base

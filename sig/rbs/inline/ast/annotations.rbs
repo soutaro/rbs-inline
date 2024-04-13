@@ -141,6 +141,15 @@ module RBS
 
           def complete?: () -> bool
         end
+
+        # `@rbs %a{FOO}`
+        class RBSAnnotation < Base
+          attr_reader contents: Array[String]
+
+          def initialize: (Tree, CommentLines) -> void
+
+          def annotation: () -> RBS::AST::Annotation
+        end
       end
     end
   end

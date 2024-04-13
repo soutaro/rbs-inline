@@ -115,6 +115,21 @@ module RBS
             types ? true : false
           end
         end
+
+        class RBSAnnotation < Base
+          attr_reader :contents
+
+          def initialize(tree, comments)
+            @source = comments
+            @tree = tree
+
+            annots = tree.nth_tree!(1)
+            @contents = annots.non_trivia_trees.map do |token|
+              raise unless token.is_a?(Array)
+              token[1]
+            end
+          end
+        end
       end
     end
   end

@@ -128,4 +128,14 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_nil annotation.types
     end
   end
+
+  def test_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs %a{pure} %a[hello] %a(world)
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_equal ["%a{pure}", "%a[hello]", "%a(world)"], annotation.contents
+    end
+  end
 end

@@ -67,10 +67,8 @@ module RBS
           RBS::AST::Members::MethodDefinition.new(
             name: member.method_name,
             kind: :instance,
-            overloads: member.method_types.map do |method_type|
-              RBS::AST::Members::MethodDefinition::Overload.new(method_type: method_type, annotations: [])
-            end,
-            annotations: [],
+            overloads: member.method_overloads,
+            annotations: member.method_annotations,
             location: nil,
             comment: comment,
             overloading: false,

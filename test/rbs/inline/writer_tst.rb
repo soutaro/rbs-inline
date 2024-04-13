@@ -10,7 +10,7 @@ class RBS::Inline::WriterTest < Minitest::Test
     Writer.write(uses, decls)
   end
 
-  def test_class_decl
+  def test_method_type
     output = translate(<<~RUBY)
       class Foo
         #:: () -> String
@@ -48,6 +48,26 @@ class RBS::Inline::WriterTest < Minitest::Test
         def f: (?Integer x, *String y, foo: Symbol, ?bar: Integer?, **String? rest) -> void
 
         def g: (?untyped x, *untyped y, foo: untyped, ?bar: untyped, **untyped rest) -> untyped
+      end
+    RBS
+  end
+
+  def test_method_type__annotation
+    output = translate(<<~RUBY)
+      class Foo
+        # @rbs %a(pure)
+        # @rbs return: String?
+        def f()
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        # @rbs %a(pure)
+        # @rbs return: String?
+        %a{pure}
+        def f: () -> String?
       end
     RBS
   end

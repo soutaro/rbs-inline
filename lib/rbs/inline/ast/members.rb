@@ -57,10 +57,15 @@ module RBS
             types
           end
 
-          def method_types
+          def method_overloads
             if !(annots = method_type_annotations).empty?
               annots.map do
-                _1.type #: MethodType
+                method_type = _1.type #: MethodType
+
+                RBS::AST::Members::MethodDefinition::Overload.new(
+                  method_type: method_type,
+                  annotations: []
+                )
               end
             else
               required_positionals = [] #: Array[Types::Function::Param]
@@ -154,22 +159,44 @@ module RBS
               end
 
               [
-                RBS::MethodType.new(
-                  type_params: [],
-                  type: Types::Function.new(
-                    required_positionals: required_positionals,
-                    optional_positionals: optional_positionals,
-                    rest_positionals: rest_positionals,
-                    trailing_positionals: [],
-                    required_keywords: required_keywords,
-                    optional_keywords: optional_keywords,
-                    rest_keywords: rest_keywords,
-                    return_type: return_type || Types::Bases::Any.new(location: nil)
+                RBS::AST::Members::MethodDefinition::Overload.new(
+                  method_type: RBS::MethodType.new(
+                    type_params: [],
+                    type: Types::Function.new(
+                      required_positionals: required_positionals,
+                      optional_positionals: optional_positionals,
+                      rest_positionals: rest_positionals,
+                      trailing_positionals: [],
+                      required_keywords: required_keywords,
+                      optional_keywords: optional_keywords,
+                      rest_keywords: rest_keywords,
+                      return_type: return_type || Types::Bases::Any.new(location: nil)
+                    ),
+                    block: nil,
+                    location: nil
                   ),
-                  block: nil,
-                  location: nil
+                  annotations: []
                 )
               ]
+            end
+          end
+
+          def method_annotations
+            if comments
+              comments.annotations.flat_map do |annotation|
+                if annotation.is_a?(AST::Annotations::RBSAnnotation)
+                  annotation.contents.map do |string|
+                    RBS::AST::Annotation.new(
+                      string: string[3...-1] || "",
+                      location: nil
+                    )
+                  end
+                else
+                  []
+                end
+              end
+            else
+              []
             end
           end
         end

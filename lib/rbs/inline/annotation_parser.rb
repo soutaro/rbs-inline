@@ -163,6 +163,12 @@ module RBS
             @current_token = [:kCOLON, s]
           when s = scanner.scan(/--/)
             @current_token = [:kMINUS2, s]
+          when s = scanner.scan(/%a\{[^}]+\}/)
+            @current_token = [:tANNOTATION, s]
+          when s = scanner.scan(/%a\[[^]]+\]/)
+            @current_token = [:tANNOTATION, s]
+          when s = scanner.scan(/%a\([^)]+\)/)
+            @current_token = [:tANNOTATION, s]
           else
             @current_token = nil
           end
@@ -213,6 +219,9 @@ module RBS
           when tokenizer.type?(:kRETURN)
             tree << parse_return_type_decl(tokenizer)
             AST::Annotations::ReturnType.new(tree, comments)
+          when tokenizer.type?(:tANNOTATION)
+            tree << parse_rbs_annotation(tokenizer)
+            AST::Annotations::RBSAnnotation.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
           tree << tokenizer.current_token
@@ -391,6 +400,17 @@ module RBS
         content = tokenizer.skip_to_comment
         tree = AST::Tree.new(:type_syntax_error)
         tree << [:tSOURCE, content]
+        tree
+      end
+
+      def parse_rbs_annotation(tokenizer)
+        tree = AST::Tree.new(:rbs_annotation)
+
+        while tokenizer.type?(:tANNOTATION)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        end
+
         tree
       end
     end

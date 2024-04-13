@@ -96,6 +96,8 @@ module RBS
       def parse_comment: (Tokenizer) -> AST::Tree
 
       def parse_type_app: (Tokenizer) -> AST::Tree
+
+      def parse_rbs_annotation: (Tokenizer) -> AST::Tree
     end
   end
 end
