@@ -11,7 +11,10 @@ module RBS
           end
         end
 
-        class ClassDecl
+        class Base
+        end
+
+        class ClassDecl < Base
           include ConstantUtil
 
           attr_reader :node

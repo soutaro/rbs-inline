@@ -8,7 +8,10 @@ module RBS
           def type_name: (Prism::Node) -> TypeName?
         end
 
-        class ClassDecl
+        class Base
+        end
+
+        class ClassDecl < Base
           include ConstantUtil
 
           attr_reader node: Prism::ClassNode
@@ -19,9 +22,9 @@ module RBS
 
           def initialize: (Prism::ClassNode, AnnotationParser::ParsingResult?) -> void
 
-          def class_name: () -> TypeName?
+          %a{pure} def class_name: () -> TypeName?
 
-          def super_class: () -> TypeName?
+          %a{pure} def super_class: () -> TypeName?
         end
       end
     end

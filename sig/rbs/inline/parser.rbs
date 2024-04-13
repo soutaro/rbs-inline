@@ -5,6 +5,8 @@ module RBS
     class Parser < Prism::Visitor
       # A mappning from the last line to the result
       #
+      # Comments associated to some elements are deleted while parsing.
+      # 
       attr_reader comments: Hash[Integer, AnnotationParser::ParsingResult]
 
       attr_reader decls: Array[AST::Declarations::t]
@@ -15,11 +17,13 @@ module RBS
 
       def self.parse: (ParseResult[ProgramNode]) -> [Array[AST::Annotations::Use], Array[AST::Declarations::t]]
 
-      def visit_class_node: (ClassNode node) -> void
-
       def current_class_module_decl: () -> AST::Declarations::ClassDecl?
 
+      def current_class_module_decl!: () -> AST::Declarations::ClassDecl
+
       def push_class_module_decl: (AST::Declarations::ClassDecl) { () -> void } -> void
+
+      def visit_class_node: (ClassNode node) -> void
     end
   end
 end

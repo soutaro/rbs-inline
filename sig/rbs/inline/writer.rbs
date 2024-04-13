@@ -1,0 +1,19 @@
+module RBS
+  module Inline
+    class Writer
+      attr_reader output: String
+
+      attr_reader writer: RBS::Writer
+
+      def self.write: (Array[AST::Annotations::Use], Array[AST::Declarations::t]) -> String
+
+      def initialize: (?String) -> void
+
+      def write: (Array[AST::Annotations::Use], Array[AST::Declarations::t]) -> void
+
+      def translate_class_decl: (AST::Declarations::ClassDecl) -> RBS::AST::Declarations::Class?
+
+      def translate_member: (AST::Members::t) -> RBS::AST::Members::t?
+    end
+  end
+end

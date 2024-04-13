@@ -14,7 +14,8 @@ class RBS::Inline::ParserTest < Minitest::Test
       class Foo
         # Hello world
         class Bar < Object
-
+          def foo
+          end
         end
       end
     RUBY

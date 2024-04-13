@@ -12,6 +12,8 @@ module RBS
       def self.parse(result)
         instance = Parser.new()
 
+        # pp result
+
         annots = AnnotationParser.parse(result.comments)
         annots.each do |result|
           instance.comments[result.line_range.end] = result
@@ -25,23 +27,12 @@ module RBS
         ]
       end
 
-      def visit_class_node(node)
-        visit node.constant_path
-        visit node.superclass
-
-        if node.location
-          associated_comment = comments[node.location.start_line - 1]
-        end
-
-        class_decl = AST::Declarations::ClassDecl.new(node, associated_comment)
-
-        push_class_module_decl(class_decl) do
-          visit node.body
-        end
-      end
-
       def current_class_module_decl
         surrounding_decls.last
+      end
+
+      def current_class_module_decl!
+        current_class_module_decl or raise
       end
 
       def push_class_module_decl(decl)
@@ -57,6 +48,33 @@ module RBS
         ensure
           surrounding_decls.pop()
         end
+      end
+
+      def visit_class_node(node)
+        visit node.constant_path
+        visit node.superclass
+
+        if node.location
+          associated_comment = comments.delete(node.location.start_line - 1)
+        end
+
+        class_decl = AST::Declarations::ClassDecl.new(node, associated_comment)
+
+        push_class_module_decl(class_decl) do
+          visit node.body
+        end
+      end
+
+      def visit_def_node(node)
+        current_decl = current_class_module_decl!
+
+        if node.location
+          associated_comment = comments.delete(node.location.start_line - 1)
+        end
+
+        current_decl.members << AST::Members::RubyDef.new(node, associated_comment)
+
+        super
       end
     end
   end

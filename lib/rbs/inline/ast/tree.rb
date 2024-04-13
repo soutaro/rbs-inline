@@ -4,14 +4,19 @@ module RBS
       class Tree
         attr_reader :trees
         attr_reader :type
+        attr_reader :non_trivia_trees
 
         def initialize(type)
           @type = type
           @trees = []
+          @non_trivia_trees = []
         end
 
         def <<(tok)
           trees << tok
+          unless tok.is_a?(Array) && tok[0] == :tWHITESPACE
+            non_trivia_trees << tok
+          end
           self
         end
 
@@ -32,16 +37,6 @@ module RBS
           end
 
           buf
-        end
-
-        def non_trivia_trees
-          trees.select do |tree|
-            if tree.is_a?(Array)
-              tree[0] != :tWHITESPACE
-            else
-              true
-            end
-          end
         end
 
         def nth_token(index)

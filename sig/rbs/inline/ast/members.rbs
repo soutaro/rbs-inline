@@ -8,25 +8,43 @@ module RBS
 
         type t = ruby | rbs
 
-        class RubyDef
+        class Base
         end
 
-        class RubyAlias
+        class RubyDef < Base
+          attr_reader node: Prism::DefNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          def initialize: (Prism::DefNode, AnnotationParser::ParsingResult?) -> void
+
+          def method_name: () -> Symbol
+
+          def method_types: () -> Array[MethodType]
+
+          def method_type_annotations: () -> Array[Annotations::Assertion]
+
+          def return_type: () -> Types::t?
+
+          def var_type_hash: () -> Hash[Symbol, Types::t?]
         end
 
-        class RubyMixin
+        class RubyAlias < Base
         end
 
-        class RubyAttr
+        class RubyMixin < Base
         end
 
-        class RBSDef
+        class RubyAttr < Base
         end
 
-        class RBSAlias
+        class RBSDef < Base
         end
 
-        class RBSAttr
+        class RBSAlias < Base
+        end
+
+        class RBSAttr < Base
         end
       end
     end

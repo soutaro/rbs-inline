@@ -8,38 +8,89 @@ module RBS
 
         attr_reader trees: Array[tree]
 
+        # Children but without `tWHITESPACE` tokens
+        #
+        attr_reader non_trivia_trees: Array[tree]
+
         attr_reader type: Symbol
 
         def initialize: (Symbol type) -> void
 
         def <<: (tree) -> self
 
-        def non_trivia_trees: () -> Array[tree]
-
+        # Returns n-th token from the children
+        #
+        # Raises if the value is not a token or nil.
+        #
         def nth_token: (Integer) -> token?
 
+        # Returns n-th token from the children
+        #
+        # Returns `nil` if the value is not a token.
+        #
         def nth_token?: (Integer) -> token?
 
+        # Returns n-th token from the children
+        #
+        # Raises if the value is not token.
+        #
         def nth_token!: (Integer) -> token
 
+        # Returns n-th tree from the children
+        #
+        # Raises if the value is not a tree or nil.
+        #
         def nth_tree: (Integer) -> Tree?
 
+        # Returns n-th tree from the children
+        #
+        # Returns `nil` if the value is not a tree or nil.
+        #
         def nth_tree?: (Integer) -> Tree?
 
+        # Returns n-th tree from the children
+        #
+        # Raises if the value is not a tree.
+        #
         def nth_tree!: (Integer) -> Tree
 
+        # Returns n-th type from the children
+        #
+        # Raises if the value is not a tree or nil.
+        #
         def nth_type: (Integer) -> Types::t?
 
+        # Returns n-th type from the children
+        #
+        # Returns `nil` if the value is not a type.
+        #
         def nth_type?: (Integer) -> Types::t?
 
+        # Returns n-th type from the children
+        #
+        # Raises if the value is not a type.
+        #
         def nth_type!: (Integer) -> Types::t
 
+        # Returns n-th method type from the children
+        #
+        # Raises if the value is not a method type or `nil`.
+        #
         def nth_method_type: (Integer) -> MethodType?
 
+        # Returns n-th method type from the children
+        #
+        # Returns `nil` if the value is not a method type.
+        #
         def nth_method_type?: (Integer) -> MethodType?
 
+        # Returns n-th method tree from the children
+        #
+        # Raises if the value is not a method tree.
+        #
         def nth_method_type!: (Integer) -> MethodType
 
+        # Returns the source code associated to the tree
         def to_s: () -> String
       end
     end

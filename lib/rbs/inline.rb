@@ -11,7 +11,9 @@ require "rbs/inline/ast/annotations"
 require "rbs/inline/ast/comment_lines"
 require "rbs/inline/ast/tree"
 require "rbs/inline/ast/declarations"
+require "rbs/inline/ast/members"
 require "rbs/inline/parser"
+require "rbs/inline/writer"
 
 module RBS
   module Inline
