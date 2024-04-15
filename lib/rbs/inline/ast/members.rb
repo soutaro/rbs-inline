@@ -221,6 +221,20 @@ module RBS
             value.to_sym
           end
         end
+
+        class RubyMixin < Base
+          attr_reader :node, :comments, :application
+
+          def initialize(node, comments, application)
+            @node = node
+            @comments = comments
+            @application = application
+          end
+
+          def mixin_member
+            args = node.arguments
+          end
+        end
       end
     end
   end

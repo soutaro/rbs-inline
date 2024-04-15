@@ -91,4 +91,22 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_mixin
+    output = translate(<<~RUBY)
+      class Foo
+        include Foo
+
+        include Bar #[Integer, String]
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        include Foo
+
+        include Bar[Integer, String]
+      end
+    RBS
+  end
 end

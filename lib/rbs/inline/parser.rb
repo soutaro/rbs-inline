@@ -84,6 +84,20 @@ module RBS
         current_class_module_decl!.members << AST::Members::RubyAlias.new(node, comment)
         super
       end
+
+      def visit_call_node(node)
+        case node.name
+        when :include
+          pp node
+          if node.arguments
+            if node.arguments.arguments.size == 1
+
+            end
+          end
+        end
+
+        super
+      end
     end
   end
 end

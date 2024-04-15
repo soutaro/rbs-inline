@@ -46,6 +46,17 @@ module RBS
         end
 
         class RubyMixin < Base
+          attr_reader node: Prism::CallNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          attr_reader application: Annotations::Application?
+
+          def initialize: (Prism::CallNode, AnnotationParser::ParsingResult?, Annotations::Application?) -> void
+
+          def mixin_member: () -> TypeName
+
+          def mixin_arguments: () -> Array[Types::t]
         end
 
         class RubyAttr < Base
