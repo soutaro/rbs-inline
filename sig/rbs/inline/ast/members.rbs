@@ -34,6 +34,15 @@ module RBS
         end
 
         class RubyAlias < Base
+          attr_reader node: Prism::AliasMethodNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          def initialize: (Prism::AliasMethodNode, AnnotationParser::ParsingResult?) -> void
+
+          def old_name: () -> Symbol
+
+          def new_name: () -> Symbol
         end
 
         class RubyMixin < Base

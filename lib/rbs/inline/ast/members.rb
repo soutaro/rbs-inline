@@ -200,6 +200,27 @@ module RBS
             end
           end
         end
+
+        class RubyAlias < Base
+          attr_reader :node, :comments
+
+          def initialize(node, comments)
+            @node = node
+            @comments = comments
+          end
+
+          def old_name
+            raise unless node.old_name.is_a?(Prism::SymbolNode)
+            value = node.old_name.value or raise
+            value.to_sym
+          end
+
+          def new_name
+            raise unless node.new_name.is_a?(Prism::SymbolNode)
+            value = node.new_name.value or raise
+            value.to_sym
+          end
+        end
       end
     end
   end

@@ -71,4 +71,24 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_method__alias
+    output = translate(<<~RUBY)
+      class Foo
+        alias eql? ==
+
+        # foo is an alias of bar
+        alias :foo :bar
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        alias eql? ==
+
+        # foo is an alias of bar
+        alias foo bar
+      end
+    RBS
+  end
 end

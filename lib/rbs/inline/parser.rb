@@ -76,6 +76,14 @@ module RBS
 
         super
       end
+
+      def visit_alias_method_node(node)
+        if node.location
+          comment = comments.delete(node.location.start_line - 1)
+        end
+        current_class_module_decl!.members << AST::Members::RubyAlias.new(node, comment)
+        super
+      end
     end
   end
 end

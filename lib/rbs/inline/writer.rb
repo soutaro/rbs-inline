@@ -74,6 +74,19 @@ module RBS
             overloading: false,
             visibility: nil
           )
+        when AST::Members::RubyAlias
+          if member.comments
+            comment = RBS::AST::Comment.new(string: member.comments.content, location: nil)
+          end
+
+          RBS::AST::Members::Alias.new(
+            new_name: member.new_name,
+            old_name: member.old_name,
+            kind: :instance,
+            annotations: [],
+            location: nil,
+            comment: comment
+          )
         end
       end
     end
