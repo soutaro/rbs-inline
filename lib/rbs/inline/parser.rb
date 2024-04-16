@@ -96,21 +96,36 @@ module RBS
         when :include, :prepend, :extend
           case node.receiver
           when nil, Prism::SelfNode
-            if node.location
-              comment = comments.delete(node.location.start_line - 1)
+            comment = comments.delete(node.location.start_line - 1)
 
-              comment_line, app_comment = comments.find do |_, comment|
-                comment.line_range.begin == node.location.end_line
-              end
-              if app_comment && comment_line
-                comments.delete(comment_line)
-                app = app_comment.annotations.find do |annotation|
-                  annotation.is_a?(AST::Annotations::Application)
-                end #: AST::Annotations::Application?
-              end
+            comment_line, app_comment = comments.find do |_, comment|
+              comment.line_range.begin == node.location.end_line
+            end
+            if app_comment && comment_line
+              comments.delete(comment_line)
+              app = app_comment.annotations.find do |annotation|
+                annotation.is_a?(AST::Annotations::Application)
+              end #: AST::Annotations::Application?
             end
 
             current_class_module_decl!.members << AST::Members::RubyMixin.new(node, comment, app)
+          end
+        when :attr_reader, :attr_accessor, :attr_writer
+          case node.receiver
+          when nil, Prism::SelfNode
+            comment = comments.delete(node.location.start_line - 1)
+
+            comment_line, assertion_comment = comments.find do |_, comment|
+              comment.line_range.begin == node.location.end_line
+            end
+            if assertion_comment && comment_line
+              comments.delete(comment_line)
+              assertion = assertion_comment.annotations.find do |annotation|
+                annotation.is_a?(AST::Annotations::Assertion)
+              end #: AST::Annotations::Assertion?
+            end
+
+            current_class_module_decl!.members << AST::Members::RubyAttr.new(node, comment, assertion)
           end
         end
 

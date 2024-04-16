@@ -277,6 +277,27 @@ module RBS
             end
           end
         end
+
+        class RubyAttr < Base
+          attr_reader :node, :comments, :assertion
+
+          def initialize(node, comments, assertion)
+            @node = node
+            @comments = comments
+            @assertion = assertion
+          end
+
+          def rbs
+            
+          end
+
+          def attribute_type
+            type = assertion&.type
+            raise if type.is_a?(MethodType)
+
+            type || Types::Bases::Any.new(location: nil)
+          end
+        end
       end
     end
   end

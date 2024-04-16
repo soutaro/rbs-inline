@@ -62,6 +62,17 @@ module RBS
         end
 
         class RubyAttr < Base
+          attr_reader node: Prism::CallNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          attr_reader assertion: Annotations::Assertion?
+
+          def initialize: (Prism::CallNode, AnnotationParser::ParsingResult?, Annotations::Assertion?) -> void
+
+          def rbs: () -> (RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor | nil)
+
+          def attribute_type: () -> Types::t
         end
 
         class RBSDef < Base
