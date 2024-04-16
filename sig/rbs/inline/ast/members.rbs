@@ -54,6 +54,8 @@ module RBS
 
           def initialize: (Prism::CallNode, AnnotationParser::ParsingResult?, Annotations::Application?) -> void
 
+          def rbs: () -> (::RBS::AST::Members::Include | ::RBS::AST::Members::Extend | ::RBS::AST::Members::Prepend | nil)
+
           def mixin_member: () -> TypeName
 
           def mixin_arguments: () -> Array[Types::t]

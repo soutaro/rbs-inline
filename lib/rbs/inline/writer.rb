@@ -87,6 +87,8 @@ module RBS
             location: nil,
             comment: comment
           )
+        when AST::Members::RubyMixin
+          member.rbs
         end
       end
     end

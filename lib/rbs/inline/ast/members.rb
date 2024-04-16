@@ -231,8 +231,50 @@ module RBS
             @application = application
           end
 
-          def mixin_member
-            args = node.arguments
+          def rbs
+            return unless node.arguments
+            return unless node.arguments.arguments.size == 1
+
+            arg = node.arguments.arguments[0] || raise
+            if arg.is_a?(Prism::ConstantReadNode)
+              type_name = RBS::TypeName.new(name: arg.name, namespace: RBS::Namespace.empty)
+            else
+              raise
+            end
+
+            args = [] #: Array[Types::t]
+            if application
+              if application.types
+                args.concat(application.types)
+              end
+            end
+
+            case node.name
+            when :include
+              RBS::AST::Members::Include.new(
+                name: type_name,
+                args: args,
+                annotations: [],
+                location: nil,
+                comment: nil
+              )
+            when :extend
+              RBS::AST::Members::Extend.new(
+                name: type_name,
+                args: args,
+                annotations: [],
+                location: nil,
+                comment: nil
+              )
+            when :prepend
+              RBS::AST::Members::Prepend.new(
+                name: type_name,
+                args: args,
+                annotations: [],
+                location: nil,
+                comment: nil
+              )
+            end
           end
         end
       end

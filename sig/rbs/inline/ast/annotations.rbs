@@ -11,6 +11,7 @@ module RBS
                | Alias | Skip
                | Assertion
                | Application
+               | RBSAnnotation
 
         class Base
           attr_reader source: CommentLines

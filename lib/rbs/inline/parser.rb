@@ -87,12 +87,24 @@ module RBS
 
       def visit_call_node(node)
         case node.name
-        when :include
-          pp node
-          if node.arguments
-            if node.arguments.arguments.size == 1
+        when :include, :prepend, :extend
+          case node.receiver
+          when nil, Prism::SelfNode
+            if node.location
+              comment = comments.delete(node.location.start_line - 1)
 
+              comment_line, app_comment = comments.find do |_, comment|
+                comment.line_range.begin == node.location.end_line
+              end
+              if app_comment && comment_line
+                comments.delete(comment_line)
+                app = app_comment.annotations.find do |annotation|
+                  annotation.is_a?(AST::Annotations::Application)
+                end #: AST::Annotations::Application?
+              end
             end
+
+            current_class_module_decl!.members << AST::Members::RubyMixin.new(node, comment, app)
           end
         end
 
