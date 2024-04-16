@@ -146,4 +146,18 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_equal ["%a{pure}", "%a[hello]", "%a(world)"], annotation.contents
     end
   end
+
+  def test_skip
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs skip
+      # @rbs skip: untyped
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::Skip, annotation
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::VarType, annotation
+    end
+  end
 end

@@ -130,6 +130,13 @@ module RBS
             end
           end
         end
+
+        class Skip < Base
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+          end
+        end
       end
     end
   end

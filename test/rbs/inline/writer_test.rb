@@ -109,4 +109,25 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_skip
+    output = translate(<<~RUBY)
+      # @rbs skip
+      class Foo
+      end
+
+      class Bar
+        # @rbs skip
+        def foo = false
+
+        # @rbs skip
+        include Foo
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Bar
+      end
+    RBS
+  end
 end

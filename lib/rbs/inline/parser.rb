@@ -51,12 +51,12 @@ module RBS
       end
 
       def visit_class_node(node)
+        return if ignored_node?(node)
+
         visit node.constant_path
         visit node.superclass
 
-        if node.location
-          associated_comment = comments.delete(node.location.start_line - 1)
-        end
+        associated_comment = comments.delete(node.location.start_line - 1)
 
         class_decl = AST::Declarations::ClassDecl.new(node, associated_comment)
 
@@ -66,6 +66,8 @@ module RBS
       end
 
       def visit_def_node(node)
+        return if ignored_node?(node)
+
         current_decl = current_class_module_decl!
 
         if node.location
@@ -78,6 +80,8 @@ module RBS
       end
 
       def visit_alias_method_node(node)
+        return if ignored_node?(node)
+
         if node.location
           comment = comments.delete(node.location.start_line - 1)
         end
@@ -86,6 +90,8 @@ module RBS
       end
 
       def visit_call_node(node)
+        return if ignored_node?(node)
+
         case node.name
         when :include, :prepend, :extend
           case node.receiver
@@ -109,6 +115,14 @@ module RBS
         end
 
         super
+      end
+
+      def ignored_node?(node)
+        if comment = comments.fetch(node.location.start_line - 1, nil)
+          comment.annotations.any? { _1.is_a?(AST::Annotations::Skip) }
+        else
+          false
+        end
       end
     end
   end

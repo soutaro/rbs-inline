@@ -218,8 +218,15 @@ module RBS
 
           case
           when tokenizer.type?(:tLVAR)
-            tree << parse_var_decl(tokenizer)
-            AST::Annotations::VarType.new(tree, comments)
+            t =  parse_var_decl(tokenizer)
+            tree << t
+
+            if t.nth_token(0)&.[](1) == "skip" && t.non_trivia_trees[1] == nil && t.non_trivia_trees[2] == nil
+              AST::Annotations::Skip.new(tree, comments)
+            else
+              AST::Annotations::VarType.new(tree, comments)
+            end
+
           when tokenizer.type?(:kRETURN)
             tree << parse_return_type_decl(tokenizer)
             AST::Annotations::ReturnType.new(tree, comments)

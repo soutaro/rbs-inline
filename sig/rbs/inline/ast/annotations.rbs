@@ -123,6 +123,7 @@ module RBS
 
         # `@rbs skip`
         class Skip < Base
+          def initialize: (Tree, CommentLines) -> void
         end
 
         # `:: TYPE`
