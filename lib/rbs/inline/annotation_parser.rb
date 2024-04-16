@@ -108,7 +108,11 @@ module RBS
 
           next_line, next_comment = lines.first
 
-          if line.start_with?('@rbs', '::', '[')
+          possible_annotation = false
+          possible_annotation ||= line.start_with?('@rbs')
+          possible_annotation ||= comment.location.slice.start_with?("#::", "#[")
+
+          if possible_annotation
             line_offset = line.index(/\S/) || raise
 
             comments = [comment]
@@ -165,7 +169,7 @@ module RBS
             @current_token = [:kMINUS2, s]
           when s = scanner.scan(/%a\{[^}]+\}/)
             @current_token = [:tANNOTATION, s]
-          when s = scanner.scan(/%a\[[^]]+\]/)
+          when s = scanner.scan(/%a\[[^\]]+\]/)
             @current_token = [:tANNOTATION, s]
           when s = scanner.scan(/%a\([^)]+\)/)
             @current_token = [:tANNOTATION, s]

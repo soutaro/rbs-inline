@@ -95,6 +95,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       #    String,
       #    Integer,
       #   ) -> void
+      # :: String
       RUBY
 
     annots[0].annotations[0].tap do |annotation|
@@ -109,6 +110,9 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     annots[0].annotations[3].tap do |annotation|
       assert_equal "(String, Integer) -> void", annotation.type.to_s
     end
+    annots[0].annotations[4].tap do |annotation|
+      assert_nil annotation
+    end
   end
 
   def test_type_application
@@ -116,6 +120,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       #[String, Integer]
       #[String[
       #[]
+      # [String]
       RUBY
 
     annots[0].annotations[0].tap do |annotation|
@@ -126,6 +131,9 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
     annots[0].annotations[2].tap do |annotation|
       assert_nil annotation.types
+    end
+    annots[0].annotations[3].tap do |annotation|
+      assert_nil annotation
     end
   end
 
