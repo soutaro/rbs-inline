@@ -50,7 +50,7 @@ module RBS
           name: decl.class_name,
           type_params: [],
           members: members,
-          super_class: nil,
+          super_class: decl.super_class,
           annotations: [],
           location: nil,
           comment: comment

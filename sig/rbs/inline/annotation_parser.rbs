@@ -98,6 +98,17 @@ module RBS
       def parse_type_app: (Tokenizer) -> AST::Tree
 
       def parse_rbs_annotation: (Tokenizer) -> AST::Tree
+
+      def parse_inherits: (Tokenizer) -> AST::Tree
+
+      # Parses `Foo[Bar]`
+      #
+      # Returns a tree:
+      #
+      # ```
+      # class_args(type)
+      # ```
+      def parse_class_args: (Tokenizer) -> AST::Tree
     end
   end
 end

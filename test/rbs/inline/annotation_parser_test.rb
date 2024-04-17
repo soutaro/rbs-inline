@@ -160,4 +160,25 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::VarType, annotation
     end
   end
+
+  def test_inherits
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs inherits Object
+      # @rbs inherits Array[String]
+      # @rbs inherits
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_equal TypeName("Object"), annotation.super_name
+      assert_equal [], annotation.args.map(&:to_s)
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_equal TypeName("Array"), annotation.super_name
+      assert_equal ["String"], annotation.args.map(&:to_s)
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_nil annotation.super_name
+      assert_nil annotation.args
+    end
+  end
 end

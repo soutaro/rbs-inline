@@ -26,6 +26,8 @@ module RBS
       def ignored_node?: (Prism::Node) -> bool
 
       def visit_class_node: (ClassNode node) -> void
+
+      def application_annotation: (Prism::Node node) -> AST::Annotations::Application?
     end
   end
 end

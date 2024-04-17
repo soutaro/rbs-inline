@@ -137,6 +137,24 @@ module RBS
             @source = source
           end
         end
+
+        class Inherits < Base
+          attr_reader :super_name
+          attr_reader :args
+
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            inherits = tree.nth_tree!(1)
+            if super_type = inherits.nth_type(1)
+              if super_type.is_a?(Types::ClassInstance)
+                @super_name = super_type.name
+                @args = super_type.args
+              end
+            end
+          end
+        end
       end
     end
   end

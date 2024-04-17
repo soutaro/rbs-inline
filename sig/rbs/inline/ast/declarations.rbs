@@ -20,11 +20,13 @@ module RBS
 
           attr_reader comments: AnnotationParser::ParsingResult?
 
-          def initialize: (Prism::ClassNode, AnnotationParser::ParsingResult?) -> void
+          attr_reader super_application: Annotations::Application?
+
+          def initialize: (Prism::ClassNode, AnnotationParser::ParsingResult?, Annotations::Application?) -> void
 
           %a{pure} def class_name: () -> TypeName?
 
-          %a{pure} def super_class: () -> TypeName?
+          %a{pure} def super_class: () -> RBS::AST::Declarations::Class::Super?
         end
       end
     end

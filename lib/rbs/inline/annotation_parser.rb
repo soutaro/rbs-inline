@@ -161,6 +161,8 @@ module RBS
             @current_token = [:kRBS, s]
           when s = scanner.scan(/return/)
             @current_token = [:kRETURN, s]
+          when s = scanner.scan(/inherits/)
+            @current_token = [:kINHERITS, s]
           when s = scanner.scan(/[a-z]\w*/)
             @current_token = [:tLVAR, s]
           when s = scanner.scan(/:/)
@@ -233,6 +235,9 @@ module RBS
           when tokenizer.type?(:tANNOTATION)
             tree << parse_rbs_annotation(tokenizer)
             AST::Annotations::RBSAnnotation.new(tree, comments)
+          when tokenizer.type?(:kINHERITS)
+            tree << parse_inherits(tokenizer)
+            AST::Annotations::Inherits.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
           tree << tokenizer.current_token
@@ -421,6 +426,19 @@ module RBS
           tree << tokenizer.current_token
           tokenizer.advance(tree)
         end
+
+        tree
+      end
+
+      def parse_inherits(tokenizer)
+        tree = AST::Tree.new(:rbs_inherits)
+
+        if tokenizer.type?(:kINHERITS)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        end
+
+        tree << parse_type(tokenizer, tree)
 
         tree
       end

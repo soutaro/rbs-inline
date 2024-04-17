@@ -77,9 +77,11 @@ module RBS
 
         # `@rbs inherits SUPER`
         class Inherits < Base
-          attr_reader super_name: TypeName
+          attr_reader super_name: TypeName?
 
-          attr_reader args: Array[Types::t]
+          attr_reader args: Array[Types::t]?
+
+          def initialize: (Tree, CommentLines) -> void
         end
 
         # `@rbs module-self SUPER`

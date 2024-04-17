@@ -130,4 +130,33 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_class__super
+    output = translate(<<~RUBY)
+      class Foo
+      end
+
+      class Bar < Object
+      end
+
+      # @rbs inherits Array[String]
+      class Baz < Array
+      end
+
+      class Baz2 < Array #[String]
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+      end
+      class Bar < Object
+      end
+      # @rbs inherits Array[String]
+      class Baz < Array[String]
+      end
+      class Baz2 < Array[String]
+      end
+    RBS
+  end
 end

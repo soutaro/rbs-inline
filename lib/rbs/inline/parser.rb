@@ -57,8 +57,11 @@ module RBS
         visit node.superclass
 
         associated_comment = comments.delete(node.location.start_line - 1)
+        if node.superclass
+          app_comment = application_annotation(node.superclass)
+        end
 
-        class_decl = AST::Declarations::ClassDecl.new(node, associated_comment)
+        class_decl = AST::Declarations::ClassDecl.new(node, associated_comment, app_comment)
 
         push_class_module_decl(class_decl) do
           visit node.body
@@ -97,16 +100,7 @@ module RBS
           case node.receiver
           when nil, Prism::SelfNode
             comment = comments.delete(node.location.start_line - 1)
-
-            comment_line, app_comment = comments.find do |_, comment|
-              comment.line_range.begin == node.location.end_line
-            end
-            if app_comment && comment_line
-              comments.delete(comment_line)
-              app = app_comment.annotations.find do |annotation|
-                annotation.is_a?(AST::Annotations::Application)
-              end #: AST::Annotations::Application?
-            end
+            app = application_annotation(node)
 
             current_class_module_decl!.members << AST::Members::RubyMixin.new(node, comment, app)
           end
@@ -137,6 +131,19 @@ module RBS
           comment.annotations.any? { _1.is_a?(AST::Annotations::Skip) }
         else
           false
+        end
+      end
+
+      def application_annotation(node)
+        comment_line, app_comment = comments.find do |_, comment|
+          comment.line_range.begin == node.location.end_line
+        end
+
+        if app_comment && comment_line
+          comments.delete(comment_line)
+          app = app_comment.annotations.find do |annotation|
+            annotation.is_a?(AST::Annotations::Application)
+          end #: AST::Annotations::Application?
         end
       end
     end
