@@ -1,6 +1,7 @@
-module Rbs
+module RBS
   module Inline
+    type token = [Symbol, String]
+
     VERSION: String
-    # See the writing guide of rbs: https://github.com/ruby/rbs#guides
   end
 end

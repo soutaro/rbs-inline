@@ -30,6 +30,8 @@ module RBS
           end
         end.parse!(args)
 
+        base_path = Pathname.pwd + base_path
+
         logger.debug { "base_path = #{base_path}, output_path = #{output_path}" }
 
         targets = args.flat_map do
@@ -49,7 +51,7 @@ module RBS
         count = 0
 
         targets.each do |target|
-          relative_path = target.relative_path_from(base_path)
+          relative_path = (Pathname.pwd + target).relative_path_from(base_path)
           output = output_path + relative_path.sub_ext(".rbs")
 
           unless output.to_s.start_with?(output_path.to_s)

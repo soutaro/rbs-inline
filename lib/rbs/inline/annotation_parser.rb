@@ -2,10 +2,11 @@ module RBS
   module Inline
     class AnnotationParser
       class ParsingResult
-        attr_reader :comments
-        attr_reader :annotations
-        attr_reader :first_comment_offset
+        attr_reader :comments #:: Array[Prism::Comment]
+        attr_reader :annotations #:: Array[AST::Annotations::t]
+        attr_reader :first_comment_offset #:: Integer
 
+        # @rbs first_comment: Prism::Comment
         def initialize(first_comment)
           @comments = [first_comment]
           @annotations = []
@@ -14,6 +15,7 @@ module RBS
           @first_comment_offset = index
         end
 
+        # @rbs return: Range[Integer]
         def line_range
           first = comments.first or raise
           last = comments.last or raise
@@ -21,15 +23,13 @@ module RBS
           first.location.start_line .. last.location.end_line
         end
 
-        def <<(comment)
-          @comments << comment
-          self
-        end
-
+        # @rbs return: Prism::Comment
         def last_comment
           comments.last or raise
         end
 
+        # @rbs comment: Prism::Comment
+        # @rbs return: self?
         def add_comment(comment)
           if last_comment.location.end_line + 1 == comment.location.start_line
             if last_comment.location.start_column == comment.location.start_column
@@ -39,6 +39,7 @@ module RBS
           end
         end
 
+        # @rbs return: Array[[String, Prism::Comment]]
         def lines
           comments.map do |comment|
             slice = comment.location.slice
@@ -52,6 +53,7 @@ module RBS
           end
         end
 
+        # @rbs return: String
         def content
           content = +""
           lines.each do |line, _|
@@ -62,16 +64,20 @@ module RBS
         end
       end
 
-      attr_reader :input
+      attr_reader :input #:: Array[Prism::Comment]
 
+      # @rbs input: Array[Prism::Comment]
       def initialize(input)
         @input = input
       end
 
+      # @rbs input: Array[Prism::Comment]
+      # @rbs return: Array[ParsingResult]
       def self.parse(input)
         new(input).parse
       end
 
+      # @rbs return: Array[ParsingResult]
       def parse
         results = [] #: Array[ParsingResult]
 
@@ -99,7 +105,10 @@ module RBS
         results
       end
 
-      def each_annotation_paragraph(result)
+      # @rbs result: ParsingResult
+      # @rbs block: ^(Array[Prism::Comment]) -> void
+      # @rbs return: void
+      def each_annotation_paragraph(result, &block)
         lines = result.lines
 
         while true
@@ -134,14 +143,18 @@ module RBS
       end
 
       class Tokenizer
-        attr_reader :scanner
-        attr_reader :current_token
+        attr_reader :scanner #:: StringScanner
+        attr_reader :current_token #:: token?
 
+        # @rbs scanner: StringScanner
+        # @rbs return: void
         def initialize(scanner)
           @scanner = scanner
           @current_token = nil
         end
 
+        # @rbs tree: AST::Tree
+        # @rbs return: token?
         def advance(tree)
           last = current_token
 
@@ -182,6 +195,10 @@ module RBS
           last
         end
 
+        # Test if current token has specified `type`
+        #
+        # @rbs type: Symbol
+        # @rbs return: bool
         def type?(type)
           if current_token && current_token[0] == type
             true
@@ -190,6 +207,11 @@ module RBS
           end
         end
 
+        # Reset the current_token to incoming comment `--`
+        #
+        # Reset to the end of the input if `--` token cannot be found.
+        #
+        # @rbs return: String -- String that is skipped
         def skip_to_comment
           return "" if type?(:kMINUS2)
 
