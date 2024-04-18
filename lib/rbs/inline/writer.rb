@@ -44,7 +44,7 @@ module RBS
         decl.members.each do |member|
           if member.is_a?(AST::Members::Base)
             if rbs_member = translate_member(member)
-              members << rbs_member
+              members.concat rbs_member
             end
           end
 
@@ -78,7 +78,7 @@ module RBS
         decl.members.each do |member|
           if member.is_a?(AST::Members::Base)
             if rbs_member = translate_member(member)
-              members << rbs_member
+              members.concat rbs_member
             end
           end
 
@@ -107,30 +107,36 @@ module RBS
             comment = RBS::AST::Comment.new(string: member.comments.content, location: nil)
           end
 
-          RBS::AST::Members::MethodDefinition.new(
-            name: member.method_name,
-            kind: member.method_kind,
-            overloads: member.method_overloads,
-            annotations: member.method_annotations,
-            location: nil,
-            comment: comment,
-            overloading: false,
-            visibility: nil
-          )
+          [
+            RBS::AST::Members::MethodDefinition.new(
+              name: member.method_name,
+              kind: member.method_kind,
+              overloads: member.method_overloads,
+              annotations: member.method_annotations,
+              location: nil,
+              comment: comment,
+              overloading: false,
+              visibility: nil
+            )
+          ]
         when AST::Members::RubyAlias
           if member.comments
             comment = RBS::AST::Comment.new(string: member.comments.content, location: nil)
           end
 
-          RBS::AST::Members::Alias.new(
-            new_name: member.new_name,
-            old_name: member.old_name,
-            kind: :instance,
-            annotations: [],
-            location: nil,
-            comment: comment
-          )
+          [
+            RBS::AST::Members::Alias.new(
+              new_name: member.new_name,
+              old_name: member.old_name,
+              kind: :instance,
+              annotations: [],
+              location: nil,
+              comment: comment
+            )
+          ]
         when AST::Members::RubyMixin
+          [member.rbs].compact
+        when AST::Members::RubyAttr
           member.rbs
         end
       end

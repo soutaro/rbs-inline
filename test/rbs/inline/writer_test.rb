@@ -197,4 +197,56 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_attributes__unannotated
+    output = translate(<<~RUBY)
+      class Hello
+        attr_reader :foo, :foo2, "hoge".to_sym
+
+        # Attribute of bar
+        attr_writer :bar
+
+        attr_accessor :baz
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Hello
+        attr_reader foo: untyped
+
+        attr_reader foo2: untyped
+
+        # Attribute of bar
+        attr_writer bar: untyped
+
+        attr_accessor baz: untyped
+      end
+    RBS
+  end
+
+  def test_attributes__typed
+    output = translate(<<~RUBY)
+      class Hello
+        attr_reader :foo, :foo2, "hoge".to_sym #:: String
+
+        # Attribute of bar
+        attr_writer :bar #:: Array[Integer]
+
+        attr_accessor :baz #:: Integer |
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Hello
+        attr_reader foo: String
+
+        attr_reader foo2: String
+
+        # Attribute of bar
+        attr_writer bar: Array[Integer]
+
+        attr_accessor baz: untyped
+      end
+    RBS
+  end
 end

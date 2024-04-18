@@ -72,7 +72,7 @@ module RBS
 
           def initialize: (Prism::CallNode, AnnotationParser::ParsingResult?, Annotations::Assertion?) -> void
 
-          def rbs: () -> (RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor | nil)
+          def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
 
           def attribute_type: () -> Types::t
         end

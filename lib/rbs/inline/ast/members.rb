@@ -300,7 +300,46 @@ module RBS
           end
 
           def rbs
+            if comments
+              comment = RBS::AST::Comment.new(string: comments.content, location: nil)
+            end
 
+            klass =
+              case node.name
+              when :attr_reader
+                RBS::AST::Members::AttrReader
+              when :attr_writer
+                RBS::AST::Members::AttrWriter
+              when :attr_accessor
+                RBS::AST::Members::AttrAccessor
+              else
+                raise
+              end
+
+            args = [] #: Array[Symbol]
+            if node.arguments
+              node.arguments.arguments.each do |arg|
+                if arg.is_a?(Prism::SymbolNode)
+                  value = arg.value or raise
+                  args << value.to_sym
+                end
+              end
+            end
+
+            unless args.empty?
+              args.map do |arg|
+                klass.new(
+                  name: arg,
+                  type: attribute_type,
+                  ivar_name: nil,
+                  kind: :instance,
+                  annotations: [],
+                  location: nil,
+                  comment: comment,
+                  visibility: nil
+                )
+              end
+            end
           end
 
           def attribute_type
