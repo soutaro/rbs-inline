@@ -72,6 +72,30 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_method__block
+    output = translate(<<~RUBY)
+      class Foo
+        # @rbs block: ^(String) [self: Symbol] -> Integer
+        def foo(&block)
+        end
+
+        # @rbs block: (^(String) [self: Symbol] -> Integer)?
+        def bar(&block)
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        # @rbs block: ^(String) [self: Symbol] -> Integer
+        def foo: () { (String) [self: Symbol] -> Integer } -> untyped
+
+        # @rbs block: (^(String) [self: Symbol] -> Integer)?
+        def bar: () ?{ (String) [self: Symbol] -> Integer } -> untyped
+      end
+    RBS
+    end
+
   def test_method_type__kind
     output = translate(<<~RUBY)
       class Foo

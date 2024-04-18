@@ -168,6 +168,23 @@ module RBS
                     type: rest_type || Types::Bases::Any.new(location: nil),
                     location: nil)
                 end
+
+                if node.parameters.block
+                  if block_name = node.parameters.block.name
+                    var_type = var_type_hash[block_name]
+
+                    if var_type.is_a?(Types::Optional)
+                      optional = true
+                      var_type = var_type.type
+                    else
+                      optional = false
+                    end
+
+                    if var_type.is_a?(Types::Proc)
+                      block = Types::Block.new(type: var_type.type, self_type: var_type.self_type, required: !optional)
+                    end
+                  end
+                end
               end
 
               [
@@ -184,7 +201,7 @@ module RBS
                       rest_keywords: rest_keywords,
                       return_type: return_type || Types::Bases::Any.new(location: nil)
                     ),
-                    block: nil,
+                    block: block,
                     location: nil
                   ),
                   annotations: []
