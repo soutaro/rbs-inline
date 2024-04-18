@@ -29,6 +29,18 @@ module RBS
             end
           end
 
+          def method_kind
+            # FIXME: really hacky implementation
+            case node.receiver
+            when Prism::SelfNode
+              :singleton
+            when nil
+              :instance
+            else
+              :instance
+            end
+          end
+
           def return_type
             if comments
               annot = comments.annotations.find {|annot| annot.is_a?(Annotations::ReturnType ) } #: Annotations::ReturnType?
@@ -288,7 +300,7 @@ module RBS
           end
 
           def rbs
-            
+
           end
 
           def attribute_type

@@ -109,7 +109,7 @@ module RBS
 
           RBS::AST::Members::MethodDefinition.new(
             name: member.method_name,
-            kind: :instance,
+            kind: member.method_kind,
             overloads: member.method_overloads,
             annotations: member.method_annotations,
             location: nil,

@@ -28,6 +28,8 @@ module RBS
 
           def return_type: () -> Types::t?
 
+          def method_kind: () -> RBS::AST::Members::MethodDefinition::kind
+
           def var_type_hash: () -> Hash[Symbol, Types::t?]
 
           def method_annotations: () -> Array[RBS::AST::Annotation]

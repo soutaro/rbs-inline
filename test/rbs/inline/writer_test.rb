@@ -72,6 +72,21 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_method_type__kind
+    output = translate(<<~RUBY)
+      class Foo
+        def self.f()
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        def self.f: () -> untyped
+      end
+    RBS
+  end
+
   def test_method__alias
     output = translate(<<~RUBY)
       class Foo
@@ -157,7 +172,7 @@ class RBS::Inline::WriterTest < Minitest::Test
       # @rbs inherits Array[String]
       class Baz < Array[String]
       end
-      
+
       class Baz2 < Array[String]
       end
     RBS
