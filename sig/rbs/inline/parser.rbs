@@ -11,17 +11,17 @@ module RBS
 
       attr_reader decls: Array[AST::Declarations::t]
 
-      attr_reader surrounding_decls: Array[AST::Declarations::ClassDecl]
+      attr_reader surrounding_decls: Array[AST::Declarations::t]
 
       def initialize: () -> void
 
       def self.parse: (ParseResult[ProgramNode]) -> [Array[AST::Annotations::Use], Array[AST::Declarations::t]]
 
-      def current_class_module_decl: () -> AST::Declarations::ClassDecl?
+      def current_class_module_decl: () -> AST::Declarations::t?
 
-      def current_class_module_decl!: () -> AST::Declarations::ClassDecl
+      def current_class_module_decl!: () -> AST::Declarations::t
 
-      def push_class_module_decl: (AST::Declarations::ClassDecl) { () -> void } -> void
+      def push_class_module_decl: (AST::Declarations::t) { () -> void } -> void
 
       def ignored_node?: (Node) -> bool
 

@@ -11,7 +11,11 @@ module RBS
 
       def write: (Array[AST::Annotations::Use], Array[AST::Declarations::t]) -> void
 
+      def translate_decl: (AST::Declarations::t) -> RBS::AST::Declarations::t?
+
       def translate_class_decl: (AST::Declarations::ClassDecl) -> RBS::AST::Declarations::Class?
+
+      def translate_module_decl: (AST::Declarations::ModuleDecl) -> RBS::AST::Declarations::Module?
 
       def translate_member: (AST::Members::t) -> RBS::AST::Members::t?
     end

@@ -16,10 +16,19 @@ module RBS
       end
 
       def write(uses, decls)
-        decls.each do |decl|
-          if klass_decl = translate_class_decl(decl)
-            writer.write([klass_decl])
-          end
+        rbs = decls.filter_map do |decl|
+          translate_decl(decl)
+        end
+
+        writer.write(rbs)
+      end
+
+      def translate_decl(decl)
+        case decl
+        when AST::Declarations::ClassDecl
+          translate_class_decl(decl)
+        when AST::Declarations::ModuleDecl
+          translate_module_decl(decl)
         end
       end
 
@@ -40,8 +49,8 @@ module RBS
           end
 
           if member.is_a?(AST::Declarations::Base)
-            if rbs_decl = translate_class_decl(member)
-              members << rbs_decl
+            if rbs = translate_decl(member)
+              members << rbs
             end
           end
         end
@@ -51,6 +60,40 @@ module RBS
           type_params: [],
           members: members,
           super_class: decl.super_class,
+          annotations: [],
+          location: nil,
+          comment: comment
+        )
+      end
+
+      def translate_module_decl(decl)
+        return unless decl.module_name
+
+        if decl.comments
+          comment = RBS::AST::Comment.new(string: decl.comments.content, location: nil)
+        end
+
+        members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
+
+        decl.members.each do |member|
+          if member.is_a?(AST::Members::Base)
+            if rbs_member = translate_member(member)
+              members << rbs_member
+            end
+          end
+
+          if member.is_a?(AST::Declarations::Base)
+            if rbs = translate_decl(member)
+              members << rbs
+            end
+          end
+        end
+
+        RBS::AST::Declarations::Module.new(
+          name: decl.module_name,
+          type_params: [],
+          members: members,
+          self_types: [],
           annotations: [],
           location: nil,
           comment: comment

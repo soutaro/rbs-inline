@@ -68,6 +68,19 @@ module RBS
         end
       end
 
+      def visit_module_node(node)
+        return if ignored_node?(node)
+
+        visit node.constant_path
+
+        associated_comment = comments.delete(node.location.start_line - 1)
+
+        module_decl = AST::Declarations::ModuleDecl.new(node, associated_comment)
+        push_class_module_decl(module_decl) do
+          visit node.body
+        end
+      end
+
       def visit_def_node(node)
         return if ignored_node?(node)
         return unless current_class_module_decl

@@ -69,6 +69,24 @@ module RBS
             end
           end
         end
+
+        class ModuleDecl < Base
+          include ConstantUtil
+
+          attr_reader :node
+          attr_reader :members
+          attr_reader :comments
+
+          def initialize(node, comments)
+            @node = node
+            @comments = comments
+            @members = []
+          end
+
+          def module_name
+            type_name(node.constant_path)
+          end
+        end
       end
     end
   end

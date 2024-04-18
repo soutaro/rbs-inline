@@ -150,12 +150,35 @@ class RBS::Inline::WriterTest < Minitest::Test
     assert_equal <<~RBS, output
       class Foo
       end
+
       class Bar < Object
       end
+
       # @rbs inherits Array[String]
       class Baz < Array[String]
       end
+      
       class Baz2 < Array[String]
+      end
+    RBS
+  end
+
+  def test_module__decl
+    output = translate(<<~RUBY)
+      module Foo
+        module Bar
+        end
+      end
+
+      # @rbs skip
+      module Baz
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      module Foo
+        module Bar
+        end
       end
     RBS
   end

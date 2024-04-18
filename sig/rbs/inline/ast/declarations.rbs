@@ -2,7 +2,7 @@ module RBS
   module Inline
     module AST
       module Declarations
-        type t = ClassDecl
+        type t = ClassDecl | ModuleDecl
 
         module ConstantUtil
           def type_name: (Prism::Node) -> TypeName?
@@ -27,6 +27,20 @@ module RBS
           %a{pure} def class_name: () -> TypeName?
 
           %a{pure} def super_class: () -> RBS::AST::Declarations::Class::Super?
+        end
+
+        class ModuleDecl < Base
+          include ConstantUtil
+
+          attr_reader node: Prism::ModuleNode
+
+          attr_reader members: Array[Members::t | t]
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          def initialize: (Prism::ModuleNode, AnnotationParser::ParsingResult?) -> void
+
+          %a{pure} def module_name: () -> TypeName?
         end
       end
     end
