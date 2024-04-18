@@ -1,0 +1,15 @@
+module RBS
+  module Inline
+    class CLI
+      attr_reader stdout: IO
+
+      attr_reader stderr: IO
+
+      attr_reader logger: Logger
+
+      def initialize: (?stdout: IO, ?stderr: IO) -> void
+
+      def run: (Array[String]) -> Integer
+    end
+  end
+end

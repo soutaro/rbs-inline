@@ -23,11 +23,11 @@ module RBS
 
       def push_class_module_decl: (AST::Declarations::ClassDecl) { () -> void } -> void
 
-      def ignored_node?: (Prism::Node) -> bool
+      def ignored_node?: (Node) -> bool
 
       def visit_class_node: (ClassNode node) -> void
 
-      def application_annotation: (Prism::Node node) -> AST::Annotations::Application?
+      def application_annotation: (Node node) -> AST::Annotations::Application?
     end
   end
 end

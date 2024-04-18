@@ -70,6 +70,7 @@ module RBS
 
       def visit_def_node(node)
         return if ignored_node?(node)
+        return unless current_class_module_decl
 
         current_decl = current_class_module_decl!
 

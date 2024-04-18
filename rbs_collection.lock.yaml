@@ -46,7 +46,7 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: e047afdf7e470acf0d0cdff31bd9c3123be3ea39
+    revision: bc4cbee282cfb013be8c44a3fe7a374491492400
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: rbs

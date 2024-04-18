@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require "rbs/inline"
+require "rbs/inline/cli"
+
+exit RBS::Inline::CLI.new().run(ARGV)
