@@ -13,6 +13,8 @@ module RBS
 
       attr_reader surrounding_decls: Array[AST::Declarations::t]
 
+      attr_reader current_visibility: RBS::AST::Members::visibility?
+
       def initialize: () -> void
 
       def self.parse: (ParseResult[ProgramNode]) -> [Array[AST::Annotations::Use], Array[AST::Declarations::t]]
@@ -28,6 +30,8 @@ module RBS
       def visit_class_node: (ClassNode node) -> void
 
       def application_annotation: (Node node) -> AST::Annotations::Application?
+
+      def push_visibility: (RBS::AST::Members::visibility | nil) { () -> void } -> void
     end
   end
 end

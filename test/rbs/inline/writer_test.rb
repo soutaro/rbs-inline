@@ -111,6 +111,23 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_method_type__visibility
+    output = translate(<<~RUBY)
+      class Foo
+        # @rbs return: String
+        private def foo()
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        # @rbs return: String
+        private def foo: () -> String
+      end
+    RBS
+  end
+
   def test_method__alias
     output = translate(<<~RUBY)
       class Foo
@@ -270,6 +287,26 @@ class RBS::Inline::WriterTest < Minitest::Test
         attr_writer bar: Array[Integer]
 
         attr_accessor baz: untyped
+      end
+    RBS
+  end
+
+  def test_public_private
+    output = translate(<<~RUBY)
+      class Hello
+        public
+
+        private()
+
+        public :foo
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Hello
+        public
+
+        private
       end
     RBS
   end

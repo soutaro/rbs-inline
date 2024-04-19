@@ -9,10 +9,12 @@ module RBS
         class RubyDef < Base
           attr_reader :node
           attr_reader :comments
+          attr_reader :visibility
 
-          def initialize(node, comments)
+          def initialize(node, comments, visibility)
             @node = node
             @comments = comments
+            @visibility = visibility
           end
 
           def method_name
@@ -364,6 +366,22 @@ module RBS
             raise if type.is_a?(MethodType)
 
             type || Types::Bases::Any.new(location: nil)
+          end
+        end
+
+        class RubyPrivate < Base
+          attr_reader :node
+
+          def initialize(node)
+            @node = node
+          end
+        end
+
+        class RubyPublic < Base
+          attr_reader :node
+
+          def initialize(node)
+            @node = node
           end
         end
       end

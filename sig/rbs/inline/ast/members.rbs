@@ -4,7 +4,7 @@ module RBS
   module Inline
     module AST
       module Members
-        type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr
+        type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
 
         type rbs = RBSDef | RBSAlias | RBSAttr
 
@@ -18,7 +18,9 @@ module RBS
 
           attr_reader comments: AnnotationParser::ParsingResult?
 
-          def initialize: (Prism::DefNode, AnnotationParser::ParsingResult?) -> void
+          attr_reader visibility: RBS::AST::Members::visibility?
+
+          def initialize: (Prism::DefNode, AnnotationParser::ParsingResult?, RBS::AST::Members::visibility) -> void
 
           def method_name: () -> Symbol
 
@@ -75,6 +77,18 @@ module RBS
           def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
 
           def attribute_type: () -> Types::t
+        end
+
+        class RubyPrivate < Base
+          attr_reader node: Prism::CallNode
+
+          def initialize: (Prism::CallNode) -> void
+        end
+
+        class RubyPublic < Base
+          attr_reader node: Prism::CallNode
+
+          def initialize: (Prism::CallNode) -> void
         end
 
         class RBSDef < Base

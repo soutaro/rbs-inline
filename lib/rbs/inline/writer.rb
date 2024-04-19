@@ -116,7 +116,7 @@ module RBS
               location: nil,
               comment: comment,
               overloading: false,
-              visibility: nil
+              visibility: member.visibility
             )
           ]
         when AST::Members::RubyAlias
@@ -138,6 +138,14 @@ module RBS
           [member.rbs].compact
         when AST::Members::RubyAttr
           member.rbs
+        when AST::Members::RubyPrivate
+          [
+            RBS::AST::Members::Private.new(location: nil)
+          ]
+        when AST::Members::RubyPublic
+          [
+            RBS::AST::Members::Public.new(location: nil)
+          ]
         end
       end
     end

@@ -1,7 +1,7 @@
 module RBS
   module Inline
     class Parser < Prism::Visitor
-      attr_reader :decls, :surrounding_decls, :comments
+      attr_reader :decls, :surrounding_decls, :comments, :current_visibility
 
       def initialize()
         @decls = []
@@ -91,7 +91,7 @@ module RBS
           associated_comment = comments.delete(node.location.start_line - 1)
         end
 
-        current_decl.members << AST::Members::RubyDef.new(node, associated_comment)
+        current_decl.members << AST::Members::RubyDef.new(node, associated_comment, current_visibility)
 
         super
       end
@@ -117,6 +117,8 @@ module RBS
             app = application_annotation(node)
 
             current_class_module_decl!.members << AST::Members::RubyMixin.new(node, comment, app)
+
+            return
           end
         when :attr_reader, :attr_accessor, :attr_writer
           case node.receiver
@@ -134,10 +136,48 @@ module RBS
             end
 
             current_class_module_decl!.members << AST::Members::RubyAttr.new(node, comment, assertion)
+
+            return
+          end
+        when :public, :private
+          case node.receiver
+          when nil, Prism::SelfNode
+            if node.arguments && node.arguments.arguments.size > 0
+              if node.name == :public
+                push_visibility(:public) { super }
+              end
+
+              if node.name == :private
+                push_visibility(:private) { super }
+              end
+
+              return
+            else
+              if node.name == :public
+                current_class_module_decl!.members << AST::Members::RubyPublic.new(node)
+                return
+              end
+
+              if node.name == :private
+                current_class_module_decl!.members << AST::Members::RubyPrivate.new(node)
+                return
+              end
+            end
           end
         end
 
         super
+      end
+
+      def push_visibility(new_visibility)
+        old_visibility = current_visibility
+
+        begin
+          @current_visibility = new_visibility
+          yield
+        ensure
+          @current_visibility = old_visibility
+        end
       end
 
       def ignored_node?(node)
