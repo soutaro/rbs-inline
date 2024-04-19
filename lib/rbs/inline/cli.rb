@@ -14,7 +14,7 @@ module RBS
 
       def run(args)
         base_path = Pathname("lib")
-        output_path = Pathname("sig/embedded")
+        output_path = Pathname("sig/generated")
 
         OptionParser.new do |opts|
           opts.on("--base=[BASE]", "The path to calculate relative path of files (defaults to #{base_path})") do

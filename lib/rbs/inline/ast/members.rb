@@ -3,24 +3,38 @@ module RBS
     module AST
       module Members
         class Base
-
         end
 
         class RubyDef < Base
-          attr_reader :node
-          attr_reader :comments
-          attr_reader :visibility
+          attr_reader :node #:: Prism::DefNode
+          attr_reader :comments #:: AnnotationParser::ParsingResult?
 
+          # The visibility directly attached to the `def` node
+          #
+          # `nil` when the `def` node is not passed to `private`/`public` calls.
+          #
+          # ```rb
+          # def foo() end            # <= nil
+          # private def foo() end    # <= :private
+          # ```
+          attr_reader :visibility #:: RBS::AST::Members::visibility?
+
+          # @rbs node: Prism::DefNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs visibility: RBS::AST::Members::visibility?
+          # @rbs return: void
           def initialize(node, comments, visibility)
             @node = node
             @comments = comments
             @visibility = visibility
           end
 
+          # @rbs return: Symbol -- the name of the method
           def method_name
             node.name
           end
 
+          # @rbs return: Array[Annotations::Assertion]
           def method_type_annotations
             if comments
               comments.annotations.select do |annotation|
@@ -31,6 +45,16 @@ module RBS
             end
           end
 
+          # Returns the `kind` of the method definition
+          #
+          # [FIXME] It only supports `self` receiver.
+          #
+          # ```rb
+          # def self.foo = ()    # :sigleton
+          # def object.foo = ()  # Not supported (returns :instance)
+          # ```
+          #
+          # @rbs return: RBS::AST::Members::MethodDefinition::kind
           def method_kind
             # FIXME: really hacky implementation
             case node.receiver
@@ -43,6 +67,7 @@ module RBS
             end
           end
 
+          # @rbs return: Types::t?
           def return_type
             if comments
               annot = comments.annotations.find {|annot| annot.is_a?(Annotations::ReturnType ) } #: Annotations::ReturnType?
@@ -52,6 +77,7 @@ module RBS
             end
           end
 
+          # @rbs return: Hash[Symbol, Types::t?]
           def var_type_hash
             types = {} #: Hash[Symbol, Types::t?]
 
@@ -71,6 +97,7 @@ module RBS
             types
           end
 
+          # @rbs return: Array[RBS::AST::Members::MethodDefinition::Overload]
           def method_overloads
             if !(annots = method_type_annotations).empty?
               annots.map do
@@ -212,6 +239,7 @@ module RBS
             end
           end
 
+          # @rbs return: Array[RBS::AST::Annotation]
           def method_annotations
             if comments
               comments.annotations.flat_map do |annotation|
@@ -233,19 +261,25 @@ module RBS
         end
 
         class RubyAlias < Base
-          attr_reader :node, :comments
+          attr_reader :node #:: Prism::AliasMethodNode
 
+          attr_reader :comments #:: AnnotationParser::ParsingResult?
+
+          # @rbs node: Prism::AliasMethodNode
+          # @rbs comments: AnnotationParser::ParsingResult?
           def initialize(node, comments)
             @node = node
             @comments = comments
           end
 
+          # @rbs return: Symbol -- the name of *old* method
           def old_name
             raise unless node.old_name.is_a?(Prism::SymbolNode)
             value = node.old_name.value or raise
             value.to_sym
           end
 
+          # @rbs return: Symbol -- the name of *new* method
           def new_name
             raise unless node.new_name.is_a?(Prism::SymbolNode)
             value = node.new_name.value or raise
@@ -254,14 +288,29 @@ module RBS
         end
 
         class RubyMixin < Base
-          attr_reader :node, :comments, :application
+          # CallNode that calls `include`, `prepend`, and `extend` method
+          attr_reader :node #:: Prism::CallNode
 
+          # Comments attached to the call node
+          attr_reader :comments #:: AnnotationParser::ParsingResult?
+
+          # Possible following type application annotation
+          attr_reader :application #:: Annotations::Application?
+
+          # @rbs node: Prism::CallNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs application: Annotations::Application?
+          # @rbs return: void
           def initialize(node, comments, application)
             @node = node
             @comments = comments
             @application = application
           end
 
+          # @rbs return: ::RBS::AST::Members::Include
+          #            | ::RBS::AST::Members::Extend
+          #            | ::RBS::AST::Members::Prepend
+          #            | nil
           def rbs
             return unless node.arguments
             return unless node.arguments.arguments.size == 1
@@ -310,14 +359,21 @@ module RBS
         end
 
         class RubyAttr < Base
-          attr_reader :node, :comments, :assertion
+          attr_reader :node #:: Prism::CallNode
+          attr_reader :comments #:: AnnotationParser::ParsingResult?
+          attr_reader :assertion #:: Annotations::Assertion?
 
+          # @rbs node: Prism::CallNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs assertion: Annotations::Assertion?
+          # @rbs return: void
           def initialize(node, comments, assertion)
             @node = node
             @comments = comments
             @assertion = assertion
           end
 
+          # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
           def rbs
             if comments
               comment = RBS::AST::Comment.new(string: comments.content, location: nil)
@@ -361,6 +417,11 @@ module RBS
             end
           end
 
+          # Returns the type of the attribute
+          #
+          # Returns `untyped` when not annotated.
+          #
+          # @rbs return: Types::t
           def attribute_type
             type = assertion&.type
             raise if type.is_a?(MethodType)
@@ -369,17 +430,23 @@ module RBS
           end
         end
 
+        # `private` call without arguments
+        #
         class RubyPrivate < Base
-          attr_reader :node
+          attr_reader :node #:: Prism::CallNode
 
+          # @rbs node: Prism::CallNode
           def initialize(node)
             @node = node
           end
         end
 
+        # `public` call without arguments
+        #
         class RubyPublic < Base
-          attr_reader :node
+          attr_reader :node #:: Prism::CallNode
 
+          # @rbs node: Prism::CallNode
           def initialize(node)
             @node = node
           end

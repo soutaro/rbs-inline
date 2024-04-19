@@ -105,6 +105,8 @@ module RBS
         results
       end
 
+      private
+
       # @rbs result: ParsingResult
       # @rbs block: ^(Array[Prism::Comment]) -> void
       # @rbs return: void
@@ -227,6 +229,8 @@ module RBS
         end
       end
 
+      # @rbs comments: AST::CommentLines
+      # @rbs return: AST::Annotations::t?
       def parse_annotation(comments)
         scanner = StringScanner.new(comments.string)
         tokenizer = Tokenizer.new(scanner)
@@ -272,6 +276,8 @@ module RBS
         end
       end
 
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
       def parse_var_decl(tokenizer)
         tree = AST::Tree.new(:var_decl)
 
@@ -300,6 +306,8 @@ module RBS
         tree
       end
 
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
       def parse_return_type_decl(tokenizer)
         tree = AST::Tree.new(:return_type_decl)
 
@@ -328,6 +336,8 @@ module RBS
         tree
       end
 
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
       def parse_comment(tokenizer)
         tree = AST::Tree.new(:comment)
 
@@ -344,6 +354,8 @@ module RBS
         tree
       end
 
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
       def parse_type_app(tokenizer)
         tree = AST::Tree.new(:tapp)
 
@@ -379,6 +391,17 @@ module RBS
         tree
       end
 
+      # Parse a RBS method type or type and returns it
+      #
+      # It tries parsing a method type, and then parsing a type if failed.
+      #
+      # If both parsing failed, it returns a Tree(`:type_syntax_error), consuming all of the remaining input.
+      #
+      # Note that this doesn't recognize `--` comment unlike `parse_type`.
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs parent_tree: AST::Tree
+      # @rbs return: MethodType | AST::Tree | Types::t | nil
       def parse_type_method_type(tokenizer, parent_tree)
         buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
         range = (tokenizer.scanner.charpos - (tokenizer.scanner.matched_size || 0) ..)
@@ -419,6 +442,22 @@ module RBS
         end
       end
 
+      # Parse a RBS type and returns it
+      #
+      # If parsing failed, it returns a Tree(`:type_syntax_error), consuming
+      #
+      # 1. All of the input with `--` token if exists (for comments)
+      # 2. All of the input (for anything else)
+      #
+      # ```
+      # Integer -- Foo        # => Returns `Integer`, tokenizer has `--` as its current token
+      # Integer[ -- Foo       # => Returns a tree for `Integer[`, tokenizer has `--` as its curren token
+      # Integer[ Foo          # => Returns a tree for `Integer[ Foo`, tokenizer is at the end of the input
+      # ```
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs parent_tree: AST::Tree
+      # @rbs return: Types::t | AST::Tree | nil
       def parse_type(tokenizer, parent_tree)
         buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
         range = (tokenizer.scanner.charpos - (tokenizer.scanner.matched_size || 0) ..)
@@ -441,6 +480,8 @@ module RBS
         tree
       end
 
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
       def parse_rbs_annotation(tokenizer)
         tree = AST::Tree.new(:rbs_annotation)
 
@@ -452,6 +493,8 @@ module RBS
         tree
       end
 
+      # @rbs tokznier: Tokenizer
+      # @rbs return: AST::Tree
       def parse_inherits(tokenizer)
         tree = AST::Tree.new(:rbs_inherits)
 

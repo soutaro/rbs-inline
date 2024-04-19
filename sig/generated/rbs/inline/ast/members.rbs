@@ -1,0 +1,143 @@
+module RBS
+  module Inline
+    module AST
+      module Members
+        class Base
+        end
+
+        class RubyDef < Base
+          attr_reader node: Prism::DefNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          # The visibility directly attached to the `def` node
+          #
+          # `nil` when the `def` node is not passed to `private`/`public` calls.
+          #
+          # ```rb
+          # def foo() end            # <= nil
+          # private def foo() end    # <= :private
+          # ```
+          attr_reader visibility: RBS::AST::Members::visibility?
+
+          # @rbs node: Prism::DefNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs visibility: RBS::AST::Members::visibility?
+          # @rbs return: void
+          def initialize: (Prism::DefNode node, AnnotationParser::ParsingResult? comments, RBS::AST::Members::visibility? visibility) -> void
+
+          # @rbs return: Symbol -- the name of the method
+          def method_name: () -> Symbol
+
+          # @rbs return: Array[Annotations::Assertion]
+          def method_type_annotations: () -> Array[Annotations::Assertion]
+
+          # Returns the `kind` of the method definition
+          #
+          # [FIXME] It only supports `self` receiver.
+          #
+          # ```rb
+          # def self.foo = ()    # :sigleton
+          # def object.foo = ()  # Not supported (returns :instance)
+          # ```
+          #
+          # @rbs return: RBS::AST::Members::MethodDefinition::kind
+          def method_kind: () -> RBS::AST::Members::MethodDefinition::kind
+
+          # @rbs return: Types::t?
+          def return_type: () -> Types::t?
+
+          # @rbs return: Hash[Symbol, Types::t?]
+          def var_type_hash: () -> Hash[Symbol, Types::t?]
+
+          # @rbs return: Array[RBS::AST::Members::MethodDefinition::Overload]
+          def method_overloads: () -> Array[RBS::AST::Members::MethodDefinition::Overload]
+
+          # @rbs return: Array[RBS::AST::Annotation]
+          def method_annotations: () -> Array[RBS::AST::Annotation]
+        end
+
+        class RubyAlias < Base
+          attr_reader node: Prism::AliasMethodNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          # @rbs node: Prism::AliasMethodNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          def initialize: (Prism::AliasMethodNode node, AnnotationParser::ParsingResult? comments) -> untyped
+
+          # @rbs return: Symbol -- the name of *old* method
+          def old_name: () -> Symbol
+
+          # @rbs return: Symbol -- the name of *new* method
+          def new_name: () -> Symbol
+        end
+
+        class RubyMixin < Base
+          # CallNode that calls `include`, `prepend`, and `extend` method
+          attr_reader node: Prism::CallNode
+
+          # Comments attached to the call node
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          # Possible following type application annotation
+          attr_reader application: Annotations::Application?
+
+          # @rbs node: Prism::CallNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs application: Annotations::Application?
+          # @rbs return: void
+          def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Application? application) -> void
+
+          # @rbs return: ::RBS::AST::Members::Include
+          #            | ::RBS::AST::Members::Extend
+          #            | ::RBS::AST::Members::Prepend
+          #            | nil
+          def rbs: () -> (::RBS::AST::Members::Include | ::RBS::AST::Members::Extend | ::RBS::AST::Members::Prepend | nil)
+        end
+
+        class RubyAttr < Base
+          attr_reader node: Prism::CallNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          attr_reader assertion: Annotations::Assertion?
+
+          # @rbs node: Prism::CallNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs assertion: Annotations::Assertion?
+          # @rbs return: void
+          def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> void
+
+          # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
+          def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
+
+          # Returns the type of the attribute
+          #
+          # Returns `untyped` when not annotated.
+          #
+          # @rbs return: Types::t
+          def attribute_type: () -> Types::t
+        end
+
+        # `private` call without arguments
+        #
+        class RubyPrivate < Base
+          attr_reader node: Prism::CallNode
+
+          # @rbs node: Prism::CallNode
+          def initialize: (Prism::CallNode node) -> untyped
+        end
+
+        # `public` call without arguments
+        #
+        class RubyPublic < Base
+          attr_reader node: Prism::CallNode
+
+          # @rbs node: Prism::CallNode
+          def initialize: (Prism::CallNode node) -> untyped
+        end
+      end
+    end
+  end
+end
