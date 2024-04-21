@@ -132,6 +132,12 @@ module RBS
       # @rbs tokznier: Tokenizer
       # @rbs return: AST::Tree
       def parse_inherits: (untyped tokenizer) -> AST::Tree
+
+      # Parse `@rbs override` annotation
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_override: (Tokenizer tokenizer) -> AST::Tree
     end
   end
 end

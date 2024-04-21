@@ -258,6 +258,15 @@ module RBS
               []
             end
           end
+
+          # @rbs return: AST::Annotations::Override?
+          def override_annotation
+            if comments
+              comments.annotations.find do |annotation|
+                annotation.is_a?(AST::Annotations::Override)
+              end #: AST::Annotations::Override?
+            end
+          end
         end
 
         class RubyAlias < Base

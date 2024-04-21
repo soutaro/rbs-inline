@@ -178,12 +178,14 @@ module RBS
             @current_token = [:kRETURN, s]
           when s = scanner.scan(/inherits/)
             @current_token = [:kINHERITS, s]
-          when s = scanner.scan(/[a-z]\w*/)
-            @current_token = [:tLVAR, s]
           when s = scanner.scan(/:/)
             @current_token = [:kCOLON, s]
+          when s = scanner.scan(/override/)
+            @current_token = [:kOVERRIDE, s]
           when s = scanner.scan(/--/)
             @current_token = [:kMINUS2, s]
+          when s = scanner.scan(/[a-z]\w*/)
+            @current_token = [:tLVAR, s]
           when s = scanner.scan(/%a\{[^}]+\}/)
             @current_token = [:tANNOTATION, s]
           when s = scanner.scan(/%a\[[^\]]+\]/)
@@ -264,6 +266,9 @@ module RBS
           when tokenizer.type?(:kINHERITS)
             tree << parse_inherits(tokenizer)
             AST::Annotations::Inherits.new(tree, comments)
+          when tokenizer.type?(:kOVERRIDE)
+            tree << parse_override(tokenizer)
+            AST::Annotations::Override.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
           tree << tokenizer.current_token
@@ -504,6 +509,21 @@ module RBS
         end
 
         tree << parse_type(tokenizer, tree)
+
+        tree
+      end
+
+      # Parse `@rbs override` annotation
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_override(tokenizer)
+        tree = AST::Tree.new(:override)
+
+        if tokenizer.type?(:kOVERRIDE)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        end
 
         tree
       end

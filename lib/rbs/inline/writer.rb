@@ -107,6 +107,21 @@ module RBS
             comment = RBS::AST::Comment.new(string: member.comments.content, location: nil)
           end
 
+          if member.override_annotation
+            return [
+              RBS::AST::Members::MethodDefinition.new(
+                name: member.method_name,
+                kind: member.method_kind,
+                overloads: [],
+                annotations: [],
+                location: nil,
+                comment: comment,
+                overloading: true,
+                visibility: member.visibility
+              )
+            ]
+          end
+
           [
             RBS::AST::Members::MethodDefinition.new(
               name: member.method_name,

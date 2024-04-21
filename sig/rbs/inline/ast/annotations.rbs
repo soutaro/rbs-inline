@@ -3,157 +3,161 @@ module RBS
     module AST
       module Annotations
         type t = VarType | ReturnType
-               | Use
-               | Def
-               | AttrReader | AttrWriter | AttrAccessor
-               | Include | Extend | Prepend
-               | Inherits | Generic | ModuleSelf
-               | Alias | Skip
+              #  | Use
+              #  | Def
+              #  | AttrReader | AttrWriter | AttrAccessor
+              #  | Include | Extend | Prepend
+               | Inherits
+              #  | Generic
+              #  | ModuleSelf
+              #  | Alias
+               | Skip
                | Assertion
                | Application
                | RBSAnnotation
+               | Override
 
-        class Base
-          attr_reader source: CommentLines
-          attr_reader tree: Tree
-        end
+        # class Base
+        #   attr_reader source: CommentLines
+        #   attr_reader tree: Tree
+        # end
 
-        # `@rbs x : T`
-        class VarType < Base
-          def initialize: (Tree, CommentLines) -> void
+        # # `@rbs x : T`
+        # class VarType < Base
+        #   def initialize: (Tree, CommentLines) -> void
 
-          attr_reader name: Symbol?
+        #   attr_reader name: Symbol?
 
-          attr_reader type: Types::t?
+        #   attr_reader type: Types::t?
 
-          attr_reader comment: String?
+        #   attr_reader comment: String?
 
-          def complete?: () -> bool
-        end
+        #   def complete?: () -> bool
+        # end
 
-        # `@rbs return: T`
-        class ReturnType < Base
-          def initialize: (Tree, CommentLines) -> void
+        # # `@rbs return: T`
+        # class ReturnType < Base
+        #   def initialize: (Tree, CommentLines) -> void
 
-          attr_reader type: RBS::Types::t?
+        #   attr_reader type: RBS::Types::t?
 
-          attr_reader comment: String?
+        #   attr_reader comment: String?
 
-          def complete?: () -> bool
-        end
+        #   def complete?: () -> bool
+        # end
 
         # `@rbs use USE`
         class Use < Base
           attr_reader clauses: Array[RBS::AST::Directives::Use::clause]
         end
 
-        # `@rbs def NAME : () -> T`
-        class Def < Base
-          attr_reader kind: RBS::AST::Members::MethodDefinition::kind
+        # # `@rbs def NAME : () -> T`
+        # class Def < Base
+        #   attr_reader kind: RBS::AST::Members::MethodDefinition::kind
 
-          attr_reader method_name: Symbol
+        #   attr_reader method_name: Symbol
 
-          attr_reader types: Array[RBS::MethodType]
-        end
+        #   attr_reader types: Array[RBS::MethodType]
+        # end
 
-        class Attribute < Base
-          attr_reader name: Symbol
-          attr_reader type: Types::t
-          attr_reader kind: RBS::AST::Members::Attribute::kind
-          attr_reader ivar_name: Symbol | false | nil
-        end
+        # class Attribute < Base
+        #   attr_reader name: Symbol
+        #   attr_reader type: Types::t
+        #   attr_reader kind: RBS::AST::Members::Attribute::kind
+        #   attr_reader ivar_name: Symbol | false | nil
+        # end
 
-        # `@rbs attr_reader NAME : TYPE`
-        class AttrReader < Attribute
-        end
+        # # `@rbs attr_reader NAME : TYPE`
+        # class AttrReader < Attribute
+        # end
 
-        # `@rbs attr_writer NAME : TYPE`
-        class AttrWriter < Attribute
-        end
+        # # `@rbs attr_writer NAME : TYPE`
+        # class AttrWriter < Attribute
+        # end
 
-        # `@rbs attr_accessor NAME : TYPE`
-        class AttrAccessor < Attribute
-        end
+        # # `@rbs attr_accessor NAME : TYPE`
+        # class AttrAccessor < Attribute
+        # end
 
-        # `@rbs inherits SUPER`
-        class Inherits < Base
-          attr_reader super_name: TypeName?
+        # # `@rbs inherits SUPER`
+        # class Inherits < Base
+        #   attr_reader super_name: TypeName?
 
-          attr_reader args: Array[Types::t]?
+        #   attr_reader args: Array[Types::t]?
 
-          def initialize: (Tree, CommentLines) -> void
-        end
+        #   def initialize: (Tree, CommentLines) -> void
+        # end
 
-        # `@rbs module-self SUPER`
-        class ModuleSelf < Base
-          attr_reader super_name: TypeName
+        # # `@rbs module-self SUPER`
+        # class ModuleSelf < Base
+        #   attr_reader super_name: TypeName
 
-          attr_reader args: Array[Types::t]
-        end
+        #   attr_reader args: Array[Types::t]
+        # end
 
-        class Mixin < Base
-          attr_reader module_name: TypeName
+        # class Mixin < Base
+        #   attr_reader module_name: TypeName
 
-          attr_reader args: Array[Types::t]
-        end
+        #   attr_reader args: Array[Types::t]
+        # end
 
-        # `@rbs include MIXIN`
-        class Include < Mixin
-        end
+        # # `@rbs include MIXIN`
+        # class Include < Mixin
+        # end
 
-        # `@rbs extend MIXIN`
-        class Extend < Mixin
-        end
+        # # `@rbs extend MIXIN`
+        # class Extend < Mixin
+        # end
 
-        # `@rbs prepend MIXIN`
-        class Prepend < Mixin
-        end
+        # # `@rbs prepend MIXIN`
+        # class Prepend < Mixin
+        # end
 
-        # `@rbs alias OLD NEW`
-        class Alias < Base
-          attr_reader kind: RBS::AST::Members::Alias::kind
+        # # `@rbs alias OLD NEW`
+        # class Alias < Base
+        #   attr_reader kind: RBS::AST::Members::Alias::kind
 
-          attr_reader old_name: Symbol
+        #   attr_reader old_name: Symbol
 
-          attr_reader new_name: Symbol
-        end
+        #   attr_reader new_name: Symbol
+        # end
 
-        # `@rbs generic TYPE-PARAM`
-        class Generic < Base
-          attr_reader type_param: RBS::AST::TypeParam
-        end
+        # # `@rbs generic TYPE-PARAM`
+        # class Generic < Base
+        #   attr_reader type_param: RBS::AST::TypeParam
+        # end
 
-        # `@rbs skip`
-        class Skip < Base
-          def initialize: (Tree, CommentLines) -> void
-        end
+        # # `@rbs skip`
+        # class Skip < Base
+        #   def initialize: (Tree, CommentLines) -> void
+        # end
 
-        # `:: TYPE`
-        class Assertion < Base
-          attr_reader type: Types::t | RBS::MethodType | nil
+        # # `:: TYPE`
+        # class Assertion < Base
+        #   attr_reader type: Types::t | RBS::MethodType | nil
 
-          def initialize: (Tree, CommentLines) -> void
+        #   def initialize: (Tree, CommentLines) -> void
 
-          def complete?: () -> bool
-        end
+        #   def complete?: () -> bool
+        # end
 
-        # `[TYPE, ..., TYPE]`
-        class Application < Base
-          attr_reader types: Array[Types::t]?
+        # # `[TYPE, ..., TYPE]`
+        # class Application < Base
+        #   attr_reader types: Array[Types::t]?
 
-          def initialize: (Tree, CommentLines) -> void
+        #   def initialize: (Tree, CommentLines) -> void
 
-          def complete?: () -> bool
-        end
+        #   def complete?: () -> bool
+        # end
 
-        # `@rbs %a{FOO}`
-        class RBSAnnotation < Base
-          attr_reader contents: Array[String]
+        # # `@rbs %a{FOO}`
+        # class RBSAnnotation < Base
+        #   attr_reader contents: Array[String]
 
-          def initialize: (Tree, CommentLines) -> void
+        #   def initialize: (Tree, CommentLines) -> void
 
-          def annotation: () -> RBS::AST::Annotation
-        end
+        #   def annotation: () -> RBS::AST::Annotation
+        # end
       end
     end
   end

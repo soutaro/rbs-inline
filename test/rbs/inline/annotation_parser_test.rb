@@ -192,4 +192,14 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     assert_equal ":: Foo", annots[0].content
     assert_equal ":: Bar", annots[1].content
   end
+
+  def test_override
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs override
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::Override, annotation
+    end
+  end
 end

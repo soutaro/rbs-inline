@@ -1,0 +1,102 @@
+module RBS
+  module Inline
+    module AST
+      module Annotations
+        class Base
+          attr_reader source: CommentLines
+
+          attr_reader tree: Tree
+
+          # @rbs tree: Tree
+          # @rbs source: CommentLines
+          # @rbs return: void
+          def initialize: (Tree tree, CommentLines source) -> void
+        end
+
+        class VarType < Base
+          attr_reader name: Symbol?
+
+          attr_reader type: Types::t?
+
+          attr_reader comment: String?
+
+          # @rbs override
+          def initialize: ...
+
+          # :: () -> bool
+          def complete?: () -> bool
+        end
+
+        class ReturnType < Base
+          attr_reader type: Types::t?
+
+          attr_reader comment: String?
+
+          # @rbs override
+          def initialize: ...
+
+          # @rbs return: bool
+          def complete?: () -> bool
+        end
+
+        # `#:: TYPE`
+        #
+        class Assertion < Base
+          attr_reader type: Types::t | MethodType | nil
+
+          def initialize: (untyped tree, untyped source) -> untyped
+
+          # @rbs return: bool
+          def complete?: () -> bool
+        end
+
+        # `#[TYPE, ..., TYPE]`
+        #
+        class Application < Base
+          attr_reader types: Array[Types::t]?
+
+          # @rbs override
+          def initialize: ...
+
+          # @rbs return: bool
+          def complete?: () -> bool
+        end
+
+        # `# @rbs %a{a} %a{a} ...`
+        class RBSAnnotation < Base
+          attr_reader contents: Array[String]
+
+          # @rbs override
+          def initialize: ...
+        end
+
+        # `# @rbs skip`
+        #
+        class Skip < Base
+          # @rbs override
+          def initialize: ...
+        end
+
+        # `# @rbs inherits T`
+        #
+        class Inherits < Base
+          attr_reader super_name: TypeName?
+
+          attr_reader args: Array[Types::t]?
+
+          # @rbs override
+          def initialize: ...
+        end
+
+        # `# @rbs override`
+        #
+        # Specify the method types as `...` (overriding super class method)
+        #
+        class Override < Base
+          # @rbs override
+          def initialize: ...
+        end
+      end
+    end
+  end
+end

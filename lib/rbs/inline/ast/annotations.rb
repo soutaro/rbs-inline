@@ -3,15 +3,26 @@ module RBS
     module AST
       module Annotations
         class Base
-          attr_reader :source
-          attr_reader :tree
+          attr_reader :source #:: CommentLines
+          attr_reader :tree #:: Tree
+
+          # @rbs tree: Tree
+          # @rbs source: CommentLines
+          # @rbs return: void
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+          end
         end
 
         class VarType < Base
-          attr_reader :name
-          attr_reader :type
-          attr_reader :comment
+          attr_reader :name #:: Symbol?
 
+          attr_reader :type #:: Types::t?
+
+          attr_reader :comment #:: String?
+
+          # @rbs override
           def initialize(tree, source)
             @tree = tree
             @source = source
@@ -31,6 +42,7 @@ module RBS
             end
           end
 
+          #:: () -> bool
           def complete?
             if name && type
               true
@@ -41,10 +53,11 @@ module RBS
         end
 
         class ReturnType < Base
-          attr_reader :type
+          attr_reader :type #:: Types::t?
 
-          attr_reader :comment
+          attr_reader :comment #:: String?
 
+          # @rbs override
           def initialize(tree, source)
             @tree = tree
             @source = source
@@ -60,6 +73,7 @@ module RBS
             end
           end
 
+          # @rbs return: bool
           def complete?
             if type
               true
@@ -69,8 +83,10 @@ module RBS
           end
         end
 
+        # `#:: TYPE`
+        #
         class Assertion < Base
-          attr_reader :type
+          attr_reader :type #:: Types::t | MethodType | nil
 
           def initialize(tree, source)
             @source = source
@@ -79,6 +95,7 @@ module RBS
             @type = tree.nth_method_type?(1) || tree.nth_type?(1)
           end
 
+          # @rbs return: bool
           def complete?
             if type
               true
@@ -88,9 +105,12 @@ module RBS
           end
         end
 
+        # `#[TYPE, ..., TYPE]`
+        #
         class Application < Base
-          attr_reader :types
+          attr_reader :types #:: Array[Types::t]?
 
+          # @rbs override
           def initialize(tree, source)
             @tree = tree
             @source = source
@@ -111,14 +131,17 @@ module RBS
             end
           end
 
+          # @rbs return: bool
           def complete?
             types ? true : false
           end
         end
 
+        # `# @rbs %a{a} %a{a} ...`
         class RBSAnnotation < Base
-          attr_reader :contents
+          attr_reader :contents #:: Array[String]
 
+          # @rbs override
           def initialize(tree, comments)
             @source = comments
             @tree = tree
@@ -131,17 +154,23 @@ module RBS
           end
         end
 
+        # `# @rbs skip`
+        #
         class Skip < Base
+          # @rbs override
           def initialize(tree, source)
             @tree = tree
             @source = source
           end
         end
 
+        # `# @rbs inherits T`
+        #
         class Inherits < Base
-          attr_reader :super_name
-          attr_reader :args
+          attr_reader :super_name #:: TypeName?
+          attr_reader :args #:: Array[Types::t]?
 
+          # @rbs override
           def initialize(tree, source)
             @tree = tree
             @source = source
@@ -153,6 +182,18 @@ module RBS
                 @args = super_type.args
               end
             end
+          end
+        end
+
+        # `# @rbs override`
+        #
+        # Specify the method types as `...` (overriding super class method)
+        #
+        class Override < Base
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
           end
         end
       end
