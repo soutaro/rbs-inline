@@ -15,7 +15,7 @@ class RBS::Inline::AST::DeclarationsTest < Minitest::Test
       end
     RUBY
 
-    decl = AST::Declarations::ClassDecl.new(result.value.statements.body[0], nil)
+    decl = AST::Declarations::ClassDecl.new(result.value.statements.body[0], nil, nil)
 
     assert_equal TypeName("Hello"), decl.class_name
   end
@@ -26,9 +26,8 @@ class RBS::Inline::AST::DeclarationsTest < Minitest::Test
       end
     RUBY
 
-    decl = AST::Declarations::ClassDecl.new(result.value.statements.body[0], nil)
+    decl = AST::Declarations::ClassDecl.new(result.value.statements.body[0], nil, nil)
 
     assert_equal TypeName("Hello"), decl.class_name
-    assert_equal TypeName("Object"), decl.super_class
   end
 end

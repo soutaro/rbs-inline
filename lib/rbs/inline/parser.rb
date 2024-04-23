@@ -195,7 +195,7 @@ module RBS
 
         if app_comment && comment_line
           comments.delete(comment_line)
-          app = app_comment.annotations.find do |annotation|
+          app_comment.annotations.find do |annotation|
             annotation.is_a?(AST::Annotations::Application)
           end #: AST::Annotations::Application?
         end

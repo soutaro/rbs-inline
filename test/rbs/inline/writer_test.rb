@@ -94,7 +94,7 @@ class RBS::Inline::WriterTest < Minitest::Test
         def bar: () ?{ (String) [self: Symbol] -> Integer } -> untyped
       end
     RBS
-    end
+  end
 
   def test_method_type__kind
     output = translate(<<~RUBY)
