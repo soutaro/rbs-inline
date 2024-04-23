@@ -46,11 +46,11 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: bc4cbee282cfb013be8c44a3fe7a374491492400
+    revision: d2e93d426c927fdab90ef12e30a9875aa05d60d6
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: rbs
-  version: 3.4.4
+  version: 3.5.0.pre.2
   source:
     type: rubygems
 - name: rdoc
