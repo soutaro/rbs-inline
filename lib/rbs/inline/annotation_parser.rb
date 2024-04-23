@@ -33,8 +33,13 @@ module RBS
         def add_comment(comment)
           if last_comment.location.end_line + 1 == comment.location.start_line
             if last_comment.location.start_column == comment.location.start_column
-              comments << comment
-              self
+              if prefix = comment.location.start_line_slice[..comment.location.start_column]
+                prefix.strip!
+                if prefix.empty?
+                  comments << comment
+                  self
+                end
+              end
             end
           end
         end
@@ -55,12 +60,7 @@ module RBS
 
         # @rbs return: String
         def content
-          content = +""
-          lines.each do |line, _|
-            content << line
-            content << "\n"
-          end
-          content
+          lines.map(&:first).join("\n")
         end
       end
 

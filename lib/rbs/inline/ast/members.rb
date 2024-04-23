@@ -262,7 +262,6 @@ module RBS
 
         class RubyAlias < Base
           attr_reader :node #:: Prism::AliasMethodNode
-
           attr_reader :comments #:: AnnotationParser::ParsingResult?
 
           # @rbs node: Prism::AliasMethodNode

@@ -121,7 +121,6 @@ module RBS
         end
 
         # `private` call without arguments
-        #
         class RubyPrivate < Base
           attr_reader node: Prism::CallNode
 
@@ -130,7 +129,6 @@ module RBS
         end
 
         # `public` call without arguments
-        #
         class RubyPublic < Base
           attr_reader node: Prism::CallNode
 
