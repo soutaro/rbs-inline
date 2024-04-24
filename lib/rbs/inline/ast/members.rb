@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 module RBS
   module Inline
     module AST

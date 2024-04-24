@@ -17,7 +17,7 @@ module RBS
 
       def initialize: () -> void
 
-      def self.parse: (ParseResult[ProgramNode]) -> [Array[AST::Annotations::Use], Array[AST::Declarations::t]]
+      def self.parse: (ParseResult[ProgramNode]) -> [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
 
       def current_class_module_decl: () -> AST::Declarations::t?
 

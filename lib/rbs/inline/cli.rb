@@ -61,19 +61,23 @@ module RBS
           logger.debug { "Generating #{output} from #{target} ..."}
 
           logger.debug { "Parsing ruby file #{target}..." }
-          uses, decls = Parser.parse(Prism.parse_file(target.to_s))
-          writer = Writer.new()
-          writer.write(uses, decls)
 
-          unless output.parent.directory?
-            logger.debug { "Making directory #{output.parent}..." }
-            output.parent.mkpath
+          if (uses, decls = Parser.parse(Prism.parse_file(target.to_s)))
+            writer = Writer.new()
+            writer.write(uses, decls)
+
+            unless output.parent.directory?
+              logger.debug { "Making directory #{output.parent}..." }
+              output.parent.mkpath
+            end
+
+            logger.debug { "Writing RBS file to #{output}..." }
+            output.write(writer.output)
+
+            count += 1
+          else
+            logger.debug { "Skipping #{target} because `# rbs_inline: enabled` comment not found" }
           end
-
-          logger.debug { "Writing RBS file to #{output}..." }
-          output.write(writer.output)
-
-          count += 1
         end
 
         stdout.puts "🎉 Generated #{count} RBS files under #{output_path}"

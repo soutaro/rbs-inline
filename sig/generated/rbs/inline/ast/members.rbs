@@ -110,7 +110,7 @@ module RBS
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs assertion: Annotations::Assertion?
           # @rbs return: void
-          def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> void
+          def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, untyped assertion) -> void
 
           # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
           def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?

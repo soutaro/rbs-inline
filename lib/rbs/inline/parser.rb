@@ -19,6 +19,10 @@ module RBS
           instance.comments[result.line_range.end] = result
         end
 
+        if result.comments.none? {|comment| comment.location.slice =~ /\A# rbs_inline: enabled\Z/}
+          return
+        end
+
         uses = [] #: Array[AST::Annotations::Use]
         annots.each do |annot|
           annot.annotations.each do |annotation|
