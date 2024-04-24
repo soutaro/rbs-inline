@@ -178,10 +178,20 @@ module RBS
             @current_token = [:kRETURN, s]
           when s = scanner.scan(/inherits/)
             @current_token = [:kINHERITS, s]
+          when s = scanner.scan(/as/)
+            @current_token = [:kAS, s]
           when s = scanner.scan(/:/)
             @current_token = [:kCOLON, s]
           when s = scanner.scan(/override/)
             @current_token = [:kOVERRIDE, s]
+          when s = scanner.scan(/use/)
+            @current_token = [:kUSE, s]
+          when s = scanner.scan(/[A-Z]\w*/)
+            @current_token = [:tUIDENT, s]
+          when s = scanner.scan(/_[A-Z]\w*/)
+            @current_token = [:tIFIDENT, s]
+          when s = scanner.scan(/\*/)
+            @current_token = [:kSTAR, s]
           when s = scanner.scan(/--/)
             @current_token = [:kMINUS2, s]
           when s = scanner.scan(/[a-z]\w*/)
@@ -201,14 +211,10 @@ module RBS
 
         # Test if current token has specified `type`
         #
-        # @rbs type: Symbol
+        # @rbs type: Array[Symbol]
         # @rbs return: bool
-        def type?(type)
-          if current_token && current_token[0] == type
-            true
-          else
-            false
-          end
+        def type?(*type)
+          type.any? { current_token && current_token[0] == _1 }
         end
 
         # Reset the current_token to incoming comment `--`
@@ -269,6 +275,9 @@ module RBS
           when tokenizer.type?(:kOVERRIDE)
             tree << parse_override(tokenizer)
             AST::Annotations::Override.new(tree, comments)
+          when tokenizer.type?(:kUSE)
+            tree << parse_use(tokenizer)
+            AST::Annotations::Use.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
           tree << tokenizer.current_token
@@ -523,6 +532,95 @@ module RBS
         if tokenizer.type?(:kOVERRIDE)
           tree << tokenizer.current_token
           tokenizer.advance(tree)
+        end
+
+        tree
+      end
+
+      # Parse `@rbs use [CLAUSES]` annotation
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_use(tokenizer)
+        tree = AST::Tree.new(:use)
+
+        if tokenizer.type?(:kUSE)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        end
+
+        while tokenizer.type?(:kCOLON2, :tUIDENT, :tIFIDENT, :tLVAR)
+          tree << parse_use_clause(tokenizer)
+
+          if tokenizer.type?(:kCOMMA)
+            tree << tokenizer.advance(tree)
+          else
+            tree << nil
+          end
+        end
+
+        tree
+      end
+
+      # Parses use clause
+      #
+      # Returns one of the following form:
+      #
+      # * [`::`?, [UIDENT, `::`]*, LIDENT, [`as` LIDENT]?]
+      # * [`::`?, [UIDENT, `::`]*, UIDENT, [`as` UIDENT]?]
+      # * [`::`?, [UIDENT, `::`]*, IFIDENT, [`as`, IFIDENT]?]
+      # * [`::`?, [UIDENT) `::`]*, `*`]
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_use_clause(tokenizer)
+        tree = AST::Tree.new(:use_clause)
+
+        if tokenizer.type?(:kCOLON2)
+          tree << tokenizer.current_token
+          tokenizer.advance(tree)
+        end
+
+        while true
+          case
+          when tokenizer.type?(:tUIDENT)
+            tree << tokenizer.advance(tree)
+
+            case
+            when tokenizer.type?(:kCOLON2)
+              tree << tokenizer.advance(tree)
+            else
+              break
+            end
+          else
+            break
+          end
+        end
+
+        case
+        when tokenizer.type?(:tLVAR)
+          tree << tokenizer.advance(tree)
+        when tokenizer.type?(:tIFIDENT)
+          tree << tokenizer.advance(tree)
+        when tokenizer.type?(:kSTAR)
+          tree << tokenizer.advance(tree)
+          return tree
+        end
+
+        if tokenizer.type?(:kAS)
+          as_tree = AST::Tree.new(:as)
+
+          as_tree << tokenizer.advance(as_tree)
+
+          if tokenizer.type?(:tLVAR, :tIFIDENT, :tUIDENT)
+            as_tree <<tokenizer.advance(as_tree)
+          else
+            as_tree << nil
+          end
+
+          tree << as_tree
+        else
+          tree << nil
         end
 
         tree

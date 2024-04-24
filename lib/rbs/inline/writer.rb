@@ -16,11 +16,18 @@ module RBS
       end
 
       def write(uses, decls)
+        use_dirs = uses.map do |use|
+          RBS::AST::Directives::Use.new(
+            clauses: use.clauses,
+            location: nil
+          )
+        end
+
         rbs = decls.filter_map do |decl|
           translate_decl(decl)
         end
 
-        writer.write(rbs)
+        writer.write(use_dirs + rbs)
       end
 
       def translate_decl(decl)

@@ -3,7 +3,7 @@ module RBS
     module AST
       module Annotations
         type t = VarType | ReturnType
-              #  | Use
+               | Use
               #  | Def
               #  | AttrReader | AttrWriter | AttrAccessor
               #  | Include | Extend | Prepend
@@ -47,9 +47,9 @@ module RBS
         # end
 
         # `@rbs use USE`
-        class Use < Base
-          attr_reader clauses: Array[RBS::AST::Directives::Use::clause]
-        end
+        # class Use < Base
+        #   attr_reader clauses: Array[RBS::AST::Directives::Use::clause]
+        # end
 
         # # `@rbs def NAME : () -> T`
         # class Def < Base

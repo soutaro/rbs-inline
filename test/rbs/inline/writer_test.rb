@@ -327,4 +327,25 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_uses
+    output = translate(<<~RUBY)
+      # @rbs use String
+
+      class Foo < String
+        # @rbs override
+        def length
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      use String
+
+      class Foo < String
+        # @rbs override
+        def length: ...
+      end
+    RBS
+  end
 end

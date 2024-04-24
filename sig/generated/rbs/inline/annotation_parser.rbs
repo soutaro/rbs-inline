@@ -62,9 +62,9 @@ module RBS
 
         # Test if current token has specified `type`
         #
-        # @rbs type: Symbol
+        # @rbs type: Array[Symbol]
         # @rbs return: bool
-        def type?: (Symbol type) -> bool
+        def type?: (*Symbol type) -> bool
 
         # Reset the current_token to incoming comment `--`
         #
@@ -138,6 +138,25 @@ module RBS
       # @rbs tokenizer: Tokenizer
       # @rbs return: AST::Tree
       def parse_override: (Tokenizer tokenizer) -> AST::Tree
+
+      # Parse `@rbs use [CLAUSES]` annotation
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_use: (Tokenizer tokenizer) -> AST::Tree
+
+      # Parses use clause
+      #
+      # Returns one of the following form:
+      #
+      # * [`::`?, [UIDENT, `::`]*, LIDENT, [`as` LIDENT]?]
+      # * [`::`?, [UIDENT, `::`]*, UIDENT, [`as` UIDENT]?]
+      # * [`::`?, [UIDENT, `::`]*, IFIDENT, [`as`, IFIDENT]?]
+      # * [`::`?, [UIDENT) `::`]*, `*`]
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_use_clause: (Tokenizer tokenizer) -> AST::Tree
     end
   end
 end

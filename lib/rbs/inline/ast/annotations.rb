@@ -196,6 +196,58 @@ module RBS
             @source = source
           end
         end
+
+        # `# @rbs use [USES]`
+        class Use < Base
+          attr_reader :clauses #:: Array[RBS::AST::Directives::Use::clause]
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            @clauses = []
+
+            tree.nth_tree!(1).tap do |use_tree|
+              _, *clause_pairs = use_tree.non_trivia_trees
+              clause_pairs.each_slice(2) do |clause, _comma|
+                if clause.is_a?(Tree)
+                  *tokens, last_token = clause.non_trivia_trees
+                  token_strs = tokens.map do |tok|
+                    if tok.is_a?(Array)
+                      tok[1]
+                    else
+                      raise
+                    end
+                  end
+
+                  case last_token
+                  when Array
+                    # `*` clause
+                    namespace = Namespace(token_strs.join)
+                    @clauses << RBS::AST::Directives::Use::WildcardClause.new(
+                      namespace: namespace,
+                      location: nil
+                    )
+                  when Tree, nil
+                    if last_token
+                      if new_name_token = last_token.nth_token(1)
+                        new_name = new_name_token[1].to_sym
+                      end
+                    end
+
+                    typename = TypeName(token_strs.join)
+                    @clauses << RBS::AST::Directives::Use::SingleClause.new(
+                      type_name: typename,
+                      new_name: new_name,
+                      location: nil
+                    )
+                  end
+                end
+              end
+            end
+          end
+        end
       end
     end
   end

@@ -19,10 +19,19 @@ module RBS
           instance.comments[result.line_range.end] = result
         end
 
+        uses = [] #: Array[AST::Annotations::Use]
+        annots.each do |annot|
+          annot.annotations.each do |annotation|
+            if annotation.is_a?(AST::Annotations::Use)
+              uses << annotation
+            end
+          end
+        end
+
         instance.visit(result.value)
 
         [
-          [],
+          uses,
           instance.decls
         ]
       end

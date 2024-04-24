@@ -40,7 +40,6 @@ module RBS
         end
 
         # `#:: TYPE`
-        #
         class Assertion < Base
           attr_reader type: Types::t | MethodType | nil
 
@@ -51,7 +50,6 @@ module RBS
         end
 
         # `#[TYPE, ..., TYPE]`
-        #
         class Application < Base
           attr_reader types: Array[Types::t]?
 
@@ -71,14 +69,12 @@ module RBS
         end
 
         # `# @rbs skip`
-        #
         class Skip < Base
           # @rbs override
           def initialize: ...
         end
 
         # `# @rbs inherits T`
-        #
         class Inherits < Base
           attr_reader super_name: TypeName?
 
@@ -91,8 +87,15 @@ module RBS
         # `# @rbs override`
         #
         # Specify the method types as `...` (overriding super class method)
-        #
         class Override < Base
+          # @rbs override
+          def initialize: ...
+        end
+
+        # `# @rbs use [USES]`
+        class Use < Base
+          attr_reader clauses: Array[RBS::AST::Directives::Use::clause]
+
           # @rbs override
           def initialize: ...
         end

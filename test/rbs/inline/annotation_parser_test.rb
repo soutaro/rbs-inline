@@ -202,4 +202,80 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::Override, annotation
     end
   end
+
+  def test_use
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs use ::Foo
+      # @rbs use Foo
+      # @rbs use Foo::Bar
+      # @rbs use Foo::bar
+      # @rbs use Foo::_Bar
+      # @rbs use Foo::*
+      # @rbs use Foo::Bar as Bar2, Foo::bar as bar2, Foo::_Bar as _Bar2
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::Use, annotation
+
+      annotation.clauses[0].tap do |clause|
+        assert_equal TypeName("::Foo"), clause.type_name
+        assert_nil clause.new_name
+      end
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::Use, annotation
+
+      annotation.clauses[0].tap do |clause|
+        assert_equal TypeName("Foo"), clause.type_name
+        assert_nil clause.new_name
+      end
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::Annotations::Use, annotation
+
+      annotation.clauses[0].tap do |clause|
+        assert_equal TypeName("Foo::Bar"), clause.type_name
+        assert_nil clause.new_name
+      end
+    end
+    annots[0].annotations[3].tap do |annotation|
+      assert_instance_of AST::Annotations::Use, annotation
+
+      annotation.clauses[0].tap do |clause|
+        assert_equal TypeName("Foo::bar"), clause.type_name
+        assert_nil clause.new_name
+      end
+    end
+    annots[0].annotations[4].tap do |annotation|
+      assert_instance_of AST::Annotations::Use, annotation
+
+      annotation.clauses[0].tap do |clause|
+        assert_equal TypeName("Foo::_Bar"), clause.type_name
+        assert_nil clause.new_name
+      end
+    end
+    annots[0].annotations[5].tap do |annotation|
+      assert_instance_of AST::Annotations::Use, annotation
+
+      annotation.clauses[0].tap do |clause|
+        assert_equal Namespace("Foo::"), clause.namespace
+      end
+    end
+    annots[0].annotations[6].tap do |annotation|
+      assert_instance_of AST::Annotations::Use, annotation
+
+      annotation.clauses[0].tap do |clause|
+        assert_equal TypeName("Foo::Bar"), clause.type_name
+        assert_equal :Bar2, clause.new_name
+      end
+      annotation.clauses[1].tap do |clause|
+        assert_equal TypeName("Foo::bar"), clause.type_name
+        assert_equal :bar2, clause.new_name
+      end
+      annotation.clauses[2].tap do |clause|
+        assert_equal TypeName("Foo::_Bar"), clause.type_name
+        assert_equal :_Bar2, clause.new_name
+      end
+    end
+  end
 end
