@@ -150,6 +150,27 @@ module RBS
         attr_reader :scanner #:: StringScanner
         attr_reader :current_token #:: token?
 
+        KEYWORDS = {
+          "@rbs" => :kRBS,
+          "return" => :kRETURN,
+          "inherits" => :kINHERITS,
+          "as" => :kAS,
+          "override" => :kOVERRIDE,
+          "use" => :kUSE,
+        } #:: Hash[String, Symbol]
+        KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
+
+        PUNCTS = {
+          "::" => :kCOLON2,
+          ":" => :kCOLON,
+          "[" => :kLBRACKET,
+          "]" => :kRBRACKET,
+          "," => :kCOMMA,
+          "*" => :kSTAR,
+          "--" => :kMINUS2,
+        } #:: Hash[String, Symbol]
+        PUNCTS_RE = Regexp.union(PUNCTS.keys)
+
         # @rbs scanner: StringScanner
         # @rbs return: void
         def initialize(scanner)
@@ -166,36 +187,14 @@ module RBS
           when s = scanner.scan(/\s+/)
             tree << [:tWHITESPACE, s] if tree
             advance(tree)
-          when s = scanner.scan(/::/)
-            @current_token = [:kCOLON2, s]
-          when s = scanner.scan(/\[/)
-            @current_token = [:kLBRACKET, "["]
-          when s = scanner.scan(/\]/)
-            @current_token = [:kRBRACKET, "]"]
-          when s = scanner.scan(/,/)
-            @current_token = [:kCOMMA, ","]
-          when s = scanner.scan(/@rbs/)
-            @current_token = [:kRBS, s]
-          when s = scanner.scan(/return/)
-            @current_token = [:kRETURN, s]
-          when s = scanner.scan(/inherits/)
-            @current_token = [:kINHERITS, s]
-          when s = scanner.scan(/as/)
-            @current_token = [:kAS, s]
-          when s = scanner.scan(/:/)
-            @current_token = [:kCOLON, s]
-          when s = scanner.scan(/override/)
-            @current_token = [:kOVERRIDE, s]
-          when s = scanner.scan(/use/)
-            @current_token = [:kUSE, s]
+          when s = scanner.scan(PUNCTS_RE)
+            @current_token = [PUNCTS.fetch(s), s]
+          when s = scanner.scan(KW_RE)
+            @current_token = [KEYWORDS.fetch(s), s]
           when s = scanner.scan(/[A-Z]\w*/)
             @current_token = [:tUIDENT, s]
           when s = scanner.scan(/_[A-Z]\w*/)
             @current_token = [:tIFIDENT, s]
-          when s = scanner.scan(/\*/)
-            @current_token = [:kSTAR, s]
-          when s = scanner.scan(/--/)
-            @current_token = [:kMINUS2, s]
           when s = scanner.scan(/[a-z]\w*/)
             @current_token = [:tLVAR, s]
           when s = scanner.scan(/%a\{[^}]+\}/)
