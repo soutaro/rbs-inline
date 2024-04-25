@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 module RBS
   module Inline
     module AST
@@ -245,6 +247,35 @@ module RBS
                   end
                 end
               end
+            end
+          end
+        end
+
+        # `# @rbs module-self [MODULE_SELF]`
+        class ModuleSelf < Base
+          attr_reader :constraint #:: RBS::AST::Declarations::Module::Self?
+
+          attr_reader :comment #:: String?
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            module_self = tree.nth_tree!(1)
+            type = module_self.nth_type?(1)
+
+            case type
+            when Types::ClassInstance, Types::Interface
+              @constraint = RBS::AST::Declarations::Module::Self.new(
+                name: type.name,
+                args: type.args,
+                location: nil
+              )
+            end
+
+            if comment = module_self.nth_tree(2)
+              @comment = comment.to_s
             end
           end
         end

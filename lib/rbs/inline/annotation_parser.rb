@@ -157,6 +157,7 @@ module RBS
           "as" => :kAS,
           "override" => :kOVERRIDE,
           "use" => :kUSE,
+          "module-self" => :kMODULESELF,
         } #:: Hash[String, Symbol]
         KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
 
@@ -210,12 +211,43 @@ module RBS
           last
         end
 
+        # Consume given token type and inserts the token to the tree or `nil`
+        #
+        # @rbs type: Array[Symbol]
+        # @rbs tree: AST::Tree
+        # @rbs return: void
+        def consume_token(*types, tree:)
+          if type?(*types)
+            tree << advance(tree)
+          else
+            tree << nil
+          end
+        end
+
+        # Consume given token type and inserts the token to the tree or raise
+        #
+        # @rbs type: Array[Symbol]
+        # @rbs tree: AST::Tree
+        # @rbs return: void
+        def consume_token!(*types, tree:)
+          type!(*types)
+          tree << advance(tree)
+        end
+
         # Test if current token has specified `type`
         #
         # @rbs type: Array[Symbol]
         # @rbs return: bool
         def type?(*type)
           type.any? { current_token && current_token[0] == _1 }
+        end
+
+        # Ensure current token is one of the specified in types
+        #
+        # @rbs types: Array[Symbol]
+        # @rbs return: void
+        def type!(*types)
+          raise "Unexpected token: #{current_token&.[](0)}, where expected token: #{types.join(",")}" unless type?(*types)
         end
 
         # Reset the current_token to incoming comment `--`
@@ -279,6 +311,9 @@ module RBS
           when tokenizer.type?(:kUSE)
             tree << parse_use(tokenizer)
             AST::Annotations::Use.new(tree, comments)
+          when tokenizer.type?(:kMODULESELF)
+            tree << parse_module_self(tokenizer)
+            AST::Annotations::ModuleSelf.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
           tree << tokenizer.current_token
@@ -356,15 +391,12 @@ module RBS
       def parse_comment(tokenizer)
         tree = AST::Tree.new(:comment)
 
-        if tokenizer.type?(:kMINUS2)
-          tree << tokenizer.current_token
-          rest = tokenizer.scanner.rest || ""
-          tokenizer.scanner.terminate
-          tree << [:tCOMMENT, rest]
-        else
-          tree << nil
-          tree << nil
-        end
+        tokenizer.type!(:kMINUS2)
+
+        tree << tokenizer.current_token
+        rest = tokenizer.scanner.rest || ""
+        tokenizer.scanner.terminate
+        tree << [:tCOMMENT, rest]
 
         tree
       end
@@ -620,6 +652,23 @@ module RBS
           end
 
           tree << as_tree
+        else
+          tree << nil
+        end
+
+        tree
+      end
+
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_module_self(tokenizer)
+        tree = AST::Tree.new(:module_self)
+
+        tokenizer.consume_token!(:kMODULESELF, tree: tree)
+        tree << parse_type(tokenizer, tree)
+
+        if tokenizer.type?(:kMINUS2)
+          tree << parse_comment(tokenizer)
         else
           tree << nil
         end

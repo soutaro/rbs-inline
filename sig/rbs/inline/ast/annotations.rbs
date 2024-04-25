@@ -9,7 +9,7 @@ module RBS
               #  | Include | Extend | Prepend
                | Inherits
               #  | Generic
-              #  | ModuleSelf
+               | ModuleSelf
               #  | Alias
                | Skip
                | Assertion

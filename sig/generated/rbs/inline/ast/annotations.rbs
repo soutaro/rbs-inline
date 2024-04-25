@@ -101,6 +101,16 @@ module RBS
           # @rbs override
           def initialize: ...
         end
+
+        # `# @rbs module-self [MODULE_SELF]`
+        class ModuleSelf < Base
+          attr_reader constraint: RBS::AST::Declarations::Module::Self?
+
+          attr_reader comment: String?
+
+          # @rbs override
+          def initialize: ...
+        end
       end
     end
   end

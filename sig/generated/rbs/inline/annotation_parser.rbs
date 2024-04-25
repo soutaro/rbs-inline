@@ -62,11 +62,31 @@ module RBS
         # @rbs return: token?
         def advance: (AST::Tree tree) -> token?
 
+        # Consume given token type and inserts the token to the tree or `nil`
+        #
+        # @rbs type: Array[Symbol]
+        # @rbs tree: AST::Tree
+        # @rbs return: void
+        def consume_token: (*untyped types, tree: AST::Tree) -> void
+
+        # Consume given token type and inserts the token to the tree or raise
+        #
+        # @rbs type: Array[Symbol]
+        # @rbs tree: AST::Tree
+        # @rbs return: void
+        def consume_token!: (*untyped types, tree: AST::Tree) -> void
+
         # Test if current token has specified `type`
         #
         # @rbs type: Array[Symbol]
         # @rbs return: bool
         def type?: (*Symbol type) -> bool
+
+        # Ensure current token is one of the specified in types
+        #
+        # @rbs types: Array[Symbol]
+        # @rbs return: void
+        def type!: (*Symbol types) -> void
 
         # Reset the current_token to incoming comment `--`
         #
@@ -159,6 +179,10 @@ module RBS
       # @rbs tokenizer: Tokenizer
       # @rbs return: AST::Tree
       def parse_use_clause: (Tokenizer tokenizer) -> AST::Tree
+
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_module_self: (Tokenizer tokenizer) -> AST::Tree
     end
   end
 end
