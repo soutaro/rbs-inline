@@ -92,6 +92,17 @@ module RBS
         push_class_module_decl(module_decl) do
           visit node.body
         end
+
+        annotation_range = node.location.start_line .. node.location.end_line
+        annotations = comments.each_value.select do |annotation|
+          range = annotation.line_range
+          annotation_range.begin < range.begin && range.end < annotation_range.end
+        end
+
+        annotations.each do |annot|
+          comments.delete(annot.line_range.end)
+          module_decl.inner_comments.push(annot)
+        end
       end
 
       def visit_def_node(node)

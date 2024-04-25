@@ -103,11 +103,13 @@ module RBS
           end
         end
 
+        self_types = decl.module_selfs.map { _1.constraint }.compact
+
         RBS::AST::Declarations::Module.new(
           name: decl.module_name,
           type_params: [],
           members: members,
-          self_types: [],
+          self_types: self_types,
           annotations: [],
           location: nil,
           comment: comment

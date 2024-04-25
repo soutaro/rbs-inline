@@ -76,15 +76,27 @@ module RBS
           attr_reader :node
           attr_reader :members
           attr_reader :comments
+          attr_reader :inner_comments
 
           def initialize(node, comments)
             @node = node
             @comments = comments
             @members = []
+            @inner_comments = []
           end
 
           def module_name
             type_name(node.constant_path)
+          end
+
+          def module_selfs
+            inner_comments.flat_map do |comment|
+              comment.annotations.filter_map do |ann|
+                if ann.is_a?(AST::Annotations::ModuleSelf)
+                  ann
+                end
+              end
+            end
           end
         end
       end

@@ -6,6 +6,7 @@ class RBS::Inline::WriterTest < Minitest::Test
   include RBS::Inline
 
   def translate(src)
+    src = "# rbs_inline: enabled\n\n" + src
     uses, decls = Parser.parse(Prism.parse(src, filepath: "a.rb"))
     Writer.write(uses, decls)
   end
@@ -345,6 +346,23 @@ class RBS::Inline::WriterTest < Minitest::Test
       class Foo < String
         # @rbs override
         def length: ...
+      end
+    RBS
+  end
+
+  def test_module_self
+    output = translate(<<~RUBY)
+      module Foo
+        # @rbs module-self BasicObject
+
+        def foo
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      module Foo : BasicObject
+        def foo: () -> untyped
       end
     RBS
   end

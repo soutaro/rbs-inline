@@ -38,9 +38,13 @@ module RBS
 
           attr_reader comments: AnnotationParser::ParsingResult?
 
+          attr_reader inner_comments: Array[AnnotationParser::ParsingResult]
+
           def initialize: (Prism::ModuleNode, AnnotationParser::ParsingResult?) -> void
 
           %a{pure} def module_name: () -> TypeName?
+
+          %a{pure} def module_selfs: () -> Array[Annotations::ModuleSelf]
         end
       end
     end
