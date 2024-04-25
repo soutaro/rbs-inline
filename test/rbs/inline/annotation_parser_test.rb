@@ -182,13 +182,13 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
   end
 
-  def test_lvar_decl_annotation
+  def test_attributes_typed_annotation
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
         attr_reader :foo #:: Foo
         attr_reader :bar #:: Bar
       RUBY
 
-    assert_equal 3, annots.size
+    assert_equal 2, annots.size
     assert_equal ":: Foo", annots[0].content
     assert_equal ":: Bar", annots[1].content
   end

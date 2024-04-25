@@ -15,6 +15,13 @@ module RBS
         writer.output
       end
 
+      def header(*lines)
+        lines.each do |line|
+          writer.out.puts("# " + line)
+        end
+        writer.out.puts
+      end
+
       def write(uses, decls)
         use_dirs = uses.map do |use|
           RBS::AST::Directives::Use.new(

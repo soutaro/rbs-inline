@@ -1,3 +1,5 @@
+# Generated from lib/rbs/inline/annotation_parser.rb with RBS::Inline
+
 module RBS
   module Inline
     class AnnotationParser

@@ -1,3 +1,5 @@
+# Generated from lib/rbs/inline/ast/annotations.rb with RBS::Inline
+
 module RBS
   module Inline
     module AST

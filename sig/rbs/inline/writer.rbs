@@ -11,6 +11,8 @@ module RBS
 
       def write: (Array[AST::Annotations::Use], Array[AST::Declarations::t]) -> void
 
+      def header: (*String) -> void
+
       def translate_decl: (AST::Declarations::t) -> RBS::AST::Declarations::t?
 
       def translate_class_decl: (AST::Declarations::ClassDecl) -> RBS::AST::Declarations::Class?
