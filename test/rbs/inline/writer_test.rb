@@ -366,4 +366,25 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_constant_decl
+    output = translate(<<~RUBY)
+      VERSION = "hogehoge"
+
+      SIZE = [123] #:: Array[Integer]
+
+      NAMES = __dir__
+
+      # @rbs skip
+      SKIP = 123
+    RUBY
+
+    assert_equal <<~RBS, output
+      VERSION: ::String
+
+      SIZE: Array[Integer]
+
+      NAMES: untyped
+    RBS
+  end
 end

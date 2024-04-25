@@ -170,7 +170,7 @@ module RBS
           "*" => :kSTAR,
           "--" => :kMINUS2,
         } #:: Hash[String, Symbol]
-        PUNCTS_RE = Regexp.union(PUNCTS.keys)
+        PUNCTS_RE = Regexp.union(PUNCTS.keys) #:: Regexp
 
         # @rbs scanner: StringScanner
         # @rbs return: void
@@ -643,13 +643,8 @@ module RBS
         if tokenizer.type?(:kAS)
           as_tree = AST::Tree.new(:as)
 
-          as_tree << tokenizer.advance(as_tree)
-
-          if tokenizer.type?(:tLVAR, :tIFIDENT, :tUIDENT)
-            as_tree <<tokenizer.advance(as_tree)
-          else
-            as_tree << nil
-          end
+          tokenizer.consume_token!(:kAS, tree: as_tree)
+          tokenizer.consume_token(:tLVAR, :tIFIDENT, :tUIDENT, tree: as_tree)
 
           tree << as_tree
         else

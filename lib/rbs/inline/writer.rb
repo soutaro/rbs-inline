@@ -43,6 +43,8 @@ module RBS
           translate_class_decl(decl)
         when AST::Declarations::ModuleDecl
           translate_module_decl(decl)
+        when AST::Declarations::ConstantDecl
+          translate_constant_decl(decl)
         end
       end
 
@@ -113,6 +115,21 @@ module RBS
           annotations: [],
           location: nil,
           comment: comment
+        )
+      end
+
+      def translate_constant_decl(decl)
+        return unless decl.constant_name
+        
+        if decl.comments
+          comment = RBS::AST::Comment.new(string: decl.comments.content, location: nil)
+        end
+
+        RBS::AST::Declarations::Constant.new(
+          name: decl.constant_name,
+          type: decl.type,
+          comment: comment,
+          location: nil
         )
       end
 

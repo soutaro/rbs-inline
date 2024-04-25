@@ -54,6 +54,14 @@ module RBS
 
         attr_reader current_token: token?
 
+        KEYWORDS: Hash[String, Symbol]
+
+        KW_RE: ::Regexp
+
+        PUNCTS: Hash[String, Symbol]
+
+        PUNCTS_RE: Regexp
+
         # @rbs scanner: StringScanner
         # @rbs return: void
         def initialize: (StringScanner scanner) -> void

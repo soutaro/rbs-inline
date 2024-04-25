@@ -55,11 +55,13 @@ module RBS
           decls << decl
         end
 
-        surrounding_decls.push(decl)
-        begin
-          yield
-        ensure
-          surrounding_decls.pop()
+        if block_given?
+          surrounding_decls.push(_ = decl)
+          begin
+            yield
+          ensure
+            surrounding_decls.pop()
+          end
         end
       end
 
@@ -223,6 +225,29 @@ module RBS
             annotation.is_a?(AST::Annotations::Application)
           end #: AST::Annotations::Application?
         end
+      end
+
+      def assertion_annotation(node)
+        comment_line, app_comment = comments.find do |_, comment|
+          comment.line_range.begin == node.location.end_line
+        end
+
+        if app_comment && comment_line
+          comments.delete(comment_line)
+          app_comment.annotations.find do |annotation|
+            annotation.is_a?(AST::Annotations::Assertion)
+          end #: AST::Annotations::Assertion?
+        end
+      end
+
+      def visit_constant_write_node(node)
+        return if ignored_node?(node)
+
+        comment = comments.delete(node.location.start_line - 1)
+        assertion = assertion_annotation(node)
+
+        decl = AST::Declarations::ConstantDecl.new(node, comment, assertion)
+        push_class_module_decl(decl)
       end
     end
   end

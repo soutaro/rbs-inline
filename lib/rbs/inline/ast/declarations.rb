@@ -99,6 +99,62 @@ module RBS
             end
           end
         end
+
+        class ConstantDecl < Base
+          include ConstantUtil
+
+          attr_reader :node
+          attr_reader :comments
+          attr_reader :assertion
+
+          def initialize(node, comments, assertion)
+            @node = node
+            @comments = comments
+            @assertion = assertion
+          end
+
+          def type
+            if assertion
+              case assertion.type
+              when MethodType, nil
+                # skip
+              else
+                return assertion.type
+              end
+            end
+
+            if literal = literal_type
+              return literal
+            end
+
+            Types::Bases::Any.new(location: nil)
+          end
+
+          def literal_type
+            case node.value
+            when Prism::StringNode, Prism::InterpolatedStringNode
+              BuiltinNames::String.instance_type
+            when Prism::SymbolNode, Prism::InterpolatedSymbolNode
+              BuiltinNames::Symbol.instance_type
+            when Prism::RegularExpressionNode, Prism::InterpolatedRegularExpressionNode
+              BuiltinNames::Regexp.instance_type
+            when Prism::IntegerNode
+              BuiltinNames::Integer.instance_type
+            when Prism::FloatNode
+              BuiltinNames::Float.instance_type
+            when Prism::ArrayNode
+              BuiltinNames::Array.instance_type
+            when Prism::HashNode
+              BuiltinNames::Hash.instance_type
+            when Prism::TrueNode, Prism::FalseNode
+              Types::Bases::Bool.new(location: nil)
+            end
+          end
+
+          def constant_name
+            TypeName.new(name: node.name, namespace: Namespace.empty)
+          end
+        end
       end
     end
   end
