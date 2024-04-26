@@ -1,0 +1,113 @@
+# Generated from lib/rbs/inline/ast/declarations.rb with RBS::Inline
+
+module RBS
+  module Inline
+    module AST
+      module Declarations
+        module ConstantUtil
+          # @rbs node: Prism::Node
+          # @rbs return: TypeName?
+          def type_name: (Prism::Node node) -> TypeName?
+        end
+
+        # @rbs module-self _WithComments
+        module Generics : _WithComments
+          # @rbs return: Array[RBS::AST::TypeParam]
+          def type_params: () -> Array[RBS::AST::TypeParam]
+        end
+
+        class Base
+        end
+
+        class ClassDecl < Base
+          include ConstantUtil
+
+          include Generics
+
+          attr_reader node: Prism::ClassNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          attr_reader members: Array[Members::t | t]
+
+          attr_reader super_application: Annotations::Application?
+
+          # @rbs node: Prism::ClassNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs super_app: Annotations::Application?
+          # @rbs return: void
+          def initialize: (Prism::ClassNode node, AnnotationParser::ParsingResult? comments, Annotations::Application? super_app) -> void
+
+          # @rbs %a{pure}
+          # @rbs return: TypeName?
+          %a{pure}
+          def class_name: () -> TypeName?
+
+          # @rbs %a{pure}
+          # @rbs return: RBS::AST::Declarations::Class::Super?
+          %a{pure}
+          def super_class: () -> RBS::AST::Declarations::Class::Super?
+        end
+
+        class ModuleDecl < Base
+          include ConstantUtil
+
+          include Generics
+
+          attr_reader node: Prism::ModuleNode
+
+          attr_reader members: Array[Members::t | t]
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          attr_reader inner_comments: Array[AnnotationParser::ParsingResult]
+
+          # @rbs node: Prism::ModuleNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs return: void
+          def initialize: (Prism::ModuleNode node, AnnotationParser::ParsingResult? comments) -> void
+
+          # @rbs %a{pure}
+          # @rbs return: TypeName?
+          %a{pure}
+          def module_name: () -> TypeName?
+
+          # @rbs %a{pure}
+          # @rbs return: Array[Annotations::ModuleSelf]
+          %a{pure}
+          def module_selfs: () -> Array[Annotations::ModuleSelf]
+        end
+
+        class ConstantDecl < Base
+          include ConstantUtil
+
+          attr_reader node: Prism::ConstantWriteNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          attr_reader assertion: Annotations::Assertion?
+
+          # @rbs node: Prism::ConstantWriteNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs assertion: Annotations::Assertion?
+          def initialize: (Prism::ConstantWriteNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> untyped
+
+          # @rbs %a{pure}
+          # @rbs return: Types::t
+          %a{pure}
+          def type: () -> Types::t
+
+          # @rbs %a{pure}
+          # @rbs return Types::t?
+          %a{pure}
+          def literal_type: () -> Types::t?
+
+          # @rbs %a{pure}
+          # @rbs return: TypeName?
+          %a{pure}
+          def constant_name: () -> TypeName?
+        end
+      end
+    end
+  end
+end

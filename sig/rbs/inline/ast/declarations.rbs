@@ -1,82 +1,76 @@
-module RBS
-  module Inline
-    module AST
-      module Declarations
-        type t = ClassDecl | ModuleDecl | ConstantDecl
+# module RBS
+#   module Inline
+#     module AST
+#       module Declarations
+#         module ConstantUtil
+#           def type_name: (Prism::Node) -> TypeName?
+#         end
 
-        module ConstantUtil
-          def type_name: (Prism::Node) -> TypeName?
-        end
+#         class Base
+#         end
 
-        class Base
-        end
+#         module Generics : _WithComments
+#           def type_params: () -> Array[RBS::AST::TypeParam]
+#         end
 
-        module Generics : _WithComments
-          interface _WithComments
-            def comments: () -> AnnotationParser::ParsingResult?
-          end
+#         class ClassDecl < Base
+#           include ConstantUtil
 
-          def type_params: () -> Array[RBS::AST::TypeParam]
-        end
+#           include Generics
 
-        class ClassDecl < Base
-          include ConstantUtil
+#           attr_reader node: Prism::ClassNode
 
-          include Generics
+#           attr_reader members: Array[Members::t | t]
 
-          attr_reader node: Prism::ClassNode
+#           attr_reader comments: AnnotationParser::ParsingResult?
 
-          attr_reader members: Array[Members::t | t]
+#           attr_reader super_application: Annotations::Application?
 
-          attr_reader comments: AnnotationParser::ParsingResult?
+#           def initialize: (Prism::ClassNode, AnnotationParser::ParsingResult?, Annotations::Application?) -> void
 
-          attr_reader super_application: Annotations::Application?
+#           %a{pure} def class_name: () -> TypeName?
 
-          def initialize: (Prism::ClassNode, AnnotationParser::ParsingResult?, Annotations::Application?) -> void
+#           %a{pure} def super_class: () -> RBS::AST::Declarations::Class::Super?
+#         end
 
-          %a{pure} def class_name: () -> TypeName?
+#         class ModuleDecl < Base
+#           include ConstantUtil
 
-          %a{pure} def super_class: () -> RBS::AST::Declarations::Class::Super?
-        end
+#           include Generics
 
-        class ModuleDecl < Base
-          include ConstantUtil
+#           attr_reader node: Prism::ModuleNode
 
-          include Generics
+#           attr_reader members: Array[Members::t | t]
 
-          attr_reader node: Prism::ModuleNode
+#           attr_reader comments: AnnotationParser::ParsingResult?
 
-          attr_reader members: Array[Members::t | t]
+#           attr_reader inner_comments: Array[AnnotationParser::ParsingResult]
 
-          attr_reader comments: AnnotationParser::ParsingResult?
+#           def initialize: (Prism::ModuleNode, AnnotationParser::ParsingResult?) -> void
 
-          attr_reader inner_comments: Array[AnnotationParser::ParsingResult]
+#           %a{pure} def module_name: () -> TypeName?
 
-          def initialize: (Prism::ModuleNode, AnnotationParser::ParsingResult?) -> void
+#           %a{pure} def module_selfs: () -> Array[Annotations::ModuleSelf]
+#         end
 
-          %a{pure} def module_name: () -> TypeName?
+#         class ConstantDecl < Base
+#           include ConstantUtil
 
-          %a{pure} def module_selfs: () -> Array[Annotations::ModuleSelf]
-        end
+#           attr_reader node: Prism::ConstantWriteNode
 
-        class ConstantDecl < Base
-          include ConstantUtil
+#           attr_reader comments: AnnotationParser::ParsingResult?
 
-          attr_reader node: Prism::ConstantWriteNode
+#           attr_reader assertion: Annotations::Assertion?
 
-          attr_reader comments: AnnotationParser::ParsingResult?
+#           def initialize: (Prism::ConstantWriteNode, AnnotationParser::ParsingResult?, Annotations::Assertion?) -> void
 
-          attr_reader assertion: Annotations::Assertion?
+#           %a{pure} def type: () -> Types::t
 
-          def initialize: (Prism::ConstantWriteNode, AnnotationParser::ParsingResult?, Annotations::Assertion?) -> void
+#           %a{pure} def literal_type: () -> Types::t?
 
-          %a{pure} def type: () -> Types::t
-
-          %a{pure} def literal_type: () -> Types::t?
-
-          %a{pure} def constant_name: () -> TypeName?
-        end
-      end
-    end
-  end
-end
+#           %a{pure} def constant_name: () -> TypeName?
+#         end
+#       end
+#     end
+#   end
+# end

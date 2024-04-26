@@ -3,5 +3,15 @@ module RBS
     type token = [Symbol, String]
 
     VERSION: String
+
+    module AST
+      module Declarations
+        type t = ClassDecl | ModuleDecl | ConstantDecl
+
+        interface _WithComments
+          def comments: () -> AnnotationParser::ParsingResult?
+        end
+      end
+    end
   end
 end

@@ -1,8 +1,12 @@
+# rbs_inline: enabled
+
 module RBS
   module Inline
     module AST
       module Declarations
         module ConstantUtil
+          # @rbs node: Prism::Node
+          # @rbs return: TypeName?
           def type_name(node)
             case node
             when Prism::ConstantReadNode
@@ -11,7 +15,9 @@ module RBS
           end
         end
 
+        # @rbs module-self _WithComments
         module Generics
+          # @rbs return: Array[RBS::AST::TypeParam]
           def type_params
             if comments = comments()
               comments.annotations.filter_map do |annotation|
@@ -32,11 +38,15 @@ module RBS
           include ConstantUtil
           include Generics
 
-          attr_reader :node
-          attr_reader :comments
-          attr_reader :members
-          attr_reader :super_application
+          attr_reader :node #:: Prism::ClassNode
+          attr_reader :comments #:: AnnotationParser::ParsingResult?
+          attr_reader :members #:: Array[Members::t | t]
+          attr_reader :super_application #:: Annotations::Application?
 
+          # @rbs node: Prism::ClassNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs super_app: Annotations::Application?
+          # @rbs return: void
           def initialize(node, comments, super_app)
             @node = node
             @members = []
@@ -44,10 +54,14 @@ module RBS
             @super_application = super_app
           end
 
+          # @rbs %a{pure}
+          # @rbs return: TypeName?
           def class_name
             type_name(node.constant_path)
           end
 
+          # @rbs %a{pure}
+          # @rbs return: RBS::AST::Declarations::Class::Super?
           def super_class
             if comments
               if inherits = comments.annotations.find {|a| a.is_a?(Annotations::Inherits) } #: Annotations::Inherits?
@@ -89,11 +103,14 @@ module RBS
           include ConstantUtil
           include Generics
 
-          attr_reader :node
-          attr_reader :members
-          attr_reader :comments
-          attr_reader :inner_comments
+          attr_reader :node #:: Prism::ModuleNode
+          attr_reader :members #:: Array[Members::t | t]
+          attr_reader :comments #:: AnnotationParser::ParsingResult?
+          attr_reader :inner_comments #:: Array[AnnotationParser::ParsingResult]
 
+          # @rbs node: Prism::ModuleNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs return: void
           def initialize(node, comments)
             @node = node
             @comments = comments
@@ -101,10 +118,14 @@ module RBS
             @inner_comments = []
           end
 
+          # @rbs %a{pure}
+          # @rbs return: TypeName?
           def module_name
             type_name(node.constant_path)
           end
 
+          # @rbs %a{pure}
+          # @rbs return: Array[Annotations::ModuleSelf]
           def module_selfs
             if comments
               comments.annotations.filter_map do |ann|
@@ -121,16 +142,21 @@ module RBS
         class ConstantDecl < Base
           include ConstantUtil
 
-          attr_reader :node
-          attr_reader :comments
-          attr_reader :assertion
+          attr_reader :node #:: Prism::ConstantWriteNode
+          attr_reader :comments #:: AnnotationParser::ParsingResult?
+          attr_reader :assertion #:: Annotations::Assertion?
 
+          # @rbs node: Prism::ConstantWriteNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs assertion: Annotations::Assertion?
           def initialize(node, comments, assertion)
             @node = node
             @comments = comments
             @assertion = assertion
           end
 
+          # @rbs %a{pure}
+          # @rbs return: Types::t
           def type
             if assertion
               case assertion.type
@@ -148,6 +174,8 @@ module RBS
             Types::Bases::Any.new(location: nil)
           end
 
+          # @rbs %a{pure}
+          # @rbs return Types::t?
           def literal_type
             case node.value
             when Prism::StringNode, Prism::InterpolatedStringNode
@@ -169,6 +197,8 @@ module RBS
             end
           end
 
+          # @rbs %a{pure}
+          # @rbs return: TypeName?
           def constant_name
             TypeName.new(name: node.name, namespace: Namespace.empty)
           end
