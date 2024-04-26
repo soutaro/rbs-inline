@@ -90,12 +90,14 @@ module RBS
           end
 
           def module_selfs
-            inner_comments.flat_map do |comment|
-              comment.annotations.filter_map do |ann|
+            if comments
+              comments.annotations.filter_map do |ann|
                 if ann.is_a?(AST::Annotations::ModuleSelf)
                   ann
                 end
               end
+            else
+              []
             end
           end
         end

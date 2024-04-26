@@ -352,8 +352,8 @@ class RBS::Inline::WriterTest < Minitest::Test
 
   def test_module_self
     output = translate(<<~RUBY)
+      # @rbs module-self BasicObject
       module Foo
-        # @rbs module-self BasicObject
 
         def foo
         end
@@ -361,6 +361,7 @@ class RBS::Inline::WriterTest < Minitest::Test
     RUBY
 
     assert_equal <<~RBS, output
+      # @rbs module-self BasicObject
       module Foo : BasicObject
         def foo: () -> untyped
       end
