@@ -1,14 +1,45 @@
+# rbs_inline: enabled
+
+# @rbs use Prism::*
+
 module RBS
   module Inline
     class Parser < Prism::Visitor
-      attr_reader :decls, :surrounding_decls, :comments, :current_visibility
+      # The top level declarations
+      #
+      attr_reader :decls #:: Array[AST::Declarations::t]
 
-      def initialize()
+      # The surrounding declarations
+      #
+      attr_reader :surrounding_decls #:: Array[AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl]
+
+      # ParsingResult associated with the line number at the end
+      #
+      # ```rb
+      # # Hello
+      # # world       <= The comments hash includes `2` (line 2) to the two lines
+      # ```
+      #
+      # > [!IMPORTANT]
+      # > The values will be removed during parsing.
+      #
+      attr_reader :comments #:: Hash[Integer, AnnotationParser::ParsingResult]
+
+      # The current visibility applied to single `def` node
+      #
+      # Assuming it's directly inside `private` or `public` calls.
+      # `nil` when the `def` node is not inside `private` or `public` calls.
+      #
+      attr_reader :current_visibility #:: RBS::AST::Members::visibility?
+
+      def initialize() #:: void
         @decls = []
         @surrounding_decls = []
         @comments = {}
       end
 
+      # @rbs result: ParseResult[ProgramNode]
+      # @rbs returns [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
       def self.parse(result)
         instance = Parser.new()
 
@@ -40,14 +71,18 @@ module RBS
         ]
       end
 
+      # @rbs rturns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
       def current_class_module_decl
         surrounding_decls.last
       end
 
+      # @rbs returns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl
       def current_class_module_decl!
         current_class_module_decl or raise
       end
 
+      #:: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl) { () -> void } -> void
+      #:: (AST::Declarations::ConstantDecl) -> void
       def push_class_module_decl(decl)
         if current = current_class_module_decl
           current.members << decl
@@ -65,6 +100,7 @@ module RBS
         end
       end
 
+      # @rbs override
       def visit_class_node(node)
         return if ignored_node?(node)
 
@@ -83,6 +119,7 @@ module RBS
         end
       end
 
+      # @rbs override
       def visit_module_node(node)
         return if ignored_node?(node)
 
@@ -107,6 +144,7 @@ module RBS
         end
       end
 
+      # @rbs override
       def visit_def_node(node)
         return if ignored_node?(node)
         return unless current_class_module_decl
@@ -124,6 +162,7 @@ module RBS
         super
       end
 
+      # @rbs override
       def visit_alias_method_node(node)
         return if ignored_node?(node)
 
@@ -134,6 +173,7 @@ module RBS
         super
       end
 
+      # @rbs override
       def visit_call_node(node)
         return if ignored_node?(node)
 
@@ -197,7 +237,10 @@ module RBS
         super
       end
 
-      def push_visibility(new_visibility)
+      # @rbs new_visibility: RBS::AST::Members::visibility?
+      # @rbs block: ^() -> void
+      # @rbs returns void
+      def push_visibility(new_visibility, &block)
         old_visibility = current_visibility
 
         begin
@@ -208,6 +251,8 @@ module RBS
         end
       end
 
+      # @rbs node: Node
+      # @rbs returns bool
       def ignored_node?(node)
         if comment = comments.fetch(node.location.start_line - 1, nil)
           comment.annotations.any? { _1.is_a?(AST::Annotations::Skip) }
@@ -216,6 +261,12 @@ module RBS
         end
       end
 
+      # Fetch Application annotation which is associated to `node`
+      #
+      # The application annotation is removed from `comments`.
+      #
+      # @rbs node: Node
+      # @rbs returns AST::Annotations::Application?
       def application_annotation(node)
         comment_line, app_comment = comments.find do |_, comment|
           comment.line_range.begin == node.location.end_line
@@ -229,6 +280,12 @@ module RBS
         end
       end
 
+      # Fetch Assertion annotation which is associated to `node`
+      #
+      # The assertion annotation is removed from `comments`.
+      #
+      # @rbs node: Node | Location
+      # @rbs returns AST::Annotations::Assertion?
       def assertion_annotation(node)
         if node.is_a?(Prism::Location)
           location = node
@@ -247,6 +304,7 @@ module RBS
         end
       end
 
+      # @rbs override
       def visit_constant_write_node(node)
         return if ignored_node?(node)
 

@@ -1,0 +1,92 @@
+# Generated from lib/rbs/inline/parser.rb with RBS::Inline
+
+use Prism::*
+
+module RBS
+  module Inline
+    class Parser < Prism::Visitor
+      # The top level declarations
+      attr_reader decls: Array[AST::Declarations::t]
+
+      # The surrounding declarations
+      attr_reader surrounding_decls: Array[AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl]
+
+      # ParsingResult associated with the line number at the end
+      #
+      # ```rb
+      # # Hello
+      # # world       <= The comments hash includes `2` (line 2) to the two lines
+      # ```
+      #
+      # > [!IMPORTANT]
+      # > The values will be removed during parsing.
+      attr_reader comments: Hash[Integer, AnnotationParser::ParsingResult]
+
+      # The current visibility applied to single `def` node
+      #
+      # Assuming it's directly inside `private` or `public` calls.
+      # `nil` when the `def` node is not inside `private` or `public` calls.
+      attr_reader current_visibility: RBS::AST::Members::visibility?
+
+      def initialize: () -> void
+
+      # @rbs result: ParseResult[ProgramNode]
+      # @rbs returns [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
+      def self.parse: (ParseResult[ProgramNode] result) -> [ Array[AST::Annotations::Use], Array[AST::Declarations::t] ]?
+
+      # @rbs rturns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
+      def current_class_module_decl: () -> untyped
+
+      # @rbs returns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl
+      def current_class_module_decl!: () -> (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl)
+
+      # :: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl) { () -> void } -> void
+      # :: (AST::Declarations::ConstantDecl) -> void
+      def push_class_module_decl: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl) { () -> void } -> void
+                                | (AST::Declarations::ConstantDecl) -> void
+
+      # @rbs override
+      def visit_class_node: ...
+
+      # @rbs override
+      def visit_module_node: ...
+
+      # @rbs override
+      def visit_def_node: ...
+
+      # @rbs override
+      def visit_alias_method_node: ...
+
+      # @rbs override
+      def visit_call_node: ...
+
+      # @rbs new_visibility: RBS::AST::Members::visibility?
+      # @rbs block: ^() -> void
+      # @rbs returns void
+      def push_visibility: (RBS::AST::Members::visibility? new_visibility) { () -> void } -> void
+
+      # @rbs node: Node
+      # @rbs returns bool
+      def ignored_node?: (Node node) -> bool
+
+      # Fetch Application annotation which is associated to `node`
+      #
+      # The application annotation is removed from `comments`.
+      #
+      # @rbs node: Node
+      # @rbs returns AST::Annotations::Application?
+      def application_annotation: (Node node) -> AST::Annotations::Application?
+
+      # Fetch Assertion annotation which is associated to `node`
+      #
+      # The assertion annotation is removed from `comments`.
+      #
+      # @rbs node: Node | Location
+      # @rbs returns AST::Annotations::Assertion?
+      def assertion_annotation: (Node | Location node) -> AST::Annotations::Assertion?
+
+      # @rbs override
+      def visit_constant_write_node: ...
+    end
+  end
+end
