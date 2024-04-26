@@ -211,6 +211,9 @@ module RBS
       # @rbs tokenizer: Tokenizer
       # @rbs returns AST::Tree
       def parse_generic: (Tokenizer tokenizer) -> AST::Tree
+
+      # :: (Tokenizer) -> AST::Tree
+      def parse_ivar_type: (Tokenizer) -> AST::Tree
     end
   end
 end

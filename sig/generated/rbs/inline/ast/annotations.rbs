@@ -42,6 +42,20 @@ module RBS
           def complete?: () -> bool
         end
 
+        # `@rbs @foo: T` or `@rbs self.@foo: T`
+        class IvarType < Base
+          attr_reader name: Symbol
+
+          attr_reader type: Types::t?
+
+          attr_reader class_instance: bool
+
+          attr_reader comment: String?
+
+          # @rbs override
+          def initialize: ...
+        end
+
         # `#:: TYPE`
         class Assertion < Base
           attr_reader type: Types::t | MethodType | nil

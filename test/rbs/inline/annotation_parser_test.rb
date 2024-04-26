@@ -335,4 +335,34 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_equal "-- Comment", annotation.comment
     end
   end
+
+  def test_ivar_decl_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs @size: Integer -- size of something
+      # @rbs self.@block: String
+      # @rbs @y: Array[
+      RUBY
+
+    assert_equal 3, annots[0].annotations.size
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::IvarType, annotation
+      assert_equal :@size, annotation.name
+      refute_predicate annotation, :class_instance
+      assert_equal "Integer", annotation.type.to_s
+      assert_equal "-- size of something", annotation.comment
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::IvarType, annotation
+      assert_equal :@block, annotation.name
+      assert_predicate annotation, :class_instance
+      assert_equal "String", annotation.type.to_s
+      assert_nil annotation.comment
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::Annotations::IvarType, annotation
+      assert_equal :@y, annotation.name
+      assert_nil annotation.type
+      assert_nil annotation.comment
+    end
+  end
 end

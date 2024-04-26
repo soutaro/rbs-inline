@@ -86,6 +86,33 @@ module RBS
           end
         end
 
+        # `@rbs @foo: T` or `@rbs self.@foo: T`
+        #
+        class IvarType < Base
+          attr_reader :name #:: Symbol
+
+          attr_reader :type #:: Types::t?
+
+          attr_reader :class_instance #:: bool
+
+          attr_reader :comment #:: String?
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            ivar_tree = tree.nth_tree!(1)
+            @class_instance = ivar_tree.nth_token?(0).is_a?(Array)
+            @name = ivar_tree.nth_token!(2).last.to_sym
+            @type = ivar_tree.nth_type?(4)
+
+            if comment = ivar_tree.nth_tree(5)
+              @comment = comment.to_s
+            end
+          end
+        end
+
         # `#:: TYPE`
         #
         class Assertion < Base

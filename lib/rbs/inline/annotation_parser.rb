@@ -162,6 +162,7 @@ module RBS
           "in" => :kIN,
           "out" => :kOUT,
           "unchecked" => :kUNCHECKED,
+          "self" => :kSELF,
         } #:: Hash[String, Symbol]
         KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
 
@@ -174,6 +175,7 @@ module RBS
           "*" => :kSTAR,
           "--" => :kMINUS2,
           "<" => :kLT,
+          "." => :kDOT,
         } #:: Hash[String, Symbol]
         PUNCTS_RE = Regexp.union(PUNCTS.keys) #:: Regexp
 
@@ -203,6 +205,8 @@ module RBS
             @current_token = [:tIFIDENT, s]
           when s = scanner.scan(/[a-z]\w*/)
             @current_token = [:tLVAR, s]
+          when s = scanner.scan(/@\w+/)
+            @current_token = [:tATIDENT, s]
           when s = scanner.scan(/%a\{[^}]+\}/)
             @current_token = [:tANNOTATION, s]
           when s = scanner.scan(/%a\[[^\]]+\]/)
@@ -322,6 +326,9 @@ module RBS
           when tokenizer.type?(:kGENERIC)
             tree << parse_generic(tokenizer)
             AST::Annotations::Generic.new(tree, comments)
+          when tokenizer.type?(:kSELF, :tATIDENT)
+            tree << parse_ivar_type(tokenizer)
+            AST::Annotations::IvarType.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
           tree << tokenizer.current_token
@@ -701,6 +708,25 @@ module RBS
 
           bound
         end
+
+        tree << parse_optional(tokenizer, :kMINUS2) do
+          parse_comment(tokenizer)
+        end
+
+        tree
+      end
+
+      #:: (Tokenizer) -> AST::Tree
+      def parse_ivar_type(tokenizer)
+        tree = AST::Tree.new(:ivar_type)
+
+        tokenizer.consume_token(:kSELF, tree: tree)
+        tokenizer.consume_token(:kDOT, tree: tree)
+
+        tokenizer.consume_token(:tATIDENT, tree: tree)
+        tokenizer.consume_token(:kCOLON, tree: tree)
+
+        tree << parse_type(tokenizer, tree)
 
         tree << parse_optional(tokenizer, :kMINUS2) do
           parse_comment(tokenizer)
