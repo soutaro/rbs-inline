@@ -32,7 +32,7 @@ module RBS
 
       def application_annotation: (Node node) -> AST::Annotations::Application?
 
-      def assertion_annotation: (Node node) -> AST::Annotations::Assertion?
+      def assertion_annotation: (Node | Prism::Location) -> AST::Annotations::Assertion?
 
       def push_visibility: (RBS::AST::Members::visibility | nil) { () -> void } -> void
     end

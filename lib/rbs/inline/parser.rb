@@ -117,7 +117,9 @@ module RBS
           associated_comment = comments.delete(node.location.start_line - 1)
         end
 
-        current_decl.members << AST::Members::RubyDef.new(node, associated_comment, current_visibility)
+        assertion = assertion_annotation(node.rparen_loc || node&.parameters&.location || node.name_loc)
+
+        current_decl.members << AST::Members::RubyDef.new(node, associated_comment, current_visibility, assertion)
 
         super
       end
@@ -228,8 +230,13 @@ module RBS
       end
 
       def assertion_annotation(node)
+        if node.is_a?(Prism::Location)
+          location = node
+        else
+          location = node.location
+        end
         comment_line, app_comment = comments.find do |_, comment|
-          comment.line_range.begin == node.location.end_line
+          comment.line_range.begin == location.end_line
         end
 
         if app_comment && comment_line

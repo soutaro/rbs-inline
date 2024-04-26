@@ -21,23 +21,25 @@ module RBS
           # ```
           attr_reader :visibility #:: RBS::AST::Members::visibility?
 
+          attr_reader :assertion #:: Annotations::Assertion?
+
           # @rbs node: Prism::DefNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs visibility: RBS::AST::Members::visibility?
-          # @rbs returns void
-          def initialize(node, comments, visibility)
+          # @rbs assertion: Annotations::Assertion?
+          def initialize(node, comments, visibility, assertion) #:: void
             @node = node
             @comments = comments
             @visibility = visibility
+            @assertion = assertion
           end
 
-          # @rbs returns Symbol -- the name of the method
-          def method_name
+          # Returns the name of the method
+          def method_name #:: Symbol
             node.name
           end
 
-          # @rbs returns Array[Annotations::Assertion]
-          def method_type_annotations
+          def method_type_annotations #:: Array[Annotations::Assertion]
             if comments
               comments.annotations.select do |annotation|
                 annotation.is_a?(Annotations::Assertion) && annotation.type.is_a?(MethodType)
@@ -56,8 +58,7 @@ module RBS
           # def object.foo = ()  # Not supported (returns :instance)
           # ```
           #
-          # @rbs returns RBS::AST::Members::MethodDefinition::kind
-          def method_kind
+          def method_kind #:: RBS::AST::Members::MethodDefinition::kind
             # FIXME: really hacky implementation
             case node.receiver
             when Prism::SelfNode
@@ -69,8 +70,12 @@ module RBS
             end
           end
 
-          # @rbs returns Types::t?
-          def return_type
+          def return_type #:: Types::t?
+            if assertion
+              if assertion.type?
+                return assertion.type?
+              end
+            end
             if comments
               annot = comments.annotations.find {|annot| annot.is_a?(Annotations::ReturnType ) } #: Annotations::ReturnType?
               if annot
@@ -79,8 +84,7 @@ module RBS
             end
           end
 
-          # @rbs returns Hash[Symbol, Types::t?]
-          def var_type_hash
+          def var_type_hash #:: Hash[Symbol, Types::t?]
             types = {} #: Hash[Symbol, Types::t?]
 
             if comments
@@ -99,8 +103,7 @@ module RBS
             types
           end
 
-          # @rbs returns Array[RBS::AST::Members::MethodDefinition::Overload]
-          def method_overloads
+          def method_overloads #:: Array[RBS::AST::Members::MethodDefinition::Overload]
             if !(annots = method_type_annotations).empty?
               annots.map do
                 method_type = _1.type #: MethodType
@@ -241,8 +244,7 @@ module RBS
             end
           end
 
-          # @rbs returns Array[RBS::AST::Annotation]
-          def method_annotations
+          def method_annotations #:: Array[RBS::AST::Annotation]
             if comments
               comments.annotations.flat_map do |annotation|
                 if annotation.is_a?(AST::Annotations::RBSAnnotation)
@@ -261,8 +263,7 @@ module RBS
             end
           end
 
-          # @rbs returns AST::Annotations::Override?
-          def override_annotation
+          def override_annotation #:: AST::Annotations::Override?
             if comments
               comments.annotations.find do |annotation|
                 annotation.is_a?(AST::Annotations::Override)
@@ -431,8 +432,7 @@ module RBS
           #
           # Returns `untyped` when not annotated.
           #
-          # @rbs returns Types::t
-          def attribute_type
+          def attribute_type #:: Types::t
             type = assertion&.type
             raise if type.is_a?(MethodType)
 
@@ -446,7 +446,7 @@ module RBS
           attr_reader :node #:: Prism::CallNode
 
           # @rbs node: Prism::CallNode
-          def initialize(node)
+          def initialize(node) #:: void
             @node = node
           end
         end
@@ -457,7 +457,7 @@ module RBS
           attr_reader :node #:: Prism::CallNode
 
           # @rbs node: Prism::CallNode
-          def initialize(node)
+          def initialize(node) #:: void
             @node = node
           end
         end

@@ -53,6 +53,35 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_method_type__return_assertion
+    output = translate(<<~RUBY)
+      class Foo
+        def to_s #:: String
+        end
+
+        def foo(
+            x,
+            y
+          ) #:: void
+        end
+
+        def hoge x,
+          y #:: Integer
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        def to_s: () -> String
+
+        def foo: (untyped x, untyped y) -> void
+
+        def hoge: (untyped x, untyped y) -> Integer
+      end
+    RBS
+  end
+
   def test_method_type__annotation
     output = translate(<<~RUBY)
       class Foo

@@ -106,6 +106,28 @@ module RBS
               false
             end
           end
+
+          # Returns a type if it's type
+          #
+          def type? #:: Types::t?
+            case type
+            when MethodType, nil
+              nil
+            else
+              type
+            end
+          end
+
+          # Returns a method type if it's a method type
+          #
+          def method_type? #:: MethodType?
+            case type
+            when MethodType
+              type
+            else
+              nil
+            end
+          end
         end
 
         # `#[TYPE, ..., TYPE]`

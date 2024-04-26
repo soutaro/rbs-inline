@@ -50,6 +50,12 @@ module RBS
 
           # @rbs returns bool
           def complete?: () -> bool
+
+          # Returns a type if it's type
+          def type?: () -> Types::t?
+
+          # Returns a method type if it's a method type
+          def method_type?: () -> MethodType?
         end
 
         # `#[TYPE, ..., TYPE]`
