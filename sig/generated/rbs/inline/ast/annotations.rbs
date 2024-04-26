@@ -111,6 +111,23 @@ module RBS
           # @rbs override
           def initialize: ...
         end
+
+        # `# @rbs generic [type param]`
+        #
+        # ```rb
+        # # @rbs generic X
+        # # @rbs generic in Y
+        # # @rbs generic unchecked out Z < String -- Comment here
+        # ```
+        class Generic < Base
+          # TypeParam object or `nil` if syntax error
+          attr_reader type_param: RBS::AST::TypeParam?
+
+          attr_reader comment: String?
+
+          # @rbs override
+          def initialize: ...
+        end
       end
     end
   end

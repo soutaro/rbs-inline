@@ -388,4 +388,28 @@ class RBS::Inline::WriterTest < Minitest::Test
       NAMES: untyped
     RBS
   end
+
+  def test_generic_class_module
+    output = translate(<<~RUBY)
+      # @rbs generic T
+      module Foo
+      end
+
+      # @rbs generic X < Integer
+      # @rbs generic out Y
+      class Bar
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      # @rbs generic T
+      module Foo[T]
+      end
+
+      # @rbs generic X < Integer
+      # @rbs generic out Y
+      class Bar[X < Integer, out Y]
+      end
+    RBS
+  end
 end

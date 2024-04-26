@@ -11,8 +11,18 @@ module RBS
         class Base
         end
 
+        module Generics : _WithComments
+          interface _WithComments
+            def comments: () -> AnnotationParser::ParsingResult?
+          end
+
+          def type_params: () -> Array[RBS::AST::TypeParam]
+        end
+
         class ClassDecl < Base
           include ConstantUtil
+
+          include Generics
 
           attr_reader node: Prism::ClassNode
 
@@ -31,6 +41,8 @@ module RBS
 
         class ModuleDecl < Base
           include ConstantUtil
+
+          include Generics
 
           attr_reader node: Prism::ModuleNode
 

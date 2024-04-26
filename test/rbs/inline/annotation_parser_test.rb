@@ -304,4 +304,30 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_nil annotation.comment
     end
   end
+
+  def test_generic
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+        # @rbs generic X
+        # @rbs generic unchecked in Y < String -- Comment
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::Generic, annotation
+
+      assert_equal :X, annotation.type_param.name
+      assert_equal :invariant, annotation.type_param.variance
+      refute_predicate annotation.type_param, :unchecked?
+      assert_nil annotation.type_param.upper_bound
+      assert_nil annotation.comment
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::Generic, annotation
+
+      assert_equal :Y, annotation.type_param.name
+      assert_equal :contravariant, annotation.type_param.variance
+      assert_predicate annotation.type_param, :unchecked?
+      assert_equal "String", annotation.type_param.upper_bound.to_s
+      assert_equal "-- Comment", annotation.comment
+    end
+  end
 end

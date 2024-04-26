@@ -11,11 +11,26 @@ module RBS
           end
         end
 
+        module Generics
+          def type_params
+            if comments = comments()
+              comments.annotations.filter_map do |annotation|
+                if annotation.is_a?(Annotations::Generic)
+                  annotation.type_param
+                end
+              end
+            else
+              []
+            end
+          end
+        end
+
         class Base
         end
 
         class ClassDecl < Base
           include ConstantUtil
+          include Generics
 
           attr_reader :node
           attr_reader :comments
@@ -72,6 +87,7 @@ module RBS
 
         class ModuleDecl < Base
           include ConstantUtil
+          include Generics
 
           attr_reader :node
           attr_reader :members

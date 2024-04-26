@@ -279,6 +279,64 @@ module RBS
             end
           end
         end
+
+        # `# @rbs generic [type param]`
+        #
+        # ```rb
+        # # @rbs generic X
+        # # @rbs generic in Y
+        # # @rbs generic unchecked out Z < String -- Comment here
+        # ```
+        #
+        class Generic < Base
+          # TypeParam object or `nil` if syntax error
+          #
+          attr_reader :type_param #:: RBS::AST::TypeParam?
+
+          attr_reader :comment #:: String?
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            generic_tree = tree.nth_tree!(1)
+            unchecked = generic_tree.nth_token?(1) != nil
+            inout =
+              case generic_tree.nth_token?(2)&.[](0)
+              when nil
+                :invariant
+              when :kIN
+                :contravariant
+              when :kOUT
+                :covariant
+              end #: RBS::AST::TypeParam::variance
+
+            name = generic_tree.nth_token?(3)&.last
+
+            if bound = generic_tree.nth_tree?(4)
+              if type = bound.nth_type?(1)
+                case type
+                when Types::ClassSingleton, Types::ClassInstance, Types::Interface
+                  upper_bound = type
+                end
+              end
+            end
+
+            if name
+              @type_param = RBS::AST::TypeParam.new(
+                name: name.to_sym,
+                variance: inout,
+                upper_bound: upper_bound,
+                location: nil
+              ).unchecked!(unchecked)
+            end
+
+            if comment = generic_tree.nth_tree?(5)
+              @comment = comment.to_s
+            end
+          end
+        end
       end
     end
   end

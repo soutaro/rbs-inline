@@ -73,7 +73,7 @@ module RBS
 
         RBS::AST::Declarations::Class.new(
           name: decl.class_name,
-          type_params: [],
+          type_params: decl.type_params,
           members: members,
           super_class: decl.super_class,
           annotations: [],
@@ -109,7 +109,7 @@ module RBS
 
         RBS::AST::Declarations::Module.new(
           name: decl.module_name,
-          type_params: [],
+          type_params: decl.type_params,
           members: members,
           self_types: self_types,
           annotations: [],
@@ -120,7 +120,7 @@ module RBS
 
       def translate_constant_decl(decl)
         return unless decl.constant_name
-        
+
         if decl.comments
           comment = RBS::AST::Comment.new(string: decl.comments.content, location: nil)
         end

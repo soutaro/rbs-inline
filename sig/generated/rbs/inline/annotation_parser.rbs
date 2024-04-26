@@ -191,6 +191,26 @@ module RBS
       # @rbs tokenizer: Tokenizer
       # @rbs return: AST::Tree
       def parse_module_self: (Tokenizer tokenizer) -> AST::Tree
+
+      # Yield the block and return the resulting tree if tokenizer has current token of `types`
+      #
+      # ```rb
+      # # Test if tokenize has `--` token, then parse comment or insert `nil` to tree
+      #
+      # tree << parse_optional(tokenizer, :kMINUS2) do
+      #   parse_comment(tokenizer)
+      # end
+      # ```
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs types: Array[Symbol]
+      # @rbs block: ^() -> AST::Tree
+      # @rbs return: AST::Tree?
+      def parse_optional: (Tokenizer tokenizer, *Symbol types) { () -> AST::Tree } -> AST::Tree?
+
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_generic: (Tokenizer tokenizer) -> AST::Tree
     end
   end
 end

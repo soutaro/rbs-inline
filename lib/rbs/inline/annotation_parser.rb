@@ -158,6 +158,10 @@ module RBS
           "override" => :kOVERRIDE,
           "use" => :kUSE,
           "module-self" => :kMODULESELF,
+          "generic" => :kGENERIC,
+          "in" => :kIN,
+          "out" => :kOUT,
+          "unchecked" => :kUNCHECKED,
         } #:: Hash[String, Symbol]
         KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
 
@@ -169,6 +173,7 @@ module RBS
           "," => :kCOMMA,
           "*" => :kSTAR,
           "--" => :kMINUS2,
+          "<" => :kLT,
         } #:: Hash[String, Symbol]
         PUNCTS_RE = Regexp.union(PUNCTS.keys) #:: Regexp
 
@@ -314,6 +319,9 @@ module RBS
           when tokenizer.type?(:kMODULESELF)
             tree << parse_module_self(tokenizer)
             AST::Annotations::ModuleSelf.new(tree, comments)
+          when tokenizer.type?(:kGENERIC)
+            tree << parse_generic(tokenizer)
+            AST::Annotations::Generic.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
           tree << tokenizer.current_token
@@ -666,6 +674,54 @@ module RBS
           tree << parse_comment(tokenizer)
         else
           tree << nil
+        end
+
+        tree
+      end
+
+      # Yield the block and return the resulting tree if tokenizer has current token of `types`
+      #
+      # ```rb
+      # # Test if tokenize has `--` token, then parse comment or insert `nil` to tree
+      #
+      # tree << parse_optional(tokenizer, :kMINUS2) do
+      #   parse_comment(tokenizer)
+      # end
+      # ```
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs types: Array[Symbol]
+      # @rbs block: ^() -> AST::Tree
+      # @rbs return: AST::Tree?
+      def parse_optional(tokenizer, *types, &block)
+        if tokenizer.type?(*types)
+          yield
+        end
+      end
+
+      # @rbs tokenizer: Tokenizer
+      # @rbs return: AST::Tree
+      def parse_generic(tokenizer)
+        tree = AST::Tree.new(:generic)
+
+        tokenizer.consume_token!(:kGENERIC, tree: tree)
+
+        tokenizer.consume_token(:kUNCHECKED, tree: tree)
+        tokenizer.consume_token(:kIN, :kOUT, tree: tree)
+
+        tokenizer.consume_token(:tUIDENT, tree: tree)
+
+        tree << parse_optional(tokenizer, :kLT) do
+          bound = AST::Tree.new(:upper_bound)
+
+          tokenizer.consume_token!(:kLT, tree: bound)
+          bound << parse_type(tokenizer, bound)
+
+          bound
+        end
+
+        tree << parse_optional(tokenizer, :kMINUS2) do
+          parse_comment(tokenizer)
         end
 
         tree
