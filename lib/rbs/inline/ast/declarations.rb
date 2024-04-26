@@ -11,6 +11,16 @@ module RBS
             case node
             when Prism::ConstantReadNode
               TypeName(node.name.to_s)
+            when Prism::ConstantPathNode
+              if node.parent
+                if parent = type_name(node.parent)
+                  if child = type_name(node.child)
+                    return parent + child
+                  end
+                end
+              else
+                type_name(node.child)&.absolute!
+              end
             end
           end
         end
