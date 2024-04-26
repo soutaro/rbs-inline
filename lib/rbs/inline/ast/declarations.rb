@@ -6,7 +6,7 @@ module RBS
       module Declarations
         module ConstantUtil
           # @rbs node: Prism::Node
-          # @rbs return: TypeName?
+          # @rbs returns TypeName?
           def type_name(node)
             case node
             when Prism::ConstantReadNode
@@ -17,7 +17,7 @@ module RBS
 
         # @rbs module-self _WithComments
         module Generics
-          # @rbs return: Array[RBS::AST::TypeParam]
+          # @rbs returns Array[RBS::AST::TypeParam]
           def type_params
             if comments = comments()
               comments.annotations.filter_map do |annotation|
@@ -46,7 +46,7 @@ module RBS
           # @rbs node: Prism::ClassNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs super_app: Annotations::Application?
-          # @rbs return: void
+          # @rbs returns void
           def initialize(node, comments, super_app)
             @node = node
             @members = []
@@ -55,13 +55,13 @@ module RBS
           end
 
           # @rbs %a{pure}
-          # @rbs return: TypeName?
+          # @rbs returns TypeName?
           def class_name
             type_name(node.constant_path)
           end
 
           # @rbs %a{pure}
-          # @rbs return: RBS::AST::Declarations::Class::Super?
+          # @rbs returns RBS::AST::Declarations::Class::Super?
           def super_class
             if comments
               if inherits = comments.annotations.find {|a| a.is_a?(Annotations::Inherits) } #: Annotations::Inherits?
@@ -110,7 +110,7 @@ module RBS
 
           # @rbs node: Prism::ModuleNode
           # @rbs comments: AnnotationParser::ParsingResult?
-          # @rbs return: void
+          # @rbs returns void
           def initialize(node, comments)
             @node = node
             @comments = comments
@@ -119,13 +119,13 @@ module RBS
           end
 
           # @rbs %a{pure}
-          # @rbs return: TypeName?
+          # @rbs returns TypeName?
           def module_name
             type_name(node.constant_path)
           end
 
           # @rbs %a{pure}
-          # @rbs return: Array[Annotations::ModuleSelf]
+          # @rbs returns Array[Annotations::ModuleSelf]
           def module_selfs
             if comments
               comments.annotations.filter_map do |ann|
@@ -156,7 +156,7 @@ module RBS
           end
 
           # @rbs %a{pure}
-          # @rbs return: Types::t
+          # @rbs returns Types::t
           def type
             if assertion
               case assertion.type
@@ -198,7 +198,7 @@ module RBS
           end
 
           # @rbs %a{pure}
-          # @rbs return: TypeName?
+          # @rbs returns TypeName?
           def constant_name
             TypeName.new(name: node.name, namespace: Namespace.empty)
           end

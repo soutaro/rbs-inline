@@ -25,13 +25,13 @@ module RBS
           # @rbs node: Prism::DefNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs visibility: RBS::AST::Members::visibility?
-          # @rbs return: void
+          # @rbs returns void
           def initialize: (Prism::DefNode node, AnnotationParser::ParsingResult? comments, RBS::AST::Members::visibility? visibility) -> void
 
-          # @rbs return: Symbol -- the name of the method
+          # @rbs returns Symbol -- the name of the method
           def method_name: () -> Symbol
 
-          # @rbs return: Array[Annotations::Assertion]
+          # @rbs returns Array[Annotations::Assertion]
           def method_type_annotations: () -> Array[Annotations::Assertion]
 
           # Returns the `kind` of the method definition
@@ -43,22 +43,22 @@ module RBS
           # def object.foo = ()  # Not supported (returns :instance)
           # ```
           #
-          # @rbs return: RBS::AST::Members::MethodDefinition::kind
+          # @rbs returns RBS::AST::Members::MethodDefinition::kind
           def method_kind: () -> RBS::AST::Members::MethodDefinition::kind
 
-          # @rbs return: Types::t?
+          # @rbs returns Types::t?
           def return_type: () -> Types::t?
 
-          # @rbs return: Hash[Symbol, Types::t?]
+          # @rbs returns Hash[Symbol, Types::t?]
           def var_type_hash: () -> Hash[Symbol, Types::t?]
 
-          # @rbs return: Array[RBS::AST::Members::MethodDefinition::Overload]
+          # @rbs returns Array[RBS::AST::Members::MethodDefinition::Overload]
           def method_overloads: () -> Array[RBS::AST::Members::MethodDefinition::Overload]
 
-          # @rbs return: Array[RBS::AST::Annotation]
+          # @rbs returns Array[RBS::AST::Annotation]
           def method_annotations: () -> Array[RBS::AST::Annotation]
 
-          # @rbs return: AST::Annotations::Override?
+          # @rbs returns AST::Annotations::Override?
           def override_annotation: () -> AST::Annotations::Override?
         end
 
@@ -71,10 +71,10 @@ module RBS
           # @rbs comments: AnnotationParser::ParsingResult?
           def initialize: (Prism::AliasMethodNode node, AnnotationParser::ParsingResult? comments) -> untyped
 
-          # @rbs return: Symbol -- the name of *old* method
+          # @rbs returns Symbol -- the name of *old* method
           def old_name: () -> Symbol
 
-          # @rbs return: Symbol -- the name of *new* method
+          # @rbs returns Symbol -- the name of *new* method
           def new_name: () -> Symbol
         end
 
@@ -91,10 +91,10 @@ module RBS
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs application: Annotations::Application?
-          # @rbs return: void
+          # @rbs returns void
           def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Application? application) -> void
 
-          # @rbs return: ::RBS::AST::Members::Include
+          # @rbs returns ::RBS::AST::Members::Include
           #            | ::RBS::AST::Members::Extend
           #            | ::RBS::AST::Members::Prepend
           #            | nil
@@ -111,17 +111,17 @@ module RBS
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs assertion: Annotations::Assertion?
-          # @rbs return: void
+          # @rbs returns void
           def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> void
 
           # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
-          def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
+          def rbs: () -> untyped
 
           # Returns the type of the attribute
           #
           # Returns `untyped` when not annotated.
           #
-          # @rbs return: Types::t
+          # @rbs returns Types::t
           def attribute_type: () -> Types::t
         end
 

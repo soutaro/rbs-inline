@@ -24,19 +24,19 @@ module RBS
           # @rbs node: Prism::DefNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs visibility: RBS::AST::Members::visibility?
-          # @rbs return: void
+          # @rbs returns void
           def initialize(node, comments, visibility)
             @node = node
             @comments = comments
             @visibility = visibility
           end
 
-          # @rbs return: Symbol -- the name of the method
+          # @rbs returns Symbol -- the name of the method
           def method_name
             node.name
           end
 
-          # @rbs return: Array[Annotations::Assertion]
+          # @rbs returns Array[Annotations::Assertion]
           def method_type_annotations
             if comments
               comments.annotations.select do |annotation|
@@ -56,7 +56,7 @@ module RBS
           # def object.foo = ()  # Not supported (returns :instance)
           # ```
           #
-          # @rbs return: RBS::AST::Members::MethodDefinition::kind
+          # @rbs returns RBS::AST::Members::MethodDefinition::kind
           def method_kind
             # FIXME: really hacky implementation
             case node.receiver
@@ -69,7 +69,7 @@ module RBS
             end
           end
 
-          # @rbs return: Types::t?
+          # @rbs returns Types::t?
           def return_type
             if comments
               annot = comments.annotations.find {|annot| annot.is_a?(Annotations::ReturnType ) } #: Annotations::ReturnType?
@@ -79,7 +79,7 @@ module RBS
             end
           end
 
-          # @rbs return: Hash[Symbol, Types::t?]
+          # @rbs returns Hash[Symbol, Types::t?]
           def var_type_hash
             types = {} #: Hash[Symbol, Types::t?]
 
@@ -99,7 +99,7 @@ module RBS
             types
           end
 
-          # @rbs return: Array[RBS::AST::Members::MethodDefinition::Overload]
+          # @rbs returns Array[RBS::AST::Members::MethodDefinition::Overload]
           def method_overloads
             if !(annots = method_type_annotations).empty?
               annots.map do
@@ -241,7 +241,7 @@ module RBS
             end
           end
 
-          # @rbs return: Array[RBS::AST::Annotation]
+          # @rbs returns Array[RBS::AST::Annotation]
           def method_annotations
             if comments
               comments.annotations.flat_map do |annotation|
@@ -261,7 +261,7 @@ module RBS
             end
           end
 
-          # @rbs return: AST::Annotations::Override?
+          # @rbs returns AST::Annotations::Override?
           def override_annotation
             if comments
               comments.annotations.find do |annotation|
@@ -282,14 +282,14 @@ module RBS
             @comments = comments
           end
 
-          # @rbs return: Symbol -- the name of *old* method
+          # @rbs returns Symbol -- the name of *old* method
           def old_name
             raise unless node.old_name.is_a?(Prism::SymbolNode)
             value = node.old_name.value or raise
             value.to_sym
           end
 
-          # @rbs return: Symbol -- the name of *new* method
+          # @rbs returns Symbol -- the name of *new* method
           def new_name
             raise unless node.new_name.is_a?(Prism::SymbolNode)
             value = node.new_name.value or raise
@@ -310,14 +310,14 @@ module RBS
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs application: Annotations::Application?
-          # @rbs return: void
+          # @rbs returns void
           def initialize(node, comments, application)
             @node = node
             @comments = comments
             @application = application
           end
 
-          # @rbs return: ::RBS::AST::Members::Include
+          # @rbs returns ::RBS::AST::Members::Include
           #            | ::RBS::AST::Members::Extend
           #            | ::RBS::AST::Members::Prepend
           #            | nil
@@ -376,7 +376,7 @@ module RBS
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs assertion: Annotations::Assertion?
-          # @rbs return: void
+          # @rbs returns void
           def initialize(node, comments, assertion)
             @node = node
             @comments = comments
@@ -431,7 +431,7 @@ module RBS
           #
           # Returns `untyped` when not annotated.
           #
-          # @rbs return: Types::t
+          # @rbs returns Types::t
           def attribute_type
             type = assertion&.type
             raise if type.is_a?(MethodType)

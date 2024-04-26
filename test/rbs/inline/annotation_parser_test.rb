@@ -56,31 +56,36 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
 
   def test_return_type_annotation
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
-      # @rbs return: Integer -- size of something
-      # @rbs return: Symbol
-      # @rbs return
-      # @rbs return: Array[
-      # @rbs return: Array[  -- something
+      # @rbs returns Integer -- size of something
+      # @rbs returns Symbol
+      # @rbs returns
+      # @rbs returns Array[
+      # @rbs returns Array[  -- something
       RUBY
 
     assert_equal 5, annots[0].annotations.size
     annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::ReturnType, annotation
       assert_equal "Integer", annotation.type.to_s
       assert_equal "-- size of something", annotation.comment
     end
     annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::ReturnType, annotation
       assert_equal "Symbol", annotation.type.to_s
       assert_nil annotation.comment
     end
     annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::Annotations::ReturnType, annotation
       assert_nil annotation.type
       assert_nil annotation.comment
     end
     annots[0].annotations[3].tap do |annotation|
+      assert_instance_of AST::Annotations::ReturnType, annotation
       assert_nil annotation.type
       assert_nil annotation.comment
     end
     annots[0].annotations[4].tap do |annotation|
+      assert_instance_of AST::Annotations::ReturnType, annotation
       assert_nil annotation.type
       assert_equal "-- something", annotation.comment
     end

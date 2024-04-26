@@ -24,7 +24,7 @@ class RBS::Inline::WriterTest < Minitest::Test
         # @rbs foo: Symbol
         # @rbs bar: Integer?
         # @rbs rest: Hash[Symbol, String?]
-        # @rbs return: void
+        # @rbs returns void
         def f(x=0, *y, foo:, bar: nil, **rest)
         end
 
@@ -45,7 +45,7 @@ class RBS::Inline::WriterTest < Minitest::Test
         # @rbs foo: Symbol
         # @rbs bar: Integer?
         # @rbs rest: Hash[Symbol, String?]
-        # @rbs return: void
+        # @rbs returns void
         def f: (?Integer x, *String y, foo: Symbol, ?bar: Integer?, **String? rest) -> void
 
         def g: (?untyped x, *untyped y, foo: untyped, ?bar: untyped, **untyped rest) -> untyped
@@ -57,7 +57,7 @@ class RBS::Inline::WriterTest < Minitest::Test
     output = translate(<<~RUBY)
       class Foo
         # @rbs %a(pure)
-        # @rbs return: String?
+        # @rbs returns String?
         def f()
         end
       end
@@ -66,7 +66,7 @@ class RBS::Inline::WriterTest < Minitest::Test
     assert_equal <<~RBS, output
       class Foo
         # @rbs %a(pure)
-        # @rbs return: String?
+        # @rbs returns String?
         %a{pure}
         def f: () -> String?
       end
@@ -115,7 +115,7 @@ class RBS::Inline::WriterTest < Minitest::Test
   def test_method_type__visibility
     output = translate(<<~RUBY)
       class Foo
-        # @rbs return: String
+        # @rbs returns String
         private def foo()
         end
       end
@@ -123,7 +123,7 @@ class RBS::Inline::WriterTest < Minitest::Test
 
     assert_equal <<~RBS, output
       class Foo
-        # @rbs return: String
+        # @rbs returns String
         private def foo: () -> String
       end
     RBS

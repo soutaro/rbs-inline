@@ -13,20 +13,20 @@ module RBS
         # @rbs first_comment: Prism::Comment
         def initialize: (Prism::Comment first_comment) -> untyped
 
-        # @rbs return: Range[Integer]
+        # @rbs returns Range[Integer]
         def line_range: () -> Range[Integer]
 
-        # @rbs return: Prism::Comment
+        # @rbs returns Prism::Comment
         def last_comment: () -> Prism::Comment
 
         # @rbs comment: Prism::Comment
-        # @rbs return: self?
+        # @rbs returns self?
         def add_comment: (Prism::Comment comment) -> self?
 
-        # @rbs return: Array[[String, Prism::Comment]]
+        # @rbs returns Array[[String, Prism::Comment]]
         def lines: () -> Array[[ String, Prism::Comment ]]
 
-        # @rbs return: String
+        # @rbs returns String
         def content: () -> String
       end
 
@@ -36,17 +36,17 @@ module RBS
       def initialize: (Array[Prism::Comment] input) -> untyped
 
       # @rbs input: Array[Prism::Comment]
-      # @rbs return: Array[ParsingResult]
+      # @rbs returns Array[ParsingResult]
       def self.parse: (Array[Prism::Comment] input) -> Array[ParsingResult]
 
-      # @rbs return: Array[ParsingResult]
+      # @rbs returns Array[ParsingResult]
       def parse: () -> Array[ParsingResult]
 
       private
 
       # @rbs result: ParsingResult
       # @rbs block: ^(Array[Prism::Comment]) -> void
-      # @rbs return: void
+      # @rbs returns void
       def each_annotation_paragraph: (ParsingResult result) { (Array[Prism::Comment]) -> void } -> void
 
       class Tokenizer
@@ -63,65 +63,65 @@ module RBS
         PUNCTS_RE: Regexp
 
         # @rbs scanner: StringScanner
-        # @rbs return: void
+        # @rbs returns void
         def initialize: (StringScanner scanner) -> void
 
         # @rbs tree: AST::Tree
-        # @rbs return: token?
+        # @rbs returns token?
         def advance: (AST::Tree tree) -> token?
 
         # Consume given token type and inserts the token to the tree or `nil`
         #
         # @rbs type: Array[Symbol]
         # @rbs tree: AST::Tree
-        # @rbs return: void
+        # @rbs returns void
         def consume_token: (*untyped types, tree: AST::Tree) -> void
 
         # Consume given token type and inserts the token to the tree or raise
         #
         # @rbs type: Array[Symbol]
         # @rbs tree: AST::Tree
-        # @rbs return: void
+        # @rbs returns void
         def consume_token!: (*untyped types, tree: AST::Tree) -> void
 
         # Test if current token has specified `type`
         #
         # @rbs type: Array[Symbol]
-        # @rbs return: bool
+        # @rbs returns bool
         def type?: (*Symbol type) -> bool
 
         # Ensure current token is one of the specified in types
         #
         # @rbs types: Array[Symbol]
-        # @rbs return: void
+        # @rbs returns void
         def type!: (*Symbol types) -> void
 
         # Reset the current_token to incoming comment `--`
         #
         # Reset to the end of the input if `--` token cannot be found.
         #
-        # @rbs return: String -- String that is skipped
+        # @rbs returns String -- String that is skipped
         def skip_to_comment: () -> String
       end
 
       # @rbs comments: AST::CommentLines
-      # @rbs return: AST::Annotations::t?
+      # @rbs returns AST::Annotations::t?
       def parse_annotation: (AST::CommentLines comments) -> AST::Annotations::t?
 
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_var_decl: (Tokenizer tokenizer) -> AST::Tree
 
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_return_type_decl: (Tokenizer tokenizer) -> AST::Tree
 
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_comment: (Tokenizer tokenizer) -> AST::Tree
 
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_type_app: (Tokenizer tokenizer) -> AST::Tree
 
       # Parse a RBS method type or type and returns it
@@ -134,7 +134,7 @@ module RBS
       #
       # @rbs tokenizer: Tokenizer
       # @rbs parent_tree: AST::Tree
-      # @rbs return: MethodType | AST::Tree | Types::t | nil
+      # @rbs returns MethodType | AST::Tree | Types::t | nil
       def parse_type_method_type: (Tokenizer tokenizer, AST::Tree parent_tree) -> (MethodType | AST::Tree | Types::t | nil)
 
       # Parse a RBS type and returns it
@@ -152,27 +152,27 @@ module RBS
       #
       # @rbs tokenizer: Tokenizer
       # @rbs parent_tree: AST::Tree
-      # @rbs return: Types::t | AST::Tree | nil
+      # @rbs returns Types::t | AST::Tree | nil
       def parse_type: (Tokenizer tokenizer, AST::Tree parent_tree) -> (Types::t | AST::Tree | nil)
 
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_rbs_annotation: (Tokenizer tokenizer) -> AST::Tree
 
       # @rbs tokznier: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_inherits: (untyped tokenizer) -> AST::Tree
 
       # Parse `@rbs override` annotation
       #
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_override: (Tokenizer tokenizer) -> AST::Tree
 
       # Parse `@rbs use [CLAUSES]` annotation
       #
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_use: (Tokenizer tokenizer) -> AST::Tree
 
       # Parses use clause
@@ -185,11 +185,11 @@ module RBS
       # * [`::`?, [UIDENT) `::`]*, `*`]
       #
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_use_clause: (Tokenizer tokenizer) -> AST::Tree
 
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_module_self: (Tokenizer tokenizer) -> AST::Tree
 
       # Yield the block and return the resulting tree if tokenizer has current token of `types`
@@ -205,11 +205,11 @@ module RBS
       # @rbs tokenizer: Tokenizer
       # @rbs types: Array[Symbol]
       # @rbs block: ^() -> AST::Tree
-      # @rbs return: AST::Tree?
+      # @rbs returns AST::Tree?
       def parse_optional: (Tokenizer tokenizer, *Symbol types) { () -> AST::Tree } -> AST::Tree?
 
       # @rbs tokenizer: Tokenizer
-      # @rbs return: AST::Tree
+      # @rbs returns AST::Tree
       def parse_generic: (Tokenizer tokenizer) -> AST::Tree
     end
   end
