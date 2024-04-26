@@ -12,6 +12,24 @@ module RBS
           def comments: () -> AnnotationParser::ParsingResult?
         end
       end
+
+      module Annotations
+        type t = VarType
+               | ReturnType
+               | Use
+               | Inherits
+               | Generic
+               | ModuleSelf
+               | Skip
+               | Assertion
+               | Application
+               | RBSAnnotation
+               | Override
+             #  | Def
+             #  | AttrReader | AttrWriter | AttrAccessor
+             #  | Include | Extend | Prepend
+             #  | Alias
+     end
     end
   end
 end
