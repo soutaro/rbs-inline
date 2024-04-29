@@ -219,9 +219,7 @@ module RBS
                 end
 
                 if node.parameters.block
-                  if block_name = node.parameters.block.name
-                    var_type = var_type_hash[block_name]
-
+                  if (block_name = node.parameters.block.name) && (var_type = var_type_hash[block_name])
                     if var_type.is_a?(Types::Optional)
                       optional = true
                       var_type = var_type.type
@@ -232,6 +230,12 @@ module RBS
                     if var_type.is_a?(Types::Proc)
                       block = Types::Block.new(type: var_type.type, self_type: var_type.self_type, required: !optional)
                     end
+                  else
+                    block = Types::Block.new(
+                      type: Types::UntypedFunction.new(return_type: Types::Bases::Any.new(location: nil)),
+                      required: false,
+                      self_type: nil
+                    )
                   end
                 end
               end

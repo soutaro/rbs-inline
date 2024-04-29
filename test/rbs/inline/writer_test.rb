@@ -466,4 +466,25 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+
+  def test_method_type__block_untyped
+    output = translate(<<~RUBY)
+      class Foo
+        def foo(&)
+        end
+
+        def bar(&block)
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        def foo: () ?{ (?) -> untyped } -> untyped
+
+        def bar: () ?{ (?) -> untyped } -> untyped
+      end
+    RBS
+  end
 end
