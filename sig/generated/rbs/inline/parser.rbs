@@ -45,11 +45,35 @@ module RBS
       def push_class_module_decl: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl) { () -> void } -> void
                                 | (AST::Declarations::ConstantDecl) -> void
 
+      # Load inner declarations and delete them from `#comments` hash
+      #
+      # It also sorts the `members` by `#start_line`` ascending.
+      #
+      # @rbs start_line: Integer
+      # @rbs end_line: Integer
+      # @rbs members: Array[AST::Members::t | AST::Declarations::t] -- 
+      #   The destination.
+      #   The method doesn't insert declarations, but have it to please type checker.
+      def load_inner_annotations: (Integer start_line, Integer end_line, Array[AST::Members::t | AST::Declarations::t] members) -> void
+
       # @rbs override
       def visit_class_node: ...
 
       # @rbs override
       def visit_module_node: ...
+
+      # Returns an array of annotations from comments that is located between start_line and end_line
+      #
+      # ```rb
+      # module Foo        # line 1 (start_line)
+      #   # foo
+      #   # bar
+      # end               # line 4 (end_line)
+      # ```
+      #
+      # @rbs start_line: Integer
+      # @rbs end_line: Integer
+      def inner_annotations: (Integer start_line, Integer end_line) -> Array[AnnotationParser::ParsingResult]
 
       # @rbs override
       def visit_def_node: ...

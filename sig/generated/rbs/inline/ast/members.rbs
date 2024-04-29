@@ -5,9 +5,18 @@ module RBS
     module AST
       module Members
         class Base
+          attr_reader location: Prism::Location
+
+          # @rbs location: Prism::Location
+          def initialize: (Prism::Location location) -> void
+
+          def start_line: () -> Integer
         end
 
-        class RubyDef < Base
+        class RubyBase < Base
+        end
+
+        class RubyDef < RubyBase
           attr_reader node: Prism::DefNode
 
           attr_reader comments: AnnotationParser::ParsingResult?
@@ -56,7 +65,7 @@ module RBS
           def override_annotation: () -> AST::Annotations::Override?
         end
 
-        class RubyAlias < Base
+        class RubyAlias < RubyBase
           attr_reader node: Prism::AliasMethodNode
 
           attr_reader comments: AnnotationParser::ParsingResult?
@@ -72,7 +81,7 @@ module RBS
           def new_name: () -> Symbol
         end
 
-        class RubyMixin < Base
+        class RubyMixin < RubyBase
           # CallNode that calls `include`, `prepend`, and `extend` method
           attr_reader node: Prism::CallNode
 
@@ -95,7 +104,7 @@ module RBS
           def rbs: () -> (::RBS::AST::Members::Include | ::RBS::AST::Members::Extend | ::RBS::AST::Members::Prepend | nil)
         end
 
-        class RubyAttr < Base
+        class RubyAttr < RubyBase
           attr_reader node: Prism::CallNode
 
           attr_reader comments: AnnotationParser::ParsingResult?
@@ -118,7 +127,7 @@ module RBS
         end
 
         # `private` call without arguments
-        class RubyPrivate < Base
+        class RubyPrivate < RubyBase
           attr_reader node: Prism::CallNode
 
           # @rbs node: Prism::CallNode
@@ -126,11 +135,26 @@ module RBS
         end
 
         # `public` call without arguments
-        class RubyPublic < Base
+        class RubyPublic < RubyBase
           attr_reader node: Prism::CallNode
 
           # @rbs node: Prism::CallNode
           def initialize: (Prism::CallNode node) -> void
+        end
+
+        class RBSBase < Base
+        end
+
+        class RBSIvar < RBSBase
+          attr_reader annotation: Annotations::IvarType
+
+          attr_reader comment: AnnotationParser::ParsingResult
+
+          # @rbs comment: AnnotationParser::ParsingResult
+          # @rbs annotation: Annotations::IvarType
+          def initialize: (AnnotationParser::ParsingResult comment, Annotations::IvarType annotation) -> void
+
+          def rbs: () -> (RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassInstanceVariable | nil)
         end
       end
     end

@@ -25,11 +25,20 @@ module RBS
                | Application
                | RBSAnnotation
                | Override
+               | IvarType
              #  | Def
              #  | AttrReader | AttrWriter | AttrAccessor
              #  | Include | Extend | Prepend
              #  | Alias
-     end
+      end
+
+      module Members
+        type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
+
+        type rbs = RBSIvar
+
+        type t = ruby | rbs
+      end
     end
   end
 end

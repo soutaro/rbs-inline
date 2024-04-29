@@ -44,35 +44,66 @@ module RBS
         class Base
         end
 
-        class ClassDecl < Base
-          include ConstantUtil
-          include Generics
+        # @rbs generic NODE < Prism::Node
+        class ModuleOrClass < Base
+          # The node that represents the declaration
+          attr_reader :node #:: NODE
 
-          attr_reader :node #:: Prism::ClassNode
+          # Leading comment
           attr_reader :comments #:: AnnotationParser::ParsingResult?
+
+          # Members included in the declaration
           attr_reader :members #:: Array[Members::t | t]
-          attr_reader :super_application #:: Annotations::Application?
+
+          # @rbs node: NODE
+          # @rbs comments: AnnotationParser::ParsingResult?
+          def initialize(node, comments) #:: void
+            @node = node
+            @comments = comments
+            @members = []
+          end
+
+          # Type parameters for the declaration
+          def type_params #:: Array[RBS::AST::TypeParam]
+            if comments = comments()
+              comments.annotations.filter_map do |annotation|
+                if annotation.is_a?(Annotations::Generic)
+                  annotation.type_param
+                end
+              end
+            else
+              []
+            end
+          end
+
+          def start_line #:: Integer
+            node.location.start_line
+          end
+        end
+
+        class ClassDecl < ModuleOrClass #[Prism::ClassNode]
+          include ConstantUtil
+
+          # Type application for super class
+          attr_reader :super_app #:: Annotations::Application?
 
           # @rbs node: Prism::ClassNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs super_app: Annotations::Application?
           # @rbs returns void
           def initialize(node, comments, super_app)
-            @node = node
-            @members = []
-            @comments = comments
-            @super_application = super_app
+            super(node, comments)
+
+            @super_app = super_app
           end
 
           # @rbs %a{pure}
-          # @rbs returns TypeName?
-          def class_name
+          def class_name #:: TypeName?
             type_name(node.constant_path)
           end
 
           # @rbs %a{pure}
-          # @rbs returns RBS::AST::Declarations::Class::Super?
-          def super_class
+          def super_class #:: RBS::AST::Declarations::Class::Super?
             if comments
               if inherits = comments.annotations.find {|a| a.is_a?(Annotations::Inherits) } #: Annotations::Inherits?
                 super_name = inherits.super_name
@@ -92,8 +123,8 @@ module RBS
               super_name = nil #: TypeName?
               super_args = nil #: Array[Types::t]?
 
-              if super_application
-                super_args = super_application.types
+              if super_app
+                super_args = super_app.types
               end
 
               super_name = type_name(node.superclass)
@@ -109,34 +140,16 @@ module RBS
           end
         end
 
-        class ModuleDecl < Base
+        class ModuleDecl  < ModuleOrClass #[Prism::ModuleNode]
           include ConstantUtil
-          include Generics
-
-          attr_reader :node #:: Prism::ModuleNode
-          attr_reader :members #:: Array[Members::t | t]
-          attr_reader :comments #:: AnnotationParser::ParsingResult?
-          attr_reader :inner_comments #:: Array[AnnotationParser::ParsingResult]
-
-          # @rbs node: Prism::ModuleNode
-          # @rbs comments: AnnotationParser::ParsingResult?
-          # @rbs returns void
-          def initialize(node, comments)
-            @node = node
-            @comments = comments
-            @members = []
-            @inner_comments = []
-          end
 
           # @rbs %a{pure}
-          # @rbs returns TypeName?
-          def module_name
+          def module_name #:: TypeName?
             type_name(node.constant_path)
           end
 
           # @rbs %a{pure}
-          # @rbs returns Array[Annotations::ModuleSelf]
-          def module_selfs
+          def module_selfs #:: Array[Annotations::ModuleSelf]
             if comments
               comments.annotations.filter_map do |ann|
                 if ann.is_a?(AST::Annotations::ModuleSelf)
@@ -211,6 +224,10 @@ module RBS
           # @rbs returns TypeName?
           def constant_name
             TypeName.new(name: node.name, namespace: Namespace.empty)
+          end
+
+          def start_line #:: Integer
+            node.location.start_line
           end
         end
       end

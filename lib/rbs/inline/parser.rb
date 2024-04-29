@@ -100,6 +100,30 @@ module RBS
         end
       end
 
+      # Load inner declarations and delete them from `#comments` hash
+      #
+      # It also sorts the `members` by `#start_line`` ascending.
+      #
+      # @rbs start_line: Integer
+      # @rbs end_line: Integer
+      # @rbs members: Array[AST::Members::t | AST::Declarations::t] -- 
+      #   The destination.
+      #   The method doesn't insert declarations, but have it to please type checker.
+      def load_inner_annotations(start_line, end_line, members) #:: void
+        comments = inner_annotations(start_line, end_line)
+
+        comments.each do |comment|
+          comment.annotations.each do |annotation|
+            case annotation
+            when AST::Annotations::IvarType
+              members << AST::Members::RBSIvar.new(comment, annotation)
+            end
+          end
+        end
+
+        members.sort_by! { _1.start_line }
+      end
+
       # @rbs override
       def visit_class_node(node)
         return if ignored_node?(node)
@@ -117,6 +141,8 @@ module RBS
         push_class_module_decl(class_decl) do
           visit node.body
         end
+
+        load_inner_annotations(node.location.start_line, node.location.end_line, class_decl.members)
       end
 
       # @rbs override
@@ -132,15 +158,28 @@ module RBS
           visit node.body
         end
 
-        annotation_range = node.location.start_line .. node.location.end_line
+        load_inner_annotations(node.location.start_line, node.location.end_line, module_decl.members)
+      end
+
+      # Returns an array of annotations from comments that is located between start_line and end_line
+      #
+      # ```rb
+      # module Foo        # line 1 (start_line)
+      #   # foo
+      #   # bar
+      # end               # line 4 (end_line)
+      # ```
+      #
+      # @rbs start_line: Integer
+      # @rbs end_line: Integer
+      def inner_annotations(start_line, end_line) #:: Array[AnnotationParser::ParsingResult]
         annotations = comments.each_value.select do |annotation|
           range = annotation.line_range
-          annotation_range.begin < range.begin && range.end < annotation_range.end
+          start_line < range.begin && range.end < end_line
         end
 
         annotations.each do |annot|
           comments.delete(annot.line_range.end)
-          module_decl.inner_comments.push(annot)
         end
       end
 

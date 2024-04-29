@@ -1,24 +1,24 @@
-use RBS::AST::Members::MethodDefinition::Overload
+# use RBS::AST::Members::MethodDefinition::Overload
 
-module RBS
-  module Inline
-    module AST
-      module Members
-        type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
+# module RBS
+#   module Inline
+#     module AST
+#       # module Members
+#       #   type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
 
-        type rbs = RBSDef | RBSAlias | RBSAttr
+#       #   type rbs = RBSDef | RBSAlias | RBSAttr | RBSIvar
 
-        type t = ruby | rbs
+#       #   type t = ruby | rbs
 
-        class RBSDef < Base
-        end
+#       #   class RBSDef < Base
+#       #   end
 
-        class RBSAlias < Base
-        end
+#       #   class RBSAlias < Base
+#       #   end
 
-        class RBSAttr < Base
-        end
-      end
-    end
-  end
-end
+#       #   class RBSAttr < Base
+#       #   end
+#       # end
+#     end
+#   end
+# end

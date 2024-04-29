@@ -441,4 +441,29 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_ivar
+    output = translate(<<~RUBY)
+      module Foo
+        # @rbs @foo: String -- This is something
+
+        def foo #:: void
+        end
+
+        # @rbs self.@foo: Integer -- Something another
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      module Foo
+        # This is something
+        @foo: String
+
+        def foo: () -> void
+
+        # Something another
+        self.@foo: Integer
+      end
+    RBS
+  end
 end

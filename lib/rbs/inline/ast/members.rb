@@ -5,9 +5,22 @@ module RBS
     module AST
       module Members
         class Base
+          attr_reader :location #:: Prism::Location
+
+          # @rbs location: Prism::Location
+          def initialize(location) #:: void
+            @location = location
+          end
+
+          def start_line #:: Integer
+            location.start_line
+          end
         end
 
-        class RubyDef < Base
+        class RubyBase < Base
+        end
+
+        class RubyDef < RubyBase
           attr_reader :node #:: Prism::DefNode
           attr_reader :comments #:: AnnotationParser::ParsingResult?
 
@@ -32,6 +45,8 @@ module RBS
             @comments = comments
             @visibility = visibility
             @assertion = assertion
+
+            super(node.location)
           end
 
           # Returns the name of the method
@@ -272,7 +287,7 @@ module RBS
           end
         end
 
-        class RubyAlias < Base
+        class RubyAlias < RubyBase
           attr_reader :node #:: Prism::AliasMethodNode
           attr_reader :comments #:: AnnotationParser::ParsingResult?
 
@@ -281,6 +296,8 @@ module RBS
           def initialize(node, comments)
             @node = node
             @comments = comments
+
+            super(node.location)
           end
 
           # @rbs returns Symbol -- the name of *old* method
@@ -298,7 +315,7 @@ module RBS
           end
         end
 
-        class RubyMixin < Base
+        class RubyMixin < RubyBase
           # CallNode that calls `include`, `prepend`, and `extend` method
           attr_reader :node #:: Prism::CallNode
 
@@ -313,6 +330,8 @@ module RBS
           # @rbs application: Annotations::Application?
           # @rbs returns void
           def initialize(node, comments, application)
+            super(node.location)
+
             @node = node
             @comments = comments
             @application = application
@@ -369,7 +388,7 @@ module RBS
           end
         end
 
-        class RubyAttr < Base
+        class RubyAttr < RubyBase
           attr_reader :node #:: Prism::CallNode
           attr_reader :comments #:: AnnotationParser::ParsingResult?
           attr_reader :assertion #:: Annotations::Assertion?
@@ -379,6 +398,8 @@ module RBS
           # @rbs assertion: Annotations::Assertion?
           # @rbs returns void
           def initialize(node, comments, assertion)
+            super(node.location)
+
             @node = node
             @comments = comments
             @assertion = assertion
@@ -442,23 +463,68 @@ module RBS
 
         # `private` call without arguments
         #
-        class RubyPrivate < Base
+        class RubyPrivate < RubyBase
           attr_reader :node #:: Prism::CallNode
 
           # @rbs node: Prism::CallNode
           def initialize(node) #:: void
+            super(node.location)
             @node = node
           end
         end
 
         # `public` call without arguments
         #
-        class RubyPublic < Base
+        class RubyPublic < RubyBase
           attr_reader :node #:: Prism::CallNode
 
           # @rbs node: Prism::CallNode
           def initialize(node) #:: void
+            super(node.location)
             @node = node
+          end
+        end
+
+        class RBSBase < Base
+        end
+
+        class RBSIvar < RBSBase
+          attr_reader :annotation #:: Annotations::IvarType
+
+          attr_reader :comment #:: AnnotationParser::ParsingResult
+
+          # @rbs comment: AnnotationParser::ParsingResult
+          # @rbs annotation: Annotations::IvarType
+          def initialize(comment, annotation) #:: void
+            @comment = comment
+            @annotation = annotation
+
+            super(comment.comments[0].location)
+          end
+
+          def rbs #:: RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassInstanceVariable | nil
+            if annotation.type
+              if annotation.comment
+                string = annotation.comment.delete_prefix("--").lstrip
+                comment = RBS::AST::Comment.new(string: string, location: nil)
+              end
+
+              if annotation.class_instance
+                RBS::AST::Members::ClassInstanceVariable.new(
+                  name: annotation.name,
+                  type: annotation.type,
+                  location: nil,
+                  comment: comment
+                )
+              else
+                RBS::AST::Members::InstanceVariable.new(
+                  name: annotation.name,
+                  type: annotation.type,
+                  location: nil,
+                  comment: comment
+                )
+              end
+            end
           end
         end
       end

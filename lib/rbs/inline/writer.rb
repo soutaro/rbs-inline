@@ -194,6 +194,10 @@ module RBS
           [
             RBS::AST::Members::Public.new(location: nil)
           ]
+        when AST::Members::RBSIvar
+          [
+            member.rbs
+          ].compact
         end
       end
     end
