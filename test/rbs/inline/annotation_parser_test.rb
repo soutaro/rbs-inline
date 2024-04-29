@@ -54,6 +54,19 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
   end
 
+  def test_lvar_decl_annotation__escape
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs !skip: Integer
+      RUBY
+
+    assert_equal 1, annots[0].annotations.size
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::VarType, annotation
+      assert_equal :skip, annotation.name
+      assert_equal "Integer", annotation.type.to_s
+    end
+  end
+
   def test_return_type_annotation
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       # @rbs returns Integer -- size of something
@@ -155,14 +168,10 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
   def test_skip
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       # @rbs skip
-      # @rbs skip: untyped
       RUBY
 
     annots[0].annotations[0].tap do |annotation|
       assert_instance_of AST::Annotations::Skip, annotation
-    end
-    annots[0].annotations[1].tap do |annotation|
-      assert_instance_of AST::Annotations::VarType, annotation
     end
   end
 

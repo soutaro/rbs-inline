@@ -16,7 +16,7 @@ module RBS
         end
 
         class VarType < Base
-          attr_reader name: Symbol?
+          attr_reader name: Symbol
 
           attr_reader type: Types::t?
 

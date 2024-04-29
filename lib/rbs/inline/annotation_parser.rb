@@ -163,6 +163,7 @@ module RBS
           "out" => :kOUT,
           "unchecked" => :kUNCHECKED,
           "self" => :kSELF,
+          "skip" => :kSKIP,
         } #:: Hash[String, Symbol]
         KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
 
@@ -205,6 +206,8 @@ module RBS
             @current_token = [:tIFIDENT, s]
           when s = scanner.scan(/[a-z]\w*/)
             @current_token = [:tLVAR, s]
+          when s = scanner.scan(/![a-z]\w*/)
+            @current_token = [:tELVAR, s]
           when s = scanner.scan(/@\w+/)
             @current_token = [:tATIDENT, s]
           when s = scanner.scan(/%a\{[^}]+\}/)
@@ -295,16 +298,11 @@ module RBS
           tokenizer.advance(tree)
 
           case
-          when tokenizer.type?(:tLVAR)
-            t =  parse_var_decl(tokenizer)
-            tree << t
-
-            if t.nth_token(0)&.[](1) == "skip" && t.non_trivia_trees[1] == nil && t.non_trivia_trees[2] == nil
-              AST::Annotations::Skip.new(tree, comments)
-            else
-              AST::Annotations::VarType.new(tree, comments)
-            end
-
+          when tokenizer.type?(:tLVAR, :tELVAR)
+            tree << parse_var_decl(tokenizer)
+            AST::Annotations::VarType.new(tree, comments)
+          when tokenizer.type?(:kSKIP)
+            AST::Annotations::Skip.new(tree, comments)
           when tokenizer.type?(:kRETURNS)
             tree << parse_return_type_decl(tokenizer)
             AST::Annotations::ReturnType.new(tree, comments)
@@ -346,12 +344,7 @@ module RBS
       def parse_var_decl(tokenizer)
         tree = AST::Tree.new(:var_decl)
 
-        if tokenizer.type?(:tLVAR)
-          tree << tokenizer.current_token
-          tokenizer.advance(tree)
-        else
-          tree << nil
-        end
+        tokenizer.consume_token!(:tLVAR, :tELVAR, tree: tree)
 
         if tokenizer.type?(:kCOLON)
           tree << tokenizer.current_token

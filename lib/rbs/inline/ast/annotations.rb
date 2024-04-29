@@ -18,7 +18,7 @@ module RBS
         end
 
         class VarType < Base
-          attr_reader :name #:: Symbol?
+          attr_reader :name #:: Symbol
 
           attr_reader :type #:: Types::t?
 
@@ -31,9 +31,9 @@ module RBS
 
             lvar_tree = tree.nth_tree!(1)
 
-            if lvar = lvar_tree.nth_token(0)
-              @name = lvar[1].to_sym
-            end
+            # :tLVAR doesn't have `!` prefix
+            # :tELVAR has `!` prefix to escape keywords
+            @name = lvar_tree.nth_token!(0)[1].delete_prefix("!").to_sym
 
             if type = lvar_tree.nth_type?(2)
               @type = type
