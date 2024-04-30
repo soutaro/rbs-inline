@@ -214,6 +214,9 @@ module RBS
 
       # :: (Tokenizer) -> AST::Tree
       def parse_ivar_type: (Tokenizer) -> AST::Tree
+
+      # :: (Tokenizer) -> AST::Tree
+      def parse_yields: (Tokenizer) -> AST::Tree
     end
   end
 end

@@ -487,4 +487,54 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_method_type__block_yields_untyped
+    output = translate(<<~RUBY)
+      class Foo
+        # @rbs yields
+        def foo(&)
+        end
+
+        # @rbs yields [optional] ()
+        def bar
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        # @rbs yields
+        def foo: () { (?) -> untyped } -> untyped
+
+        # @rbs yields [optional] ()
+        def bar: () ?{ (?) -> untyped } -> untyped
+      end
+    RBS
+  end
+
+  def test_method_type__block_yields_typed
+    output = translate(<<~RUBY)
+      class Foo
+        # @rbs yields () -> void
+        def foo(&)
+        end
+
+        # @rbs yields [optional] () [self: String] -> Integer --
+        #   Something
+        def bar
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        # @rbs yields () -> void
+        def foo: () { () -> void } -> untyped
+
+        # @rbs yields [optional] () [self: String] -> Integer --
+        #   Something
+        def bar: () ?{ () [self: String] -> Integer } -> untyped
+      end
+    RBS
+  end
 end

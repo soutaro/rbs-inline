@@ -26,6 +26,7 @@ module RBS
                | RBSAnnotation
                | Override
                | IvarType
+               | Yields
              #  | Def
              #  | AttrReader | AttrWriter | AttrAccessor
              #  | Include | Extend | Prepend

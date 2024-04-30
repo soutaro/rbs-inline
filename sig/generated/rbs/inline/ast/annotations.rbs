@@ -83,6 +83,28 @@ module RBS
           def complete?: () -> bool
         end
 
+        # `# @rbs yields () -> void -- Comment`
+        class Yields < Base
+          # The type of block
+          #
+          # * Types::Block when syntactically correct input is given
+          # * String when syntax error is reported
+          # * `nil` when nothing is given
+          attr_reader block_type: Types::Block | String | nil
+
+          # The content of the comment or `nil`
+          attr_reader comment: String?
+
+          # If `[optional]` token is inserted just after `yields` token
+          #
+          # The Types::Block instance has correct `required` attribute based on the `[optional]` token.
+          # This is for the other cases, syntax error or omitted.
+          attr_reader optional: bool
+
+          # @rbs override
+          def initialize: ...
+        end
+
         # `# @rbs %a{a} %a{a} ...`
         class RBSAnnotation < Base
           attr_reader contents: Array[String]

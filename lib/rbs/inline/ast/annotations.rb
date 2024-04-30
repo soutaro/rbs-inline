@@ -189,6 +189,54 @@ module RBS
           end
         end
 
+        # `# @rbs yields () -> void -- Comment`
+        #
+        class Yields < Base
+          # The type of block
+          #
+          # * Types::Block when syntactically correct input is given
+          # * String when syntax error is reported
+          # * `nil` when nothing is given
+          #
+          attr_reader :block_type #:: Types::Block | String | nil
+
+          # The content of the comment or `nil`
+          #
+          attr_reader :comment #:: String?
+
+          # If `[optional]` token is inserted just after `yields` token
+          #
+          # The Types::Block instance has correct `required` attribute based on the `[optional]` token.
+          # This is for the other cases, syntax error or omitted.
+          #
+          attr_reader :optional #:: bool
+
+          # @rbs override
+          def initialize(tree, comments)
+            @tree = tree
+            @source = comments
+
+            yields_tree = tree.nth_tree!(1)
+            @optional = yields_tree.nth_token?(1).is_a?(Array)
+            if block_token = yields_tree.nth_token(2)
+              block_src = block_token[1]
+              proc_src = "^" + block_src
+              proc_type = ::RBS::Parser.parse_type(proc_src, require_eof: true) rescue RBS::ParsingError
+              if proc_type.is_a?(Types::Proc)
+                @block_type = Types::Block.new(
+                  type: proc_type.type,
+                  required: !optional,
+                  self_type: proc_type.self_type
+                )
+              else
+                @block_type = block_src
+              end
+            end
+
+            @comment = yields_tree.nth_tree?(3)&.to_s
+          end
+        end
+
         # `# @rbs %a{a} %a{a} ...`
         class RBSAnnotation < Base
           attr_reader :contents #:: Array[String]

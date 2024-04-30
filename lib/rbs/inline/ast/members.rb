@@ -240,6 +240,19 @@ module RBS
                 end
               end
 
+              if annotation = yields_annotation
+                case annotation.block_type
+                when Types::Block
+                  block = annotation.block_type
+                else
+                  block = Types::Block.new(
+                    type: Types::UntypedFunction.new(return_type: Types::Bases::Any.new(location: nil)),
+                    required: !annotation.optional,
+                    self_type: nil
+                  )
+                end
+              end
+
               [
                 RBS::AST::Members::MethodDefinition::Overload.new(
                   method_type: RBS::MethodType.new(
@@ -287,6 +300,14 @@ module RBS
               comments.annotations.find do |annotation|
                 annotation.is_a?(AST::Annotations::Override)
               end #: AST::Annotations::Override?
+            end
+          end
+
+          def yields_annotation #:: AST::Annotations::Yields?
+            if comments
+              comments.annotations.find do |annotation|
+                annotation.is_a?(AST::Annotations::Yields)
+              end #: AST::Annotations::Yields?
             end
           end
         end

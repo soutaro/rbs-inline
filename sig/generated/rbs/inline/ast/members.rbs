@@ -63,6 +63,8 @@ module RBS
           def method_annotations: () -> Array[RBS::AST::Annotation]
 
           def override_annotation: () -> AST::Annotations::Override?
+
+          def yields_annotation: () -> AST::Annotations::Yields?
         end
 
         class RubyAlias < RubyBase

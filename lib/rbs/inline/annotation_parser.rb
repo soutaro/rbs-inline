@@ -164,10 +164,12 @@ module RBS
           "unchecked" => :kUNCHECKED,
           "self" => :kSELF,
           "skip" => :kSKIP,
+          "yields" => :kYIELDS,
         } #:: Hash[String, Symbol]
         KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
 
         PUNCTS = {
+          "[optional]" => :kOPTIONAL,
           "::" => :kCOLON2,
           ":" => :kCOLON,
           "[" => :kLBRACKET,
@@ -270,14 +272,14 @@ module RBS
         def skip_to_comment
           return "" if type?(:kMINUS2)
 
-          rest = scanner.matched || ""
-
-          if scanner.scan_until(/--/)
+          if string = scanner.scan_until(/--/)
             @current_token = [:kMINUS2, "--"]
-            rest + scanner.pre_match
+            string.delete_suffix("--")
           else
-            rest += scanner.scan(/.*/) || ""
-            rest
+            s = scanner.rest
+            @current_token = [:kEOF, ""]
+            scanner.terminate
+            s
           end
         end
       end
@@ -327,6 +329,9 @@ module RBS
           when tokenizer.type?(:kSELF, :tATIDENT)
             tree << parse_ivar_type(tokenizer)
             AST::Annotations::IvarType.new(tree, comments)
+          when tokenizer.type?(:kYIELDS)
+            tree << parse_yields(tokenizer)
+            AST::Annotations::Yields.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
           tree << tokenizer.current_token
@@ -720,6 +725,26 @@ module RBS
         tokenizer.consume_token(:kCOLON, tree: tree)
 
         tree << parse_type(tokenizer, tree)
+
+        tree << parse_optional(tokenizer, :kMINUS2) do
+          parse_comment(tokenizer)
+        end
+
+        tree
+      end
+
+      #:: (Tokenizer) -> AST::Tree
+      def parse_yields(tokenizer)
+        tree = AST::Tree.new(:yields)
+
+        tokenizer.consume_token!(:kYIELDS, tree: tree)
+        tokenizer.consume_token(:kOPTIONAL, tree: tree)
+
+        unless (string = tokenizer.skip_to_comment()).empty?
+          tree << [:tBLOCKSTR, string]
+        else
+          tree << nil
+        end
 
         tree << parse_optional(tokenizer, :kMINUS2) do
           parse_comment(tokenizer)
