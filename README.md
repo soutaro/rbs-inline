@@ -1,24 +1,82 @@
-# Rbs::Inline
+# RBS::Inline
 
-TODO: Delete this and the text below, and describe your gem
+RBS::Inline allows embedding RBS type declarations into Ruby code as comments. You can declare types, write the implementation, and verifies they are consistent without leaving the editor opening the Ruby code.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/rbs/inline`. To experiment with that code, run `bin/console` for an interactive prompt.
+> [!IMPORTANT]
+> The gem is experimental. We are still seeking the best syntax with your feedbacks.
+
+Here is a quick example of embedded declarations.
+
+```rb
+class Person
+  attr_reader :name #:: String
+
+  attr_reader :addresses #:: Array[String]
+
+  # @rbs name: String
+  # @rbs addresses: Array[String]
+  # @rbs returns void
+  def initialize(name:, addresses:)
+    @name = name
+    @addresses = addresses
+  end
+
+  def to_s #:: String
+    "Person(name = #{name}, addresses = #{addresses.join(", ")})"
+  end
+
+  # @rbs yields (String) -> void
+  def each_address(&block) #:: void
+    addresses.each(&block)
+  end
+end
+```
+
+This is equivalent to the following RBS type definition.
+
+```rbs
+class Person
+  attr_reader name: String
+
+  attr_reader addresses: Array[String]
+
+  def initialize: (name: String, addresses: Array[String]) -> void
+
+  def to_s: () -> String
+
+  def each_address: () { (String) -> void } -> void
+end
+```
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
 Install the gem and add to the application's Gemfile by executing:
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+    $ bundle add rbs-inline --require=false
+
+Note that the `--require=false` is important to avoid having type definition dependencies to this gem, which is usually unnecessary.
+
+You can of course add a `gem` call in your Gemfile yourself.
+
+```rb
+gem 'rbs-inline', require: false
+```
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+    $ gem install rbs-inline
 
 ## Usage
 
-TODO: Write usage instructions here
+The gem works as a transpiler from annotated Ruby code to RBS files. Run `rbs-inline` command to generate RBS files, and use the generated files with Steep, or any tools which supports RBS type definitions.
+
+    $ bundle exec rbs-inline lib
+
+You may want to use `fswatch` or likes to automatically generate RBS files when you edit the Ruby code.
+
+    $ fswatch -0 lib | xargs -0 -n1 bundle exec rbs-inline
+
+## Examples
 
 ## Development
 
@@ -28,7 +86,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/rbs-inline. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/rbs-inline/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/soutaro/rbs-inline. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/soutaro/rbs-inline/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
@@ -36,4 +94,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the Rbs::Inline project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/rbs-inline/blob/main/CODE_OF_CONDUCT.md).
+Everyone interacting in the Rbs::Inline project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/soutaro/rbs-inline/blob/main/CODE_OF_CONDUCT.md).
