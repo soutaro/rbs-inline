@@ -552,6 +552,47 @@ module RBS
             end
           end
         end
+
+        class RBSEmbedded < RBSBase
+          attr_reader :annotation #:: Annotations::Embedded
+
+          attr_reader :comment #:: AnnotationParser::ParsingResult
+
+          # @rbs comment: AnnotationParser::ParsingResult
+          # @rbs annotation: Annotations::Embedded
+          def initialize(comment, annotation) #:: void
+            @comment = comment
+            @annotation = annotation
+
+            super(comment.comments[0].location)
+          end
+
+          # Returns the array of `RBS::AST` members
+          #
+          # Returns `RBS::ParsingError` when the `content` has syntax error.
+          #
+          def members #:: Array[RBS::AST::Members::t | RBS::AST::Declarations::t] | RBS::ParsingError
+            source = <<~RBS
+              module EmbeddedModuleTest
+                #{annotation.content}
+              end
+            RBS
+
+            _, dirs, decls = RBS::Parser.parse_signature(source)
+
+            mod = decls[0]
+            mod.is_a?(RBS::AST::Declarations::Module) or raise
+
+            mod.members.each do |member|
+              # Clear `@location` of each member so that new lines are inserted between members.
+              # See `RBS::Writer#preserve_empty_line`.
+              member.instance_variable_set(:@location, nil)
+            end
+
+          rescue RBS::ParsingError => exn
+            exn
+          end
+        end
       end
     end
   end

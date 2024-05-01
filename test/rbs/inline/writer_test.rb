@@ -537,4 +537,28 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_method_type__block_yields_typed
+    output = translate(<<~RUBY)
+      class Foo
+        # @rbs!
+        #   type t = String | Integer
+        #
+        # @rbs!
+        #   interface _Hello
+        #     def world: () -> void
+        #   end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        type t = String | Integer
+
+        interface _Hello
+          def world: () -> void
+        end
+      end
+    RBS
+  end
 end

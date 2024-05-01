@@ -106,7 +106,7 @@ module RBS
       #
       # @rbs start_line: Integer
       # @rbs end_line: Integer
-      # @rbs members: Array[AST::Members::t | AST::Declarations::t] -- 
+      # @rbs members: Array[AST::Members::t | AST::Declarations::t] --
       #   The destination.
       #   The method doesn't insert declarations, but have it to please type checker.
       def load_inner_annotations(start_line, end_line, members) #:: void
@@ -117,6 +117,8 @@ module RBS
             case annotation
             when AST::Annotations::IvarType
               members << AST::Members::RBSIvar.new(comment, annotation)
+            when AST::Annotations::Embedded
+              members << AST::Members::RBSEmbedded.new(comment, annotation)
             end
           end
         end

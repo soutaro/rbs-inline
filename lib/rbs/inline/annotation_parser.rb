@@ -122,8 +122,8 @@ module RBS
           next_line, next_comment = lines.first
 
           possible_annotation = false
-          possible_annotation ||= line.start_with?('@rbs')
-          possible_annotation ||= comment.location.slice.start_with?("#::", "#[")
+          possible_annotation ||= line.start_with?('@rbs', '@rbs!')
+          possible_annotation ||= comment.location.slice.start_with?("#::", "#[")  # No leading whitespace is allowed
 
           if possible_annotation
             line_offset = line.index(/\S/) || raise
@@ -151,7 +151,6 @@ module RBS
         attr_reader :current_token #:: token?
 
         KEYWORDS = {
-          "@rbs" => :kRBS,
           "returns" => :kRETURNS,
           "inherits" => :kINHERITS,
           "as" => :kAS,
@@ -198,6 +197,10 @@ module RBS
           when s = scanner.scan(/\s+/)
             tree << [:tWHITESPACE, s] if tree
             advance(tree)
+          when s = scanner.scan(/@rbs!/)
+            @current_token = [:kRBSE, s]
+          when s = scanner.scan(/@rbs\b/)
+            @current_token = [:kRBS, s]
           when s = scanner.scan(PUNCTS_RE)
             @current_token = [PUNCTS.fetch(s), s]
           when s = scanner.scan(KW_RE)
@@ -294,6 +297,11 @@ module RBS
         tokenizer.advance(tree)
 
         case
+        when tokenizer.type?(:kRBSE)
+          tree << tokenizer.current_token
+          tree << [:EMBEDDED_RBS, tokenizer.scanner.rest]
+          tokenizer.scanner.terminate
+          AST::Annotations::Embedded.new(tree, comments)
         when tokenizer.type?(:kRBS)
           tree << tokenizer.current_token
 

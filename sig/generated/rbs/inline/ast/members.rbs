@@ -158,6 +158,21 @@ module RBS
 
           def rbs: () -> (RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassInstanceVariable | nil)
         end
+
+        class RBSEmbedded < RBSBase
+          attr_reader annotation: Annotations::Embedded
+
+          attr_reader comment: AnnotationParser::ParsingResult
+
+          # @rbs comment: AnnotationParser::ParsingResult
+          # @rbs annotation: Annotations::Embedded
+          def initialize: (AnnotationParser::ParsingResult comment, Annotations::Embedded annotation) -> void
+
+          # Returns the array of `RBS::AST` members
+          #
+          # Returns `RBS::ParsingError` when the `content` has syntax error.
+          def members: () -> (Array[RBS::AST::Members::t | RBS::AST::Declarations::t] | RBS::ParsingError)
+        end
       end
     end
   end

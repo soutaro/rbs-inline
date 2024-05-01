@@ -6,11 +6,6 @@ module RBS
 
     module AST
       module Declarations
-        type t = ClassDecl | ModuleDecl | ConstantDecl
-
-        interface _WithComments
-          def comments: () -> AnnotationParser::ParsingResult?
-        end
       end
 
       module Annotations
@@ -27,6 +22,7 @@ module RBS
                | Override
                | IvarType
                | Yields
+               | Embedded
              #  | Def
              #  | AttrReader | AttrWriter | AttrAccessor
              #  | Include | Extend | Prepend
@@ -36,7 +32,7 @@ module RBS
       module Members
         type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
 
-        type rbs = RBSIvar
+        type rbs = RBSIvar | RBSEmbedded
 
         type t = ruby | rbs
       end

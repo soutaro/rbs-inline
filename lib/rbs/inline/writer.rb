@@ -198,6 +198,11 @@ module RBS
           [
             member.rbs
           ].compact
+        when AST::Members::RBSEmbedded
+          case members = member.members
+          when Array
+            members
+          end
         end
       end
     end

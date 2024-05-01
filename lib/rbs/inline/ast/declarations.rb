@@ -25,6 +25,13 @@ module RBS
           end
         end
 
+        # @rbs! type t = ClassDecl | ModuleDecl | ConstantDecl
+
+        # @rbs!
+        #  interface _WithComments
+        #    def comments: () -> AnnotationParser::ParsingResult?
+        #  end
+
         # @rbs module-self _WithComments
         module Generics
           # @rbs returns Array[RBS::AST::TypeParam]

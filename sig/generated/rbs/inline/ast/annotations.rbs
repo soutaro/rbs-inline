@@ -171,6 +171,14 @@ module RBS
           # @rbs override
           def initialize: ...
         end
+
+        # `# @rbs!` annotation
+        class Embedded < Base
+          attr_reader content: String
+
+          # @rbs override
+          def initialize: ...
+        end
       end
     end
   end

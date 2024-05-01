@@ -10,6 +10,12 @@ module RBS
           def type_name: (Prism::Node node) -> TypeName?
         end
 
+        type t = ClassDecl | ModuleDecl | ConstantDecl
+
+        interface _WithComments
+          def comments: () -> AnnotationParser::ParsingResult?
+        end
+
         # @rbs module-self _WithComments
         module Generics : _WithComments
           # @rbs returns Array[RBS::AST::TypeParam]

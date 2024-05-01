@@ -435,6 +435,19 @@ module RBS
             end
           end
         end
+
+        # `# @rbs!` annotation
+        class Embedded < Base
+          attr_reader :content #:: String
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            @content = tree.nth_token!(1)[1]
+          end
+        end
       end
     end
   end

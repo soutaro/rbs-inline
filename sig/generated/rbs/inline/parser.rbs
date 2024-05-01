@@ -51,7 +51,7 @@ module RBS
       #
       # @rbs start_line: Integer
       # @rbs end_line: Integer
-      # @rbs members: Array[AST::Members::t | AST::Declarations::t] -- 
+      # @rbs members: Array[AST::Members::t | AST::Declarations::t] --
       #   The destination.
       #   The method doesn't insert declarations, but have it to please type checker.
       def load_inner_annotations: (Integer start_line, Integer end_line, Array[AST::Members::t | AST::Declarations::t] members) -> void

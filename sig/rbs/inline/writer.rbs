@@ -21,7 +21,7 @@ module RBS
 
       def translate_constant_decl: (AST::Declarations::ConstantDecl) -> RBS::AST::Declarations::Constant?
 
-      def translate_member: (AST::Members::t) -> Array[RBS::AST::Members::t]?
+      def translate_member: (AST::Members::t) -> Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
     end
   end
 end

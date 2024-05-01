@@ -416,4 +416,17 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_nil annotation.comment
     end
   end
+
+  def test_embedded_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs!
+      #   type t = Integer | String
+    RUBY
+
+    assert_equal 1, annots[0].annotations.size
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::Embedded, annotation
+      assert_equal "\n  type t = Integer | String", annotation.content
+    end
+  end
 end
