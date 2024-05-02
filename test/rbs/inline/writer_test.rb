@@ -538,7 +538,7 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
-  def test_method_type__block_yields_typed
+  def test_rbs_embedded
     output = translate(<<~RUBY)
       class Foo
         # @rbs!
