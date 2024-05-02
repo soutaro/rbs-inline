@@ -8,6 +8,8 @@ RBS::Inline allows embedding RBS type declarations into Ruby code as comments. Y
 Here is a quick example of embedded declarations.
 
 ```rb
+# rbs_inline: enabled
+
 class Person
   attr_reader :name #:: String
 
