@@ -578,7 +578,7 @@ module RBS
               end
             RBS
 
-            _, dirs, decls = RBS::Parser.parse_signature(source)
+            _, _, decls = RBS::Parser.parse_signature(source)
 
             mod = decls[0]
             mod.is_a?(RBS::AST::Declarations::Module) or raise
