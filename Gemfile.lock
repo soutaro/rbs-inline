@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rbs-inline (0.1.0)
-      prism (~> 0.24.0)
+      prism (>= 0.24, < 0.28)
       rbs (~> 3.5.0.pre)
 
 GEM
@@ -41,7 +41,7 @@ GEM
     parser (3.3.0.5)
       ast (~> 2.4.1)
       racc
-    prism (0.24.0)
+    prism (0.27.0)
     racc (1.7.3)
     rainbow (3.1.1)
     rake (13.2.0)
@@ -76,6 +76,7 @@ GEM
 PLATFORMS
   arm64-darwin-22
   arm64-darwin-23
+  x86_64-linux
 
 DEPENDENCIES
   minitest (~> 5.0)
