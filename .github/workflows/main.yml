@@ -26,3 +26,5 @@ jobs:
       run: bin/setup
     - name: Run the default task
       run: bundle exec rake
+    - name: Run steep check
+      run: bundle exec steep check
