@@ -76,7 +76,13 @@ You may want to use `fswatch` or likes to automatically generate RBS files when 
 
     $ fswatch -0 lib | xargs -0 -n1 bundle exec rbs-inline
 
-## Examples
+## More materials
+
+[Our wiki](https://github.com/soutaro/rbs-inline/wiki) has some materials to read.
+
+* [Syntax guide](https://github.com/soutaro/rbs-inline/wiki/Syntax-guide) explains more details of the syntax and annotations.
+* [Roadmap](https://github.com/soutaro/rbs-inline/wiki/Roadmap) explains some of the missing features and our plans.
+* [Snippets](https://github.com/soutaro/rbs-inline/wiki/Snippets) helps setting up your editors.
 
 ## Development
 
