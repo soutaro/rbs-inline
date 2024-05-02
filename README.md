@@ -70,11 +70,17 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 The gem works as a transpiler from annotated Ruby code to RBS files. Run `rbs-inline` command to generate RBS files, and use the generated files with Steep, or any tools which supports RBS type definitions.
 
-    $ bundle exec rbs-inline lib
+```sh
+# Print generated RBS files
+$ bundle exec rbs-inline lib
+
+# Save generated RBS files under sig/generated
+$ bundle exec rbs-inline --output=sig/generated lib
+```
 
 You may want to use `fswatch` or likes to automatically generate RBS files when you edit the Ruby code.
 
-    $ fswatch -0 lib | xargs -0 -n1 bundle exec rbs-inline
+    $ fswatch -0 lib | xargs -0 -n1 bundle exec rbs-inline --output=sig/generated
 
 ## More materials
 

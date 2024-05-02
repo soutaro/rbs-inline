@@ -1,0 +1,21 @@
+# Generated from lib/rbs/inline/cli.rb with RBS::Inline
+
+module RBS
+  module Inline
+    class CLI
+      attr_reader stdout: IO
+
+      attr_reader stderr: IO
+
+      attr_reader logger: Logger
+
+      # @rbs stdout: IO
+      # @rbs stderr: IO
+      def initialize: (?stdout: IO, ?stderr: IO) -> void
+
+      # @rbs args: Array[String]
+      # @rbs returns Integer
+      def run: (Array[String] args) -> Integer
+    end
+  end
+end
