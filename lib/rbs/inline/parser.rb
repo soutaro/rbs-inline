@@ -71,7 +71,7 @@ module RBS
         ]
       end
 
-      # @rbs rturns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
+      # @rbs returns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
       def current_class_module_decl
         surrounding_decls.last
       end

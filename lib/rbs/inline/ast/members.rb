@@ -69,7 +69,7 @@ module RBS
           # [FIXME] It only supports `self` receiver.
           #
           # ```rb
-          # def self.foo = ()    # :sigleton
+          # def self.foo = ()    # :singleton
           # def object.foo = ()  # Not supported (returns :instance)
           # ```
           #

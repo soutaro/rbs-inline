@@ -501,7 +501,7 @@ module RBS
       #
       # ```
       # Integer -- Foo        # => Returns `Integer`, tokenizer has `--` as its current token
-      # Integer[ -- Foo       # => Returns a tree for `Integer[`, tokenizer has `--` as its curren token
+      # Integer[ -- Foo       # => Returns a tree for `Integer[`, tokenizer has `--` as its current token
       # Integer[ Foo          # => Returns a tree for `Integer[ Foo`, tokenizer is at the end of the input
       # ```
       #
