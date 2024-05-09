@@ -20,12 +20,13 @@ module RBS
       # @rbs args: Array[String]
       # @rbs returns Integer
       def run(args)
-        base_path = Pathname("lib")
+        base_paths = [Pathname("lib"), Pathname("app")]
         output_path = nil #: Pathname?
 
         OptionParser.new do |opts|
-          opts.on("--base=[BASE]", "The path to calculate relative path of files (defaults to #{base_path})") do
-            base_path = Pathname(_1)
+          opts.on("--base=[BASE]", "The path to calculate relative path of files (defaults to #{base_paths.join(File::PATH_SEPARATOR)})") do |str|
+            # @type var str: String
+            base_paths = str.split(File::PATH_SEPARATOR).map {|path| Pathname(path) }
           end
 
           opts.on("--output=[BASE]", "The directory where the RBS files are saved at (defaults to STDOUT if not specified)") do
@@ -37,17 +38,15 @@ module RBS
           end
         end.parse!(args)
 
-        base_path = Pathname.pwd + base_path
+        logger.debug { "base_paths = #{base_paths.join(File::PATH_SEPARATOR)}, output_path = #{output_path}" }
 
-        logger.debug { "base_path = #{base_path}, output_path = #{output_path}" }
+        base_paths = base_paths.map { Pathname.pwd.join(_1) }
 
-        targets = args.flat_map do
-          path = Pathname(_1)
-
+        targets = args.flat_map { Pathname.glob(_1) }.flat_map do |path|
           if path.directory?
             pattern = path + "**/*.rb"
             Pathname.glob(pattern.to_s)
-          else 
+          else
             path
           end
         end
@@ -55,15 +54,25 @@ module RBS
         targets.sort!
         targets.uniq!
 
-        count = 0
+        count = 0 
 
         targets.each do |target|
-          relative_path = (Pathname.pwd + target).relative_path_from(base_path)
+          absolute_path = Pathname.pwd + target
+
+          base_path = base_paths.find do |path|
+            target.descend.include?(path)
+          end
+          if base_path
+            relative_path = absolute_path.relative_path_from(Pathname.pwd + base_path)
+          else
+            relative_path = absolute_path.relative_path_from(Pathname.pwd)
+          end
+
           if output_path
             output = output_path + relative_path.sub_ext(".rbs")
 
             unless output.to_s.start_with?(output_path.to_s)
-              raise "Cannot calculate the output file path for #{target} in #{output_path}"
+              raise "Cannot calculate the output file path for #{target} in #{output_path}: calculated = #{output}"
             end
 
             logger.debug { "Generating #{output} from #{target} ..." }
