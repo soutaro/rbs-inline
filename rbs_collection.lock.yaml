@@ -38,7 +38,7 @@ gems:
   source:
     type: stdlib
 - name: prism
-  version: 0.24.0
+  version: 0.28.0
   source:
     type: rubygems
 - name: rake
@@ -46,7 +46,7 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: d2e93d426c927fdab90ef12e30a9875aa05d60d6
+    revision: 7a105f52053ce1c708b605dfa9c1ab8473424036
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: rbs
