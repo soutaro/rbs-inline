@@ -35,7 +35,7 @@ module RBS
       def self.parse: (ParseResult[ProgramNode] result) -> [ Array[AST::Annotations::Use], Array[AST::Declarations::t] ]?
 
       # @rbs returns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
-      def current_class_module_decl: () -> untyped
+      def current_class_module_decl: () -> (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil)
 
       # @rbs returns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl
       def current_class_module_decl!: () -> (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl)
