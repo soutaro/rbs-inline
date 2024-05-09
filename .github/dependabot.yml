@@ -6,6 +6,7 @@ updates:
       interval: "daily"
     allow:
       - dependency-type: "all"
+    versioning-strategy: increase
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
