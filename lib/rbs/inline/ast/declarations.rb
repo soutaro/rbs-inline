@@ -9,18 +9,8 @@ module RBS
           # @rbs returns TypeName?
           def type_name(node)
             case node
-            when Prism::ConstantReadNode
-              TypeName(node.name.to_s)
-            when Prism::ConstantPathNode
-              if node.parent
-                if parent = type_name(node.parent)
-                  if child = type_name(node.child)
-                    return parent + child
-                  end
-                end
-              else
-                type_name(node.child)&.absolute!
-              end
+            when Prism::ConstantReadNode, Prism::ConstantPathNode
+              TypeName(node.full_name)
             end
           end
         end
