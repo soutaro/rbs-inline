@@ -20,4 +20,28 @@ class RBS::Inline::ParserTest < Minitest::Test
       end
     RUBY
   end
+
+  def test_stop_parsing
+    assert_nil Parser.parse(parse_ruby(<<~RUBY))
+      class Foo
+      end
+    RUBY
+  end
+
+  def test_continue_parsing__magic_comment
+    refute_nil Parser.parse(parse_ruby(<<~RUBY))
+      # rbs_inline: enabled
+
+      class Foo
+      end
+    RUBY
+  end
+
+  def test_continue_parsing__annotation
+    refute_nil Parser.parse(parse_ruby(<<~RUBY))
+      class Foo
+        attr_reader :foo #:: String
+      end
+    RUBY
+  end
 end

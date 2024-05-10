@@ -1,5 +1,3 @@
-# rbs_inline: enabled
-
 # @rbs use Prism::*
 
 module RBS
@@ -50,9 +48,10 @@ module RBS
           instance.comments[result.line_range.end] = result
         end
 
-        if result.comments.none? {|comment| comment.location.slice =~ /\A# rbs_inline: enabled\Z/}
-          return
-        end
+        with_magic_comment = result.comments.any? {|comment| comment.location.slice =~ /\A# rbs_inline: enabled\Z/}
+        with_annotation = annots.any? {|result| result.annotations.any? }
+
+        return unless with_magic_comment || with_annotation
 
         uses = [] #: Array[AST::Annotations::Use]
         annots.each do |annot|
