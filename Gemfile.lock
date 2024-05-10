@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rbs-inline (0.1.0)
+    rbs-inline (0.2.0)
       prism (~> 0.24.0)
       rbs (~> 3.5.0.pre)
 
