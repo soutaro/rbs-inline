@@ -117,7 +117,7 @@ module RBS
               output = output_file_path.sub_ext(".rbs")
             else
               raise "Cannot calculate the output file path for #{target} in #{output_path}: calculated = #{output}"
-            end 
+            end
 
             logger.debug { "Generating #{output} from #{target} ..." }
           else
@@ -137,14 +137,18 @@ module RBS
                 output.parent.mkpath
               end
 
-              logger.debug { "Writing RBS file to #{output}..." }
-              output.write(writer.output)
+              if output.file? && output.read == writer.output
+                logger.debug { "Skip writing identical RBS file" }
+              else
+                logger.debug { "Writing RBS file to #{output}..." }
+                output.write(writer.output)
+                count += 1
+              end
             else
               stdout.puts writer.output
               stdout.puts
+              count += 1
             end
-
-            count += 1
           else
             logger.debug { "Skipping #{target} because `# rbs_inline: enabled` comment not found" }
           end

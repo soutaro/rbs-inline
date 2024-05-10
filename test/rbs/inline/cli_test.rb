@@ -86,4 +86,30 @@ class RBS::Inline::CLITest < Minitest::Test
       end
     end
   end
+
+  def test_cli__skip_identical_rbs_file
+    with_tmpdir do |pwd|
+      Dir.chdir(pwd.to_s) do
+        cli = CLI.new(stdout: stdout, stderr: stderr)
+
+        lib = pwd + "lib"
+        lib.mkpath
+
+        (lib + "foo.rb").write(<<~RUBY)
+          # rbs_inline: enabled
+
+          class Hello
+          end
+        RUBY
+
+        cli.run(%w(lib -v --output=sig))
+        assert_match /Writing RBS file to/, stderr.string
+
+        stderr.truncate(0)
+
+        cli.run(%w(lib -v --output=sig))
+        assert_match /Skip writing identical RBS file/, stderr.string
+      end
+    end
+  end
 end
