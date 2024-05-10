@@ -3,6 +3,37 @@
 module RBS
   module Inline
     class CLI
+      # Calculate the path under `output_path` that has the same structure relative to one of the `base_paths`
+      #
+      # ```rb
+      # calculator = PathCalculator.new(Pathname("/rbs-inline"), [Pathname("app"), Pathname("lib")], Pathname("/tmp/sig"))
+      # calculator.calculate(Pathname("/rbs-inline/app/models/foo.rb"))   # => Pathname("/tmp/sig/models/foo.rb")
+      # calculator.calculate(Pathname("/rbs-inline/lib/bar.rb"))          # => Pathname("/tmp/sig/bar.rb")
+      # calculator.calculate(Pathname("/rbs-inline/hello/world.rb"))      # => Pathname("/tmp/sig/hello/world.rb")
+      # calculator.calculate(Pathname("/foo.rb"))                         # => nil
+      # ```
+      #
+      class PathCalculator
+        attr_reader pwd: Pathname
+
+        attr_reader base_paths: Array[Pathname]
+
+        attr_reader output_path: Pathname
+
+        # @rbs pwd: Pathname
+        # @rbs base_paths: Array[Pathname]
+        # @rbs output_path: Pathname
+        def initialize: (Pathname pwd, Array[Pathname] base_paths, Pathname output_path) -> void
+
+        # :: (Pathname) -> Pathname?
+        def calculate: (Pathname) -> Pathname?
+
+        # @rbs path: Pathname
+        # @rbs prefix: Pathname
+        # @rbs returns bool
+        def has_prefix?: (Pathname path, prefix: Pathname) -> bool
+      end
+
       attr_reader stdout: IO
 
       attr_reader stderr: IO
