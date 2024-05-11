@@ -80,12 +80,12 @@ The gem works as a transpiler from annotated Ruby code to RBS files. Run `rbs-in
 $ bundle exec rbs-inline lib
 
 # Save generated RBS files under sig/generated
-$ bundle exec rbs-inline --output=sig/generated lib
+$ bundle exec rbs-inline --output lib
 ```
 
 You may want to use `fswatch` or likes to automatically generate RBS files when you edit the Ruby code.
 
-    $ fswatch -0 lib | xargs -0 -n1 bundle exec rbs-inline --output=sig/generated
+    $ fswatch -0 lib | xargs -0 -n1 bundle exec rbs-inline --output
 
 ## More materials
 
