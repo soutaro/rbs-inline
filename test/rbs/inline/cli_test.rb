@@ -168,4 +168,29 @@ class RBS::Inline::CLITest < Minitest::Test
       end
     end
   end
+
+  def test_cli__output_option
+    with_tmpdir do |pwd|
+      Dir.chdir(pwd.to_s) do
+        cli = CLI.new(stdout: stdout, stderr: stderr)
+
+        lib = pwd + "lib"
+        lib.mkpath
+
+        test = pwd + "test"
+        test.mkpath
+
+        (lib + "foo.rb").write(<<~RUBY)
+          # rbs_inline: enabled
+
+          class Hello
+          end
+        RUBY
+
+        cli.run(%w(lib test -v --output))
+
+        assert_predicate (pwd + "sig/generated/foo.rbs"), :file?
+      end
+    end
+  end
 end

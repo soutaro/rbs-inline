@@ -75,13 +75,17 @@ module RBS
         opt_in = true
 
         OptionParser.new do |opts|
-          opts.on("--base=[BASE]", "The path to calculate relative path of files (defaults to #{base_paths.join(File::PATH_SEPARATOR)})") do |str|
+          opts.on("--base=BASE", "The path to calculate relative path of files (defaults to #{base_paths.join(File::PATH_SEPARATOR)})") do |str|
             # @type var str: String
             base_paths = str.split(File::PATH_SEPARATOR).map {|path| Pathname(path) }
           end
 
-          opts.on("--output=[BASE]", "The directory where the RBS files are saved at (defaults to STDOUT if not specified)") do
-            output_path = Pathname(_1)
+          opts.on("--output[=DEST]", "Save the generated RBS files under `sig/generated` or DEST if specified (defaults to output to STDOUT)") do
+            if _1
+              output_path = Pathname(_1)
+            else
+              output_path = Pathname("sig/generated")
+            end
           end
 
           opts.on("--opt-out", "Generates RBS files by default. Opt-out with `# rbs_inline: disabled` comment") do
