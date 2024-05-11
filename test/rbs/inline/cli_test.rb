@@ -103,12 +103,68 @@ class RBS::Inline::CLITest < Minitest::Test
         RUBY
 
         cli.run(%w(lib -v --output=sig))
-        assert_match /Writing RBS file to/, stderr.string
+        assert_match(/Writing RBS file to/, stderr.string)
 
         stderr.truncate(0)
 
         cli.run(%w(lib -v --output=sig))
-        assert_match /Skip writing identical RBS file/, stderr.string
+        assert_match(/Skip writing identical RBS file/, stderr.string)
+      end
+    end
+  end
+
+  def test_cli__opt_in
+    with_tmpdir do |pwd|
+      Dir.chdir(pwd.to_s) do
+        cli = CLI.new(stdout: stdout, stderr: stderr)
+
+        lib = pwd + "lib"
+        lib.mkpath
+
+        (lib + "foo.rb").write(<<~RUBY)
+          class Hello
+          end
+        RUBY
+        (lib + "bar.rb").write(<<~RUBY)
+          # rbs_inline: enabled
+          class Hello
+          end
+        RUBY
+
+        cli.run(%w(lib -v --output=sig --opt-in))
+
+        sig = pwd + "sig"
+
+        refute_predicate(sig + "foo.rbs", :file?)
+        assert_predicate(sig + "bar.rbs", :file?)
+      end
+    end
+  end
+
+  def test_cli__opt_out
+    with_tmpdir do |pwd|
+      Dir.chdir(pwd.to_s) do
+        cli = CLI.new(stdout: stdout, stderr: stderr)
+
+        lib = pwd + "lib"
+        lib.mkpath
+
+        (lib + "foo.rb").write(<<~RUBY)
+          class Hello
+          end
+        RUBY
+        (lib + "bar.rb").write(<<~RUBY)
+          # rbs_inline: disabled
+          class Hello
+          end
+        RUBY
+
+        cli.run(%w(lib -v --output=sig --opt-out))
+
+        sig = pwd + "sig"
+
+        assert_predicate(sig + "foo.rbs", :file?)
+        refute_predicate(sig + "bar.rbs", :file?)
       end
     end
   end

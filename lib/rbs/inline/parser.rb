@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 # @rbs use Prism::*
 
 module RBS
@@ -37,21 +39,25 @@ module RBS
       end
 
       # @rbs result: ParseResult[ProgramNode]
+      # @rbs opt_in: bool -- `true` for *opt-out* mode, `false` for *opt-in* mode.
       # @rbs returns [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
-      def self.parse(result)
+      def self.parse(result, opt_in:)
         instance = Parser.new()
-
-        # pp result
 
         annots = AnnotationParser.parse(result.comments)
         annots.each do |result|
           instance.comments[result.line_range.end] = result
         end
 
-        with_magic_comment = result.comments.any? {|comment| comment.location.slice =~ /\A# rbs_inline: enabled\Z/}
-        with_annotation = annots.any? {|result| result.annotations.any? }
+        with_enable_magic_comment = result.comments.any? {|comment| comment.location.slice =~ /\A# rbs_inline: enabled\Z/}
+        with_disable_magic_comment = result.comments.any? {|comment| comment.location.slice =~ /\A# rbs_inline: disabled\Z/}
 
-        return unless with_magic_comment || with_annotation
+        return if with_disable_magic_comment # Skips if `rbs_inline: disabled`
+
+        if opt_in
+          # opt-in means the `rbs_inline: enable` is required.
+          return unless with_enable_magic_comment
+        end
 
         uses = [] #: Array[AST::Annotations::Use]
         annots.each do |annot|

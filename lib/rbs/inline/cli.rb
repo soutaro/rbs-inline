@@ -72,6 +72,7 @@ module RBS
       def run(args)
         base_paths = [Pathname("lib"), Pathname("app")]
         output_path = nil #: Pathname?
+        opt_in = true
 
         OptionParser.new do |opts|
           opts.on("--base=[BASE]", "The path to calculate relative path of files (defaults to #{base_paths.join(File::PATH_SEPARATOR)})") do |str|
@@ -81,6 +82,14 @@ module RBS
 
           opts.on("--output=[BASE]", "The directory where the RBS files are saved at (defaults to STDOUT if not specified)") do
             output_path = Pathname(_1)
+          end
+
+          opts.on("--opt-out", "Generates RBS files by default. Opt-out with `# rbs_inline: disabled` comment") do
+            opt_in = false
+          end
+
+          opts.on("--opt-in", "Generates RBS files only for files with `# rbs_inline: enabled` comment (default)") do
+            opt_in = true
           end
 
           opts.on("--verbose") do
@@ -126,7 +135,7 @@ module RBS
 
           logger.debug { "Parsing ruby file #{target}..." }
 
-          if (uses, decls = Parser.parse(Prism.parse_file(target.to_s)))
+          if (uses, decls = Parser.parse(Prism.parse_file(target.to_s), opt_in: opt_in))
             writer = Writer.new()
             writer.header("Generated from #{target.relative? ? target : target.relative_path_from(Pathname.pwd)} with RBS::Inline")
             writer.write(uses, decls)

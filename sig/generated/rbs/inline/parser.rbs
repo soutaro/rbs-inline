@@ -31,8 +31,9 @@ module RBS
       def initialize: () -> void
 
       # @rbs result: ParseResult[ProgramNode]
+      # @rbs opt_in: bool -- `true` for *opt-out* mode, `false` for *opt-in* mode.
       # @rbs returns [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
-      def self.parse: (ParseResult[ProgramNode] result) -> [ Array[AST::Annotations::Use], Array[AST::Declarations::t] ]?
+      def self.parse: (ParseResult[ProgramNode] result, opt_in: bool) -> [ Array[AST::Annotations::Use], Array[AST::Declarations::t] ]?
 
       # @rbs returns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
       def current_class_module_decl: () -> (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil)
