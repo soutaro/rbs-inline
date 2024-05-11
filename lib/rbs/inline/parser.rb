@@ -38,7 +38,7 @@ module RBS
         @comments = {}
       end
 
-      # @rbs result: ParseResult[ProgramNode]
+      # @rbs result: ParseResult
       # @rbs opt_in: bool -- `true` for *opt-out* mode, `false` for *opt-in* mode.
       # @rbs returns [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
       def self.parse(result, opt_in:)
