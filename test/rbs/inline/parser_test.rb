@@ -10,7 +10,7 @@ class RBS::Inline::ParserTest < Minitest::Test
   end
 
   def test_class_decl
-    Parser.parse(parse_ruby(<<~RUBY))
+    Parser.parse(parse_ruby(<<~RUBY), opt_in: false)
       class Foo
         # Hello world
         class Bar < Object
@@ -22,25 +22,28 @@ class RBS::Inline::ParserTest < Minitest::Test
   end
 
   def test_stop_parsing
-    assert_nil Parser.parse(parse_ruby(<<~RUBY))
+    assert_nil Parser.parse(parse_ruby(<<~RUBY), opt_in: false)
+      # rbs_inline: disabled
+      class Foo
+      end
+    RUBY
+
+    assert_nil Parser.parse(parse_ruby(<<~RUBY), opt_in: true)
       class Foo
       end
     RUBY
   end
 
-  def test_continue_parsing__magic_comment
-    refute_nil Parser.parse(parse_ruby(<<~RUBY))
+  def test_continue_parsing
+    refute_nil Parser.parse(parse_ruby(<<~RUBY), opt_in: true)
       # rbs_inline: enabled
 
       class Foo
       end
     RUBY
-  end
 
-  def test_continue_parsing__annotation
-    refute_nil Parser.parse(parse_ruby(<<~RUBY))
+    refute_nil Parser.parse(parse_ruby(<<~RUBY), opt_in: false)
       class Foo
-        attr_reader :foo #:: String
       end
     RUBY
   end

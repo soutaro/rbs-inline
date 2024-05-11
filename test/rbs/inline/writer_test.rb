@@ -5,9 +5,9 @@ require "test_helper"
 class RBS::Inline::WriterTest < Minitest::Test
   include RBS::Inline
 
-  def translate(src)
+  def translate(src, opt_in: true)
     src = "# rbs_inline: enabled\n\n" + src
-    uses, decls = Parser.parse(Prism.parse(src, filepath: "a.rb"))
+    uses, decls = Parser.parse(Prism.parse(src, filepath: "a.rb"), opt_in: opt_in)
     Writer.write(uses, decls)
   end
 
