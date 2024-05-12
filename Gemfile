@@ -9,5 +9,5 @@ gem "rake", "~> 13.2"
 
 gem "minitest", "~> 5.0"
 
-gem "steep", require: false
+gem "steep", "~> 1.7.0.dev", require: false
 gem "strscan"
