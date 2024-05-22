@@ -1,7 +1,0 @@
-module RBS
-  module Inline
-    module NodeUtils
-      def type_name: (Prism::Node) -> TypeName?
-    end
-  end
-end

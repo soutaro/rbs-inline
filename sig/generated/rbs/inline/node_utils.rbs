@@ -1,0 +1,11 @@
+# Generated from lib/rbs/inline/node_utils.rb with RBS::Inline
+
+module RBS
+  module Inline
+    module NodeUtils
+      # @rbs node: Prism::Node
+      # @rbs returns TypeName?
+      def type_name: (Prism::Node node) -> TypeName?
+    end
+  end
+end

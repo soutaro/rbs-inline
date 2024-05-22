@@ -1,6 +1,10 @@
+# rbs_inline: enabled
+
 module RBS
   module Inline
     module NodeUtils
+      # @rbs node: Prism::Node
+      # @rbs returns TypeName?
       def type_name(node)
         case node
         when Prism::ConstantReadNode
