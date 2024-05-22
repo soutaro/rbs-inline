@@ -4,6 +4,11 @@ module RBS
   module Inline
     module AST
       module Members
+        # @rbs!
+        #   type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
+        #   type rbs = RBSIvar | RBSEmbedded
+        #   type t = ruby | rbs
+
         class Base
           attr_reader :location #:: Prism::Location
 

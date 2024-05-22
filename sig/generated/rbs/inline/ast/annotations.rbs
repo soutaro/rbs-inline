@@ -4,6 +4,8 @@ module RBS
   module Inline
     module AST
       module Annotations
+        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | Assertion | Application | RBSAnnotation | Override | IvarType | Yields | Embedded
+
         class Base
           attr_reader source: CommentLines
 
