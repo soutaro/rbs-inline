@@ -346,6 +346,8 @@ module RBS
         end
 
         class RubyMixin < RubyBase
+          include Declarations::ConstantUtil
+
           # CallNode that calls `include`, `prepend`, and `extend` method
           attr_reader :node #:: Prism::CallNode
 
@@ -376,11 +378,7 @@ module RBS
             return unless node.arguments.arguments.size == 1
 
             arg = node.arguments.arguments[0] || raise
-            if arg.is_a?(Prism::ConstantReadNode)
-              type_name = RBS::TypeName.new(name: arg.name, namespace: RBS::Namespace.empty)
-            else
-              raise
-            end
+            type_name = type_name(arg) || raise
 
             args = [] #: Array[Types::t]
             if application

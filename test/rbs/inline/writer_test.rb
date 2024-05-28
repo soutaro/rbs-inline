@@ -561,4 +561,28 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_include_nested_modules
+    output = translate(<<~RUBY)
+      module M
+        module A
+        end
+      end
+
+      class Foo
+        include M::A
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      module M
+        module A
+        end
+      end
+
+      class Foo
+        include M::A
+      end
+    RBS
+  end
 end
