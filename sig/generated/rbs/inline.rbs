@@ -1,0 +1,7 @@
+# Generated from lib/rbs/inline.rb with RBS::Inline
+
+module RBS
+  module Inline
+    type token = [ Symbol, String ]
+  end
+end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# rbs_inline: enabled
 
 require_relative "inline/version"
 
@@ -18,5 +19,7 @@ require "rbs/inline/writer"
 
 module RBS
   module Inline
+    # @rbs!
+    #   type token = [Symbol, String]
   end
 end

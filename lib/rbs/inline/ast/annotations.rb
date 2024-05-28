@@ -4,6 +4,27 @@ module RBS
   module Inline
     module AST
       module Annotations
+        # @rbs!
+        #   type t = VarType
+        #          | ReturnType
+        #          | Use
+        #          | Inherits
+        #          | Generic
+        #          | ModuleSelf
+        #          | Skip
+        #          | Assertion
+        #          | Application
+        #          | RBSAnnotation
+        #          | Override
+        #          | IvarType
+        #          | Yields
+        #          | Embedded
+        #        #  | Def
+        #        #  | AttrReader | AttrWriter | AttrAccessor
+        #        #  | Include | Extend | Prepend
+        #        #  | Alias
+
+
         class Base
           attr_reader :source #:: CommentLines
           attr_reader :tree #:: Tree

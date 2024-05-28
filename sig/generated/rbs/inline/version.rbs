@@ -1,0 +1,7 @@
+# Generated from lib/rbs/inline/version.rb with RBS::Inline
+
+module RBS
+  module Inline
+    VERSION: ::String
+  end
+end
