@@ -378,7 +378,8 @@ module RBS
             return unless node.arguments.arguments.size == 1
 
             arg = node.arguments.arguments[0] || raise
-            type_name = type_name(arg) || raise
+            type_name = type_name(arg)
+            return unless type_name
 
             args = [] #: Array[Types::t]
             if application

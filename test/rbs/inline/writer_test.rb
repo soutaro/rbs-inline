@@ -585,4 +585,17 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_include_dynamic_values
+    output = translate(<<~RUBY)
+      class A
+        include Module.new
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class A
+      end
+    RBS
+  end
 end
