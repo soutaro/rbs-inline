@@ -28,9 +28,9 @@ jobs:
       run: bundle exec rake
     - name: Generate RBS files
       run: |
-        bundle exec rbs-inline lib --output=sig/generated
+        bundle exec rbs-inline lib --output
     - name: Type check with Steep
       run: bundle exec steep check
     - name: Confirm the latest RBS file is committed
       run: |
-        git diff sig
+        git diff --exit-code sig
