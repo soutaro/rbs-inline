@@ -90,6 +90,8 @@ module RBS
         end
 
         class RubyMixin < RubyBase
+          include Declarations::ConstantUtil
+
           # CallNode that calls `include`, `prepend`, and `extend` method
           attr_reader node: Prism::CallNode
 
