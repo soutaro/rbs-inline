@@ -86,7 +86,7 @@ module RBS
         current_class_module_decl or raise
       end
 
-      #:: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl) { () -> void } -> void
+      #:: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
       #:: (AST::Declarations::ConstantDecl) -> void
       def push_class_module_decl(decl)
         if current = current_class_module_decl
@@ -150,6 +150,18 @@ module RBS
         end
 
         load_inner_annotations(node.location.start_line, node.location.end_line, class_decl.members)
+      end
+
+      # @rbs override
+      def visit_singleton_class_node(node)
+        return if ignored_node?(node)
+
+        associated_comment = comments.delete(node.location.start_line - 1)
+        singleton_decl = AST::Declarations::SingletonClassDecl.new(node, associated_comment)
+
+        push_class_module_decl(singleton_decl) do
+          visit node.body
+        end
       end
 
       # @rbs override

@@ -50,16 +50,6 @@ module RBS
 
           def method_type_annotations: () -> Array[Annotations::Assertion]
 
-          # Returns the `kind` of the method definition
-          #
-          # [FIXME] It only supports `self` receiver.
-          #
-          # ```rb
-          # def self.foo = ()    # :singleton
-          # def object.foo = ()  # Not supported (returns :instance)
-          # ```
-          def method_kind: () -> RBS::AST::Members::MethodDefinition::kind
-
           def return_type: () -> Types::t?
 
           def var_type_hash: () -> Hash[Symbol, Types::t?]

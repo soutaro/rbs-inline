@@ -39,9 +39,34 @@ module RBS
       # @rbs returns RBS::AST::Declarations::Constant?
       def translate_constant_decl: (AST::Declarations::ConstantDecl decl) -> RBS::AST::Declarations::Constant?
 
+      # @rbs decl: AST::Declarations::SingletonClassDecl
+      # @rbs returns Array[RBS::AST::Members::t]
+      def translate_singleton_decl: (AST::Declarations::SingletonClassDecl decl) -> Array[RBS::AST::Members::t]
+
       # @rbs member: AST::Members::t
+      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
       # @rbs returns Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
-      def translate_member: (AST::Members::t member) -> Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
+      def translate_member: (AST::Members::t member, AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl decl) -> Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
+
+      private
+
+      # Returns the `kind` of the method definition
+      #
+      # ```rb
+      # def self.foo = ()    # :singleton
+      # class A
+      #   class << self
+      #     def bar = ()     # :singleton
+      #   end
+      # end
+      #
+      # def object.foo = ()  # Not supported (returns :instance)
+      # ```
+      #
+      # @rbs member: AST::Members::RubyDef
+      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
+      # @rbs returns RBS::AST::Members::MethodDefinition::kind
+      def method_kind: (AST::Members::RubyDef member, AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl decl) -> RBS::AST::Members::MethodDefinition::kind
     end
   end
 end
