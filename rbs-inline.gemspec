@@ -30,4 +30,8 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "prism", ">= 0.29", "< 0.30"
   spec.add_dependency "rbs", "~> 3.5.0.pre"
+  # NOTE: rbs-inline outputs syntax that is added from RBS 3.5 and Steep 1.7.
+  #       Once RBS 3.5 is released, this dependency can be removed.
+  # ref. https://github.com/soutaro/rbs-inline/issues/41
+  spec.add_dependency "steep", "~> 1.7.0.dev"
 end
