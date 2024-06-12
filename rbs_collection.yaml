@@ -15,3 +15,5 @@ path: .gem_rbs_collection
 
 gems:
   - name: optparse
+  - name: ffi
+    ignore: true
