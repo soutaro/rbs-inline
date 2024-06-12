@@ -1,10 +1,6 @@
 ---
 path: ".gem_rbs_collection"
 gems:
-- name: abbrev
-  version: '0'
-  source:
-    type: stdlib
 - name: fileutils
   version: '0'
   source:
@@ -50,7 +46,7 @@ gems:
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: rbs
-  version: 3.5.0.pre.2
+  version: 3.5.1
   source:
     type: rubygems
 - name: rdoc
