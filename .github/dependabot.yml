@@ -2,6 +2,8 @@ version: 2
 updates:
   - package-ecosystem: "bundler"
     directory: "/"
+    schedule:
+      interval: 'daily'
     open-pull-requests-limit: 3
     allow:
       - dependency-type: "all"
