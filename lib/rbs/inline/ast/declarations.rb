@@ -15,7 +15,7 @@ module RBS
           end
         end
 
-        # @rbs! type t = ClassDecl | ModuleDecl | ConstantDecl
+        # @rbs! type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl
 
         # @rbs!
         #  interface _WithComments
@@ -226,6 +226,9 @@ module RBS
           def start_line #:: Integer
             node.location.start_line
           end
+        end
+
+        class SingletonClassDecl < ModuleOrClass #[Prism::SingletonClassNode]
         end
       end
     end

@@ -598,4 +598,32 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_singleton_class_definition
+    output = translate(<<~RUBY)
+      class X
+        class << self
+          def foo
+          end
+        end
+      end
+
+      module M
+        class << self
+          def bar
+          end
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class X
+        def self.foo: () -> untyped
+      end
+
+      module M
+        def self.bar: () -> untyped
+      end
+    RBS
+  end
 end

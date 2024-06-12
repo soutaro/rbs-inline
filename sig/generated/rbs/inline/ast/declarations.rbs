@@ -10,7 +10,7 @@ module RBS
           def type_name: (Prism::Node node) -> TypeName?
         end
 
-        type t = ClassDecl | ModuleDecl | ConstantDecl
+        type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl
 
         interface _WithComments
           def comments: () -> AnnotationParser::ParsingResult?
@@ -109,6 +109,9 @@ module RBS
           def constant_name: () -> TypeName?
 
           def start_line: () -> Integer
+        end
+
+        class SingletonClassDecl < ModuleOrClass[Prism::SingletonClassNode]
         end
       end
     end

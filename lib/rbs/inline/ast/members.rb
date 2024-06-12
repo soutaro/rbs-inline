@@ -69,27 +69,6 @@ module RBS
             end
           end
 
-          # Returns the `kind` of the method definition
-          #
-          # [FIXME] It only supports `self` receiver.
-          #
-          # ```rb
-          # def self.foo = ()    # :singleton
-          # def object.foo = ()  # Not supported (returns :instance)
-          # ```
-          #
-          def method_kind #:: RBS::AST::Members::MethodDefinition::kind
-            # FIXME: really hacky implementation
-            case node.receiver
-            when Prism::SelfNode
-              :singleton
-            when nil
-              :instance
-            else
-              :instance
-            end
-          end
-
           def return_type #:: Types::t?
             if assertion
               if assertion.type?

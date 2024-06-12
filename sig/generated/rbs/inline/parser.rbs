@@ -41,9 +41,9 @@ module RBS
       # @rbs returns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl
       def current_class_module_decl!: () -> (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl)
 
-      # :: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl) { () -> void } -> void
+      # :: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
       # :: (AST::Declarations::ConstantDecl) -> void
-      def push_class_module_decl: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl) { () -> void } -> void
+      def push_class_module_decl: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
                                 | (AST::Declarations::ConstantDecl) -> void
 
       # Load inner declarations and delete them from `#comments` hash
@@ -59,6 +59,9 @@ module RBS
 
       # @rbs override
       def visit_class_node: ...
+
+      # @rbs override
+      def visit_singleton_class_node: ...
 
       # @rbs override
       def visit_module_node: ...

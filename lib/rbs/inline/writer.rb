@@ -73,12 +73,14 @@ module RBS
 
         decl.members.each do |member|
           if member.is_a?(AST::Members::Base)
-            if rbs_member = translate_member(member)
+            if rbs_member = translate_member(member, decl)
               members.concat rbs_member
             end
           end
 
-          if member.is_a?(AST::Declarations::Base)
+          if member.is_a?(AST::Declarations::SingletonClassDecl)
+            members.concat translate_singleton_decl(member)
+          elsif member.is_a?(AST::Declarations::Base)
             if rbs = translate_decl(member)
               members << rbs
             end
@@ -109,12 +111,14 @@ module RBS
 
         decl.members.each do |member|
           if member.is_a?(AST::Members::Base)
-            if rbs_member = translate_member(member)
+            if rbs_member = translate_member(member, decl)
               members.concat rbs_member
             end
           end
 
-          if member.is_a?(AST::Declarations::Base)
+          if member.is_a?(AST::Declarations::SingletonClassDecl)
+            members.concat translate_singleton_decl(member)
+          elsif member.is_a?(AST::Declarations::Base)
             if rbs = translate_decl(member)
               members << rbs
             end
@@ -151,20 +155,39 @@ module RBS
         )
       end
 
+      # @rbs decl: AST::Declarations::SingletonClassDecl
+      # @rbs returns Array[RBS::AST::Members::t]
+      def translate_singleton_decl(decl)
+        members = []
+
+        decl.members.each do |member|
+          if member.is_a?(AST::Members::Base)
+            if rbs_member = translate_member(member, decl)
+              members.concat rbs_member
+            end
+          end
+        end
+
+        members
+      end
+
       # @rbs member: AST::Members::t
+      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
       # @rbs returns Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
-      def translate_member(member)
+      def translate_member(member, decl)
         case member
         when AST::Members::RubyDef
           if member.comments
             comment = RBS::AST::Comment.new(string: member.comments.content, location: nil)
           end
 
+          kind = method_kind(member, decl)
+
           if member.override_annotation
             return [
               RBS::AST::Members::MethodDefinition.new(
                 name: member.method_name,
-                kind: member.method_kind,
+                kind: kind,
                 overloads: [],
                 annotations: [],
                 location: nil,
@@ -178,7 +201,7 @@ module RBS
           [
             RBS::AST::Members::MethodDefinition.new(
               name: member.method_name,
-              kind: member.method_kind,
+              kind: kind,
               overloads: member.method_overloads,
               annotations: member.method_annotations,
               location: nil,
@@ -223,6 +246,35 @@ module RBS
           when Array
             members
           end
+        end
+      end
+
+      private
+
+      # Returns the `kind` of the method definition
+      #
+      # ```rb
+      # def self.foo = ()    # :singleton
+      # class A
+      #   class << self
+      #     def bar = ()     # :singleton
+      #   end
+      # end
+      #
+      # def object.foo = ()  # Not supported (returns :instance)
+      # ```
+      #
+      # @rbs member: AST::Members::RubyDef
+      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
+      # @rbs returns RBS::AST::Members::MethodDefinition::kind
+      def method_kind(member, decl)
+        return :singleton if decl.is_a?(AST::Declarations::SingletonClassDecl)
+
+        case member.node.receiver
+        when Prism::SelfNode
+          :singleton
+        else
+          :instance
         end
       end
     end
