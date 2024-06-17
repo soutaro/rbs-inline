@@ -9,6 +9,53 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     Prism.parse_comments(src, filepath: "a.rb")
   end
 
+  def test_paragraph_1
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # Comment 1
+      #   Comment 2
+      #
+      # Comment 3
+      #   Comment 4
+      RUBY
+
+    assert_equal 1, annots[0].annotations.size
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::CommentLines, annotation
+    end
+  end
+
+  def test_paragraph_2
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # Comment 1
+      #   Comment 2
+      #
+      # @rbs!
+      #   type t = Integer | String
+      #
+      #   type u = Integer | String
+      #
+      # Comment 3
+      #   Comment 4
+      #
+      #
+      RUBY
+
+    assert_equal 3, annots[0].annotations.size
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::CommentLines, annotation
+      assert_equal ["# Comment 1", "#   Comment 2", "#"], annotation.lines
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::Embedded, annotation
+      assert_equal ["# @rbs!", "#   type t = Integer | String", "#", "#   type u = Integer | String"], annotation.source.lines
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::CommentLines, annotation
+      assert_equal ["#", "# Comment 3", "#   Comment 4", "#", "#"], annotation.lines
+    end
+  end
+
+
   def test_lvar_decl_annotation
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       # @rbs size: Integer -- size of something
@@ -50,7 +97,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     annots[0].annotations[5].tap do |annotation|
       assert_equal :z, annotation.name
       assert_nil annotation.type
-      assert_equal "--\n  something\n  More comments", annotation.comment
+      assert_equal "--\n   something\n   More comments", annotation.comment
     end
   end
 
@@ -136,22 +183,36 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
   def test_type_application
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       #[String, Integer]
+      #
       #[String[
+      #
       #[]
+      #
       # [String]
       RUBY
 
+    assert_equal 6, annots[0].annotations.size
+
     annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::Application, annotation
       assert_equal ["String", "Integer"], annotation.types.map(&:to_s)
     end
     annots[0].annotations[1].tap do |annotation|
-      assert_nil annotation.types
+      assert_instance_of AST::CommentLines, annotation
     end
     annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::Annotations::Application, annotation
       assert_nil annotation.types
     end
     annots[0].annotations[3].tap do |annotation|
-      assert_nil annotation
+      assert_instance_of AST::CommentLines, annotation
+    end
+    annots[0].annotations[4].tap do |annotation|
+      assert_instance_of AST::Annotations::Application, annotation
+      assert_nil annotation.types
+    end
+    annots[0].annotations[5].tap do |annotation|
+      assert_instance_of AST::CommentLines, annotation
     end
   end
 
@@ -426,7 +487,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     assert_equal 1, annots[0].annotations.size
     annots[0].annotations[0].tap do |annotation|
       assert_instance_of AST::Annotations::Embedded, annotation
-      assert_equal "\n  type t = Integer | String", annotation.content
+      assert_equal "\n   type t = Integer | String", annotation.content
     end
   end
 end

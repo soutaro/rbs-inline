@@ -6,7 +6,9 @@ module RBS
       module Members
         # @rbs!
         #   type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
+        #
         #   type rbs = RBSIvar | RBSEmbedded
+        #
         #   type t = ruby | rbs
 
         class Base
@@ -61,7 +63,7 @@ module RBS
 
           def method_type_annotations #:: Array[Annotations::Assertion]
             if comments
-              comments.annotations.select do |annotation|
+              comments.each_annotation.select do |annotation|
                 annotation.is_a?(Annotations::Assertion) && annotation.type.is_a?(MethodType)
               end #: Array[Annotations::Assertion]
             else
@@ -76,7 +78,7 @@ module RBS
               end
             end
             if comments
-              annot = comments.annotations.find {|annot| annot.is_a?(Annotations::ReturnType ) } #: Annotations::ReturnType?
+              annot = comments.each_annotation.find {|annot| annot.is_a?(Annotations::ReturnType ) } #: Annotations::ReturnType?
               if annot
                 annot.type
               end
@@ -87,7 +89,7 @@ module RBS
             types = {} #: Hash[Symbol, Types::t?]
 
             if comments
-              comments.annotations.each do |annotation|
+              comments.each_annotation.each do |annotation|
                 if annotation.is_a?(Annotations::VarType)
                   name = annotation.name
                   type = annotation.type
@@ -262,7 +264,7 @@ module RBS
 
           def method_annotations #:: Array[RBS::AST::Annotation]
             if comments
-              comments.annotations.flat_map do |annotation|
+              comments.each_annotation.flat_map do |annotation|
                 if annotation.is_a?(AST::Annotations::RBSAnnotation)
                   annotation.contents.map do |string|
                     RBS::AST::Annotation.new(
@@ -281,7 +283,7 @@ module RBS
 
           def override_annotation #:: AST::Annotations::Override?
             if comments
-              comments.annotations.find do |annotation|
+              comments.each_annotation.find do |annotation|
                 annotation.is_a?(AST::Annotations::Override)
               end #: AST::Annotations::Override?
             end
@@ -289,7 +291,7 @@ module RBS
 
           def yields_annotation #:: AST::Annotations::Yields?
             if comments
-              comments.annotations.find do |annotation|
+              comments.each_annotation.find do |annotation|
                 annotation.is_a?(AST::Annotations::Yields)
               end #: AST::Annotations::Yields?
             end
@@ -416,7 +418,7 @@ module RBS
           # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
           def rbs
             if comments
-              comment = RBS::AST::Comment.new(string: comments.content, location: nil)
+              comment = RBS::AST::Comment.new(string: comments.content(trim: true), location: nil)
             end
 
             klass =

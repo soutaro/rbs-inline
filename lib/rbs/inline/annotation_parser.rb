@@ -3,10 +3,40 @@
 module RBS
   module Inline
     class AnnotationParser
+      # ParsingResut groups consecutive comments, which may contain several annotations
+      #
+      # *Consecutive comments* are comments are defined in below.
+      # They are basically comments that follows from the previous line, but there are some more requirements.
+      #
+      # ```ruby
+      # # Line 1
+      # # Line 2           #=> Line 1 and Line 2 are consecutive
+      #
+      #    # Line 3
+      #  # Line4           #=> Line 3 and Line 4 are not consecutive, because the starting column are different
+      #
+      #         # Line 5
+      # foo()   # Line 6   #=> Line 5 and Line 6 are not consecutive, because Line 6 has leading code
+      # ```
+      #
       class ParsingResult
         attr_reader :comments #:: Array[Prism::Comment]
-        attr_reader :annotations #:: Array[AST::Annotations::t]
+        attr_reader :annotations #:: Array[AST::Annotations::t | AST::CommentLines]
         attr_reader :first_comment_offset #:: Integer
+
+        #:: () { (AST::Annotations::t) -> void } -> void
+        #:: () -> Enumerator[AST::Annotations::t, void]
+        def each_annotation(&block)
+          if block
+            annotations.each do |annot|
+              if annot.is_a?(AST::Annotations::Base)
+                yield annot
+              end
+            end
+          else
+            enum_for :each_annotation
+          end
+        end
 
         # @rbs first_comment: Prism::Comment
         def initialize(first_comment)
@@ -46,23 +76,27 @@ module RBS
           end
         end
 
-        # @rbs returns Array[[String, Prism::Comment]]
-        def lines
-          comments.map do |comment|
-            slice = comment.location.slice
-            index = slice.index(/[^#\s]/) || slice.size
-            string = if index > first_comment_offset
-              slice[first_comment_offset..] || ""
-            else
-              slice[index..] || ""
-            end
-            [string, comment]
+        # @rbs trim: bool -- `true` to trim the leading whitespaces
+        def content(trim: false) #:: String
+          if trim
+            leading_spaces = lines[0][/\A\s*/]
+            offset = leading_spaces ? leading_spaces.length : 0
+
+            lines.map do |line|
+              prefix = line[0..offset] || ""
+              if prefix.strip.empty?
+                line[offset..]
+              else
+                line.lstrip
+              end
+            end.join("\n")
+          else
+            lines.join("\n")
           end
         end
 
-        # @rbs returns String
-        def content
-          lines.map(&:first).join("\n")
+        def lines #:: Array[String]
+          comments.map { _1.location.slice[1...] || "" }
         end
       end
 
@@ -97,9 +131,13 @@ module RBS
         end
 
         results.each do |result|
-          each_annotation_paragraph(result) do |comments|
-            if annot = parse_annotation(AST::CommentLines.new(comments))
+          each_annotation_paragraph(result) do |comments, annotation|
+            lines = AST::CommentLines.new(comments)
+
+            if annotation && annot = parse_annotation(lines)
               result.annotations << annot
+            else
+              result.annotations << lines
             end
           end
         end
@@ -109,40 +147,148 @@ module RBS
 
       private
 
-      # @rbs result: ParsingResult
-      # @rbs block: ^(Array[Prism::Comment]) -> void
-      # @rbs returns void
+      # Test if the comment is an annotation comment
+      #
+      # - Returns `nil` if the comment is not an annotation.
+      # - Returns `true` if the comment is `#::` or `#[` annotation. (Offset is `1`)
+      # - Returns Integer if the comment is `#@rbs` annotation. (Offset is the number of leading spaces including `#`)
+      #
+      #:: (Prism::Comment) -> (Integer | true | nil)
+      def annotation_comment?(comment)
+        line = comment.location.slice
+
+        # No leading whitespace is allowed
+        return true if line.start_with?("#::")
+        return true if line.start_with?("#[")
+
+        if match = line.match(/\A#(\s*)@rbs(\b|!)/)
+          leading_spaces = match[1] or raise
+          leading_spaces.size + 1
+        end
+      end
+
+      # Split lines of comments in `result` into paragraphs
+      #
+      # A paragraph consists of:
+      #
+      # * An annotation syntax constructs -- starting with `@rbs` or `::`, or
+      # * A lines something else
+      #
+      # Yields an array of comments, and a boolean indicating if the comments may be an annotation.
+      #
+      #:: (ParsingResult) { (Array[Prism::Comment], bool is_annotation) -> void } -> void
       def each_annotation_paragraph(result, &block)
-        lines = result.lines
+        yield_paragraph([], result.comments.dup, &block)
+      end
 
-        while true
-          line, comment = lines.shift
-          break unless line && comment
+      # The first annotation line is already detected and consumed.
+      # The annotation comment is already in `comments`.
+      #
+      # @rbs comments: Array[Prism::Comment] -- Annotation comments
+      # @rbs lines: Array[Prism::Comment] -- Lines to be consumed
+      # @rbs offset: Integer -- Offset of the first character of the first annotation comment from the `#` (>= 1)
+      # @rbs allow_empty_lines: bool -- `true` if empty line is allowed inside the annotation comments
+      # @rbs yields (Array[Prism::Comment], bool is_annotation) -> void
+      # @rbs returns void
+      def yield_annotation(comments, lines, offset, allow_empty_lines:, &block)
+        first_comment = lines.first
 
-          next_line, next_comment = lines.first
+        if first_comment
+          nonspace_index = first_comment.location.slice.index(/\S/, 1)
 
-          possible_annotation = false
-          possible_annotation ||= line.start_with?('@rbs', '@rbs!')
-          possible_annotation ||= comment.location.slice.start_with?("#::", "#[")  # No leading whitespace is allowed
-
-          if possible_annotation
-            line_offset = line.index(/\S/) || raise
-
-            comments = [comment]
-
-            while true
-              break unless next_line && next_comment
-              next_offset = next_line.index(/\S/) || 0
-              break unless next_offset > line_offset
-
-              comments << next_comment
+          case
+          when nonspace_index.nil?
+            if allow_empty_lines
               lines.shift
-
-              next_line, next_comment = lines.first
+              yield_empty_annotation(comments, [first_comment], lines, offset, &block)
+            else
+              # Starting next paragraph (or annotation)
+              yield(comments, true)
+              yield_paragraph([], lines, &block)
             end
-
-            yield comments
+          when nonspace_index > offset
+            # Continuation of the annotation
+            lines.shift
+            comments.push(first_comment)
+            yield_annotation(comments, lines, offset, allow_empty_lines: allow_empty_lines, &block)
+          else
+            # Starting next paragraph (or annotation)
+            yield(comments, true)
+            yield_paragraph([], lines, &block)
           end
+        else
+          yield(comments, true)
+        end
+      end
+
+      # The first line is NOT consumed.
+      #
+      # The `comments` may be empty.
+      #
+      # @rbs comments: Array[Prism::Comment] -- Leading comments
+      # @rbs lines: Array[Prism::Comment] -- Lines to be consumed
+      # @rbs yields (Array[Prism::Comment], bool is_annotation) -> void
+      # @rbs returns void
+      def yield_paragraph(comments, lines, &block)
+        while first_comment = lines.first
+          if offset = annotation_comment?(first_comment)
+            yield comments, false unless comments.empty?
+            lines.shift
+            case offset
+            when Integer
+              yield_annotation([first_comment], lines, offset, allow_empty_lines: true, &block)
+            when true
+              yield_annotation([first_comment], lines, 1, allow_empty_lines: false, &block)
+            end
+            return
+          else
+            lines.shift
+            comments.push(first_comment)
+          end
+        end
+
+        yield comments, false unless comments.empty?
+      end
+
+      # Consumes empty lines between annotation lines
+      #
+      # An empty line is already detected and consumed.
+      # The line is already removed from `lines` and put in `empty_comments`.
+      #
+      # Note that the arguments, `comments`, `empty_comments`, and `lines` are modified in place.
+      #
+      # @rbs comments: Array[Prism::Comment] -- Non empty annotation comments
+      # @rbs empty_comments: Array[Prism::Comment] -- Empty comments that may be part of the annotation
+      # @rbs lines: Array[Prism::Comment] -- Lines
+      # @rbs offset: Integer -- Offset of the first character of the annotation
+      # @rbs yields (Array[Prism::Comment], bool is_annotation) -> void
+      # @rbs returns void
+      def yield_empty_annotation(comments, empty_comments, lines, offset, &block)
+        first_comment = lines.first
+
+        if first_comment
+          nonspace_index = first_comment.location.slice.index(/\S/, 1)
+
+          case
+          when nonspace_index.nil?
+            # Empty line, possibly continues the annotation
+            lines.shift
+            empty_comments << first_comment
+            yield_empty_annotation(comments, empty_comments, lines, offset, &block)
+          when nonspace_index > offset
+            # Continuation of the annotation
+            lines.shift
+            comments.concat(empty_comments)
+            comments.push(first_comment)
+            yield_annotation(comments, lines, offset, allow_empty_lines: true, &block)
+          else
+            yield comments, true
+            yield_paragraph(empty_comments, lines, &block)
+          end
+        else
+          # EOF
+          yield comments, true
+          yield empty_comments, false
         end
       end
 

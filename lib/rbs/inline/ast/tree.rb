@@ -6,6 +6,7 @@ module RBS
       class Tree
         # @rbs!
         #   type token = [Symbol, String]
+        #
         #   type tree = token | Tree | Types::t | MethodType | nil
 
         attr_reader :trees #:: Array[tree]
