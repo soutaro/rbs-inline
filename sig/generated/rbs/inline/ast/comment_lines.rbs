@@ -3,7 +3,7 @@
 module RBS
   module Inline
     module AST
-      # CommentLines represents consecutive comments
+      # CommentLines represents consecutive comments, providing a mapping from locations in `#string` to a pair of a comment and its offset
       #
       # The comments construct one String.
       #
@@ -15,13 +15,17 @@ module RBS
       # We want to get a String of comment1 and comment2, `"Hello\nWorld".
       # And want to translate a location in the string into the location in comment1 and comment2.
       class CommentLines
-        attr_reader comments: Array[[ Prism::Comment, Integer ]]
+        attr_reader comments: Array[Prism::Comment]
 
         # @rbs comments: Array[Prism::Comment]
         def initialize: (Array[Prism::Comment] comments) -> untyped
 
+        def lines: () -> Array[String]
+
         def string: () -> String
 
+        # Translates the cursor index of `#string` into the cursor index of a specific comment object
+        #
         # @rbs index: Integer
         # @rbs returns [Prism::Comment, Integer]?
         def comment_location: (Integer index) -> [ Prism::Comment, Integer ]?

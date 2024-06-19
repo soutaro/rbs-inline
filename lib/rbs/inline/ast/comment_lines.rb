@@ -3,7 +3,7 @@
 module RBS
   module Inline
     module AST
-      # CommentLines represents consecutive comments
+      # CommentLines represents consecutive comments, providing a mapping from locations in `#string` to a pair of a comment and its offset
       #
       # The comments construct one String.
       #
@@ -16,37 +16,34 @@ module RBS
       # And want to translate a location in the string into the location in comment1 and comment2.
       #
       class CommentLines
-        attr_reader :comments #:: Array[[Prism::Comment, Integer]]
+        attr_reader :comments #:: Array[Prism::Comment]
 
         # @rbs comments: Array[Prism::Comment]
         def initialize(comments)
-          offsets = comments.map do |comment|
-            comment.location.slice.index(/[^#\s]/) || 1
-          end
-          first_offset = offsets[0]
+          @comments = comments
+        end
 
-          @comments = comments.map.with_index do |comment, index|
-            offset = offsets[index]
-            offset = first_offset if offset > first_offset
-
-            [comment, offset]
-          end
+        def lines #:: Array[String]
+          comments.map {|comment| comment.location.slice }
         end
 
         def string #:: String
-          comments.map {|comment, offset| comment.location.slice[offset..] }.join("\n")
+          comments.map {|comment| comment.location.slice[1..] || "" }.join("\n")
         end
-
+ 
+        # Translates the cursor index of `#string` into the cursor index of a specific comment object
+        #
         # @rbs index: Integer
         # @rbs returns [Prism::Comment, Integer]?
         def comment_location(index)
-          comments.each do |comment, offset|
+          comments.each do |comment|
             comment_length = comment.location.length
 
-            if index + offset <= comment_length
-              return [comment, index + offset]
+            if index + 1 <= comment_length
+              return [comment, index + 1]
             else
-              index = index - comment_length + offset - 1
+              index -= comment_length - 1
+              index -= 1 # newline
               return if index < 0
             end
           end

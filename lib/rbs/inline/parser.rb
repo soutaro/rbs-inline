@@ -61,7 +61,7 @@ module RBS
 
         uses = [] #: Array[AST::Annotations::Use]
         annots.each do |annot|
-          annot.annotations.each do |annotation|
+          annot.each_annotation do |annotation|
             if annotation.is_a?(AST::Annotations::Use)
               uses << annotation
             end
@@ -118,7 +118,7 @@ module RBS
         comments = inner_annotations(start_line, end_line)
 
         comments.each do |comment|
-          comment.annotations.each do |annotation|
+          comment.each_annotation do |annotation|
             case annotation
             when AST::Annotations::IvarType
               members << AST::Members::RBSIvar.new(comment, annotation)
@@ -256,7 +256,7 @@ module RBS
             end
             if assertion_comment && comment_line
               comments.delete(comment_line)
-              assertion = assertion_comment.annotations.find do |annotation|
+              assertion = assertion_comment.each_annotation.find do |annotation|
                 annotation.is_a?(AST::Annotations::Assertion)
               end #: AST::Annotations::Assertion?
             end
@@ -313,7 +313,7 @@ module RBS
       # @rbs returns bool
       def ignored_node?(node)
         if comment = comments.fetch(node.location.start_line - 1, nil)
-          comment.annotations.any? { _1.is_a?(AST::Annotations::Skip) }
+          comment.each_annotation.any? { _1.is_a?(AST::Annotations::Skip) }
         else
           false
         end
@@ -332,7 +332,7 @@ module RBS
 
         if app_comment && comment_line
           comments.delete(comment_line)
-          app_comment.annotations.find do |annotation|
+          app_comment.each_annotation.find do |annotation|
             annotation.is_a?(AST::Annotations::Application)
           end #: AST::Annotations::Application?
         end
@@ -356,7 +356,7 @@ module RBS
 
         if app_comment && comment_line
           comments.delete(comment_line)
-          app_comment.annotations.find do |annotation|
+          app_comment.each_annotation.find do |annotation|
             annotation.is_a?(AST::Annotations::Assertion)
           end #: AST::Annotations::Assertion?
         end

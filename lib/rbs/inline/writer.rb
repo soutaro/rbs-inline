@@ -66,7 +66,7 @@ module RBS
         return unless decl.class_name
 
         if decl.comments
-          comment = RBS::AST::Comment.new(string: decl.comments.content, location: nil)
+          comment = RBS::AST::Comment.new(string: decl.comments.content(trim: true), location: nil)
         end
 
         members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
@@ -104,7 +104,7 @@ module RBS
         return unless decl.module_name
 
         if decl.comments
-          comment = RBS::AST::Comment.new(string: decl.comments.content, location: nil)
+          comment = RBS::AST::Comment.new(string: decl.comments.content(trim: true), location: nil)
         end
 
         members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
@@ -144,7 +144,7 @@ module RBS
         return unless decl.constant_name
 
         if decl.comments
-          comment = RBS::AST::Comment.new(string: decl.comments.content, location: nil)
+          comment = RBS::AST::Comment.new(string: decl.comments.content(trim: true), location: nil)
         end
 
         RBS::AST::Declarations::Constant.new(
@@ -178,7 +178,7 @@ module RBS
         case member
         when AST::Members::RubyDef
           if member.comments
-            comment = RBS::AST::Comment.new(string: member.comments.content, location: nil)
+            comment = RBS::AST::Comment.new(string: member.comments.content(trim: true), location: nil)
           end
 
           kind = method_kind(member, decl)
@@ -212,7 +212,7 @@ module RBS
           ]
         when AST::Members::RubyAlias
           if member.comments
-            comment = RBS::AST::Comment.new(string: member.comments.content, location: nil)
+            comment = RBS::AST::Comment.new(string: member.comments.content(trim: true), location: nil)
           end
 
           [

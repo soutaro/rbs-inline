@@ -15,9 +15,9 @@ module RBS
           end
         end
 
-        # @rbs! type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl
-
         # @rbs!
+        #   type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl
+        #
         #  interface _WithComments
         #    def comments: () -> AnnotationParser::ParsingResult?
         #  end
@@ -27,7 +27,7 @@ module RBS
           # @rbs returns Array[RBS::AST::TypeParam]
           def type_params
             if comments = comments()
-              comments.annotations.filter_map do |annotation|
+              comments.each_annotation.filter_map do |annotation|
                 if annotation.is_a?(Annotations::Generic)
                   annotation.type_param
                 end
@@ -63,7 +63,7 @@ module RBS
           # Type parameters for the declaration
           def type_params #:: Array[RBS::AST::TypeParam]
             if comments = comments()
-              comments.annotations.filter_map do |annotation|
+              comments.each_annotation.filter_map do |annotation|
                 if annotation.is_a?(Annotations::Generic)
                   annotation.type_param
                 end
@@ -102,7 +102,7 @@ module RBS
           # @rbs %a{pure}
           def super_class #:: RBS::AST::Declarations::Class::Super?
             if comments
-              if inherits = comments.annotations.find {|a| a.is_a?(Annotations::Inherits) } #: Annotations::Inherits?
+              if inherits = comments.each_annotation.find {|a| a.is_a?(Annotations::Inherits) } #: Annotations::Inherits?
                 super_name = inherits.super_name
                 super_args = inherits.args
 
@@ -148,7 +148,7 @@ module RBS
           # @rbs %a{pure}
           def module_selfs #:: Array[Annotations::ModuleSelf]
             if comments
-              comments.annotations.filter_map do |ann|
+              comments.each_annotation.filter_map do |ann|
                 if ann.is_a?(AST::Annotations::ModuleSelf)
                   ann
                 end
