@@ -4,7 +4,7 @@ module RBS
   module Inline
     module NodeUtils
       # @rbs node: Prism::Node
-      # @rbs returns TypeName?
+      # @rbs return: TypeName?
       def type_name: (Prism::Node node) -> TypeName?
     end
   end

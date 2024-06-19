@@ -20,7 +20,7 @@ class Person
 
   # @rbs name: String
   # @rbs addresses: Array[String]
-  # @rbs returns void
+  # @rbs return: void
   def initialize(name:, addresses:)
     @name = name
     @addresses = addresses

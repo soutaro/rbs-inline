@@ -31,7 +31,7 @@ module RBS
 
           # @rbs tree: Tree
           # @rbs source: CommentLines
-          # @rbs returns void
+          # @rbs return: void
           def initialize(tree, source)
             @tree = tree
             @source = source
@@ -75,7 +75,7 @@ module RBS
           end
         end
 
-        # `@rbs returns T`
+        # `@rbs return: T`
         class ReturnType < Base
           attr_reader :type #:: Types::t?
 
@@ -88,16 +88,16 @@ module RBS
 
             return_type_decl = tree.nth_tree!(1)
 
-            if type = return_type_decl.nth_type?(1)
+            if type = return_type_decl.nth_type?(2)
               @type = type
             end
 
-            if comment = return_type_decl.nth_tree(2)
+            if comment = return_type_decl.nth_tree(3)
               @comment = comment.to_s
             end
           end
 
-          # @rbs returns bool
+          # @rbs return: bool
           def complete?
             if type
               true
@@ -146,7 +146,7 @@ module RBS
             @type = tree.nth_method_type?(1) || tree.nth_type?(1)
           end
 
-          # @rbs returns bool
+          # @rbs return: bool
           def complete?
             if type
               true
@@ -204,7 +204,7 @@ module RBS
             end
           end
 
-          # @rbs returns bool
+          # @rbs return: bool
           def complete?
             types ? true : false
           end

@@ -6,7 +6,7 @@ module RBS
       module Declarations
         module ConstantUtil
           # @rbs node: Prism::Node
-          # @rbs returns TypeName?
+          # @rbs return: TypeName?
           def type_name: (Prism::Node node) -> TypeName?
         end
 
@@ -18,7 +18,7 @@ module RBS
 
         # @rbs module-self _WithComments
         module Generics : _WithComments
-          # @rbs returns Array[RBS::AST::TypeParam]
+          # @rbs return: Array[RBS::AST::TypeParam]
           def type_params: () -> Array[RBS::AST::TypeParam]
         end
 
@@ -55,7 +55,7 @@ module RBS
           # @rbs node: Prism::ClassNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs super_app: Annotations::Application?
-          # @rbs returns void
+          # @rbs return: void
           def initialize: (Prism::ClassNode node, AnnotationParser::ParsingResult? comments, Annotations::Application? super_app) -> void
 
           # @rbs %a{pure}
@@ -94,17 +94,17 @@ module RBS
           def initialize: (Prism::ConstantWriteNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> untyped
 
           # @rbs %a{pure}
-          # @rbs returns Types::t
+          # @rbs return: Types::t
           %a{pure}
           def type: () -> Types::t
 
           # @rbs %a{pure}
           # @rbs return Types::t?
           %a{pure}
-          def literal_type: () -> untyped
+          def literal_type: () -> Types::t?
 
           # @rbs %a{pure}
-          # @rbs returns TypeName?
+          # @rbs return: TypeName?
           %a{pure}
           def constant_name: () -> TypeName?
 

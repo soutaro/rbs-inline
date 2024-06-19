@@ -13,7 +13,7 @@ module RBS
 
           # @rbs tree: Tree
           # @rbs source: CommentLines
-          # @rbs returns void
+          # @rbs return: void
           def initialize: (Tree tree, CommentLines source) -> void
         end
 
@@ -31,7 +31,7 @@ module RBS
           def complete?: () -> bool
         end
 
-        # `@rbs returns T`
+        # `@rbs return: T`
         class ReturnType < Base
           attr_reader type: Types::t?
 
@@ -40,7 +40,7 @@ module RBS
           # @rbs override
           def initialize: ...
 
-          # @rbs returns bool
+          # @rbs return: bool
           def complete?: () -> bool
         end
 
@@ -64,7 +64,7 @@ module RBS
 
           def initialize: (untyped tree, untyped source) -> untyped
 
-          # @rbs returns bool
+          # @rbs return: bool
           def complete?: () -> bool
 
           # Returns a type if it's type
@@ -81,7 +81,7 @@ module RBS
           # @rbs override
           def initialize: ...
 
-          # @rbs returns bool
+          # @rbs return: bool
           def complete?: () -> bool
         end
 

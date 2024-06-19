@@ -49,7 +49,7 @@ module RBS
 
         # @rbs path: Pathname
         # @rbs prefix: Pathname
-        # @rbs returns bool
+        # @rbs return: bool
         def has_prefix?(path, prefix:)
           path.descend.include?(prefix)
         end
@@ -68,7 +68,7 @@ module RBS
       end
 
       # @rbs args: Array[String]
-      # @rbs returns Integer
+      # @rbs return: Integer
       def run(args)
         base_paths = [Pathname("lib"), Pathname("app")]
         output_path = nil #: Pathname?

@@ -21,7 +21,7 @@ module RBS
       end
 
       # @rbs lines: Array[String]
-      # @rbs returns void
+      # @rbs return: void
       def header(*lines)
         lines.each do |line|
           writer.out.puts("# " + line)
@@ -31,7 +31,7 @@ module RBS
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
-      # @rbs returns void
+      # @rbs return: void
       def write(uses, decls)
         use_dirs = uses.map do |use|
           RBS::AST::Directives::Use.new(
@@ -48,7 +48,7 @@ module RBS
       end
 
       # @rbs decl: AST::Declarations::t
-      # @rbs returns RBS::AST::Declarations::t?
+      # @rbs return: RBS::AST::Declarations::t?
       def translate_decl(decl)
         case decl
         when AST::Declarations::ClassDecl
@@ -61,7 +61,7 @@ module RBS
       end
 
       # @rbs decl: AST::Declarations::ClassDecl
-      # @rbs returns RBS::AST::Declarations::Class?
+      # @rbs return: RBS::AST::Declarations::Class?
       def translate_class_decl(decl)
         return unless decl.class_name
 
@@ -99,7 +99,7 @@ module RBS
       end
 
       # @rbs decl: AST::Declarations::ModuleDecl
-      # @rbs returns RBS::AST::Declarations::Module?
+      # @rbs return: RBS::AST::Declarations::Module?
       def translate_module_decl(decl)
         return unless decl.module_name
 
@@ -139,7 +139,7 @@ module RBS
       end
 
       # @rbs decl: AST::Declarations::ConstantDecl
-      # @rbs returns RBS::AST::Declarations::Constant?
+      # @rbs return: RBS::AST::Declarations::Constant?
       def translate_constant_decl(decl)
         return unless decl.constant_name
 
@@ -156,7 +156,7 @@ module RBS
       end
 
       # @rbs decl: AST::Declarations::SingletonClassDecl
-      # @rbs returns Array[RBS::AST::Members::t]
+      # @rbs return: Array[RBS::AST::Members::t]
       def translate_singleton_decl(decl)
         members = []
 
@@ -173,7 +173,7 @@ module RBS
 
       # @rbs member: AST::Members::t
       # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
-      # @rbs returns Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
+      # @rbs return: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
       def translate_member(member, decl)
         case member
         when AST::Members::RubyDef
@@ -266,7 +266,7 @@ module RBS
       #
       # @rbs member: AST::Members::RubyDef
       # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
-      # @rbs returns RBS::AST::Members::MethodDefinition::kind
+      # @rbs return: RBS::AST::Members::MethodDefinition::kind
       def method_kind(member, decl)
         return :singleton if decl.is_a?(AST::Declarations::SingletonClassDecl)
 

@@ -27,7 +27,7 @@ module RBS
         # Translates the cursor index of `#string` into the cursor index of a specific comment object
         #
         # @rbs index: Integer
-        # @rbs returns [Prism::Comment, Integer]?
+        # @rbs return: [Prism::Comment, Integer]?
         def comment_location: (Integer index) -> [ Prism::Comment, Integer ]?
       end
     end

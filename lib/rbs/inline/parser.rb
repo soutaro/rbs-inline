@@ -40,7 +40,7 @@ module RBS
 
       # @rbs result: ParseResult
       # @rbs opt_in: bool -- `true` for *opt-out* mode, `false` for *opt-in* mode.
-      # @rbs returns [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
+      # @rbs return: [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
       def self.parse(result, opt_in:)
         instance = Parser.new()
 
@@ -76,12 +76,12 @@ module RBS
         ]
       end
 
-      # @rbs returns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
+      # @rbs return: AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
       def current_class_module_decl
         surrounding_decls.last
       end
 
-      # @rbs returns AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl
+      # @rbs return: AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl
       def current_class_module_decl!
         current_class_module_decl or raise
       end
@@ -297,7 +297,7 @@ module RBS
 
       # @rbs new_visibility: RBS::AST::Members::visibility?
       # @rbs block: ^() -> void
-      # @rbs returns void
+      # @rbs return: void
       def push_visibility(new_visibility, &block)
         old_visibility = current_visibility
 
@@ -310,7 +310,7 @@ module RBS
       end
 
       # @rbs node: Node
-      # @rbs returns bool
+      # @rbs return: bool
       def ignored_node?(node)
         if comment = comments.fetch(node.location.start_line - 1, nil)
           comment.each_annotation.any? { _1.is_a?(AST::Annotations::Skip) }
@@ -324,7 +324,7 @@ module RBS
       # The application annotation is removed from `comments`.
       #
       # @rbs node: Node
-      # @rbs returns AST::Annotations::Application?
+      # @rbs return: AST::Annotations::Application?
       def application_annotation(node)
         comment_line, app_comment = comments.find do |_, comment|
           comment.line_range.begin == node.location.end_line
@@ -343,7 +343,7 @@ module RBS
       # The assertion annotation is removed from `comments`.
       #
       # @rbs node: Node | Location
-      # @rbs returns AST::Annotations::Assertion?
+      # @rbs return: AST::Annotations::Assertion?
       def assertion_annotation(node)
         if node.is_a?(Prism::Location)
           location = node

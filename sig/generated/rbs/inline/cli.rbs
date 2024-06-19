@@ -30,7 +30,7 @@ module RBS
 
         # @rbs path: Pathname
         # @rbs prefix: Pathname
-        # @rbs returns bool
+        # @rbs return: bool
         def has_prefix?: (Pathname path, prefix: Pathname) -> bool
       end
 
@@ -45,7 +45,7 @@ module RBS
       def initialize: (?stdout: IO, ?stderr: IO) -> void
 
       # @rbs args: Array[String]
-      # @rbs returns Integer
+      # @rbs return: Integer
       def run: (Array[String] args) -> Integer
     end
   end
