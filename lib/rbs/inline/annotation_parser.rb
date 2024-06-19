@@ -293,9 +293,6 @@ module RBS
       end
 
       class Tokenizer
-        attr_reader :scanner #:: StringScanner
-        attr_reader :current_token #:: token?
-
         KEYWORDS = {
           "returns" => :kRETURNS,
           "inherits" => :kINHERITS,
@@ -327,51 +324,127 @@ module RBS
         } #:: Hash[String, Symbol]
         PUNCTS_RE = Regexp.union(PUNCTS.keys) #:: Regexp
 
+        attr_reader :scanner #:: StringScanner
+
+        # Token that comes after the current position
+        attr_reader :lookahead1 #:: token?
+
+        # Token that comes after `lookahead1`
+        attr_reader :lookahead2 #:: token?
+
+        # Returns the current char position of the scanner
+        #
+        # ```
+        # foo bar baz
+        # ^^^             lookahead1
+        #     ^^^         lookahead2
+        #         ^    <= scanner.charpos
+        # ```
+        #
+        def current_position #:: Integer
+          start = scanner.charpos
+          start -= lookahead1[1].size if lookahead1
+          start -= lookahead2[1].size if lookahead2
+          start
+        end
+
         # @rbs scanner: StringScanner
         # @rbs returns void
         def initialize(scanner)
           @scanner = scanner
-          @current_token = nil
+
+          @lookahead1 = nil
+          @lookahead2 = nil
         end
 
-        # @rbs tree: AST::Tree
-        # @rbs returns token?
-        def advance(tree)
-          last = current_token
+        # Advances the scanner
+        #
+        # @rbs tree: AST::Tree -- Tree to insert trivia tokens
+        # @rbs eat: bool -- true to add the current lookahead token into the tree
+        # @rbs returns void
+        def advance(tree, eat: false)
+          last = lookahead1
+          @lookahead1 = lookahead2
+
+          tree << last if eat
 
           case
+          when scanner.eos?
+            @lookahead2 = [:kEOF, ""]
           when s = scanner.scan(/\s+/)
-            tree << [:tWHITESPACE, s] if tree
-            advance(tree)
+            @lookahead2 = [:tWHITESPACE, s]
           when s = scanner.scan(/@rbs!/)
-            @current_token = [:kRBSE, s]
+            @lookahead2 = [:kRBSE, s]
           when s = scanner.scan(/@rbs\b/)
-            @current_token = [:kRBS, s]
+            @lookahead2 = [:kRBS, s]
           when s = scanner.scan(PUNCTS_RE)
-            @current_token = [PUNCTS.fetch(s), s]
+            @lookahead2 = [PUNCTS.fetch(s), s]
           when s = scanner.scan(KW_RE)
-            @current_token = [KEYWORDS.fetch(s), s]
+            @lookahead2 = [KEYWORDS.fetch(s), s]
           when s = scanner.scan(/[A-Z]\w*/)
-            @current_token = [:tUIDENT, s]
+            @lookahead2 = [:tUIDENT, s]
           when s = scanner.scan(/_[A-Z]\w*/)
-            @current_token = [:tIFIDENT, s]
+            @lookahead2 = [:tIFIDENT, s]
           when s = scanner.scan(/[a-z]\w*/)
-            @current_token = [:tLVAR, s]
+            @lookahead2 = [:tLVAR, s]
           when s = scanner.scan(/![a-z]\w*/)
-            @current_token = [:tELVAR, s]
+            @lookahead2 = [:tELVAR, s]
           when s = scanner.scan(/@\w+/)
-            @current_token = [:tATIDENT, s]
+            @lookahead2 = [:tATIDENT, s]
           when s = scanner.scan(/%a\{[^}]+\}/)
-            @current_token = [:tANNOTATION, s]
+            @lookahead2 = [:tANNOTATION, s]
           when s = scanner.scan(/%a\[[^\]]+\]/)
-            @current_token = [:tANNOTATION, s]
+            @lookahead2 = [:tANNOTATION, s]
           when s = scanner.scan(/%a\([^)]+\)/)
-            @current_token = [:tANNOTATION, s]
+            @lookahead2 = [:tANNOTATION, s]
           else
-            @current_token = nil
+            @lookahead2 = nil
           end
 
-          last
+          if lookahead1 && lookahead1[0] == :tWHITESPACE
+            tree << lookahead1
+            advance(tree)
+          end
+        end
+
+        # Returns true if the scanner cannot consume next token
+        def stuck? #:: bool
+          lookahead1.nil? && lookahead2.nil?
+        end
+
+        # Skips characters
+        #
+        # This method ensures the `current_position` will be the given `position`.
+        #
+        # @rbs size: Integer -- The new position
+        # @rbs tree: AST::Tree -- Tree to insert trivia tokens
+        # @rbs returns void
+        def reset(position, tree)
+          if scanner.charpos > position
+            scanner.reset()
+          end
+
+          skips = position - scanner.charpos
+
+          if scanner.rest_size < skips
+            raise "The position is bigger than the size of the rest of the input: input size=#{scanner.string.size}, position=#{position}"
+          end
+
+          scanner.skip(/.{#{skips}}/)
+
+          @lookahead1 = nil
+          @lookahead2 = nil
+
+          advance(tree)
+          advance(tree)
+        end
+
+        def rest #:: String
+          buf = +""
+          buf << lookahead1[1] if lookahead1
+          buf << lookahead2[1] if lookahead2
+          buf << scanner.rest
+          buf
         end
 
         # Consume given token type and inserts the token to the tree or `nil`
@@ -381,7 +454,7 @@ module RBS
         # @rbs returns void
         def consume_token(*types, tree:)
           if type?(*types)
-            tree << advance(tree)
+            advance(tree, eat: true)
           else
             tree << nil
           end
@@ -389,12 +462,12 @@ module RBS
 
         # Consume given token type and inserts the token to the tree or raise
         #
-        # @rbs type: Array[Symbol]
+        # @rbs types: Array[Symbol]
         # @rbs tree: AST::Tree
         # @rbs returns void
         def consume_token!(*types, tree:)
           type!(*types)
-          tree << advance(tree)
+          advance(tree, eat: true)
         end
 
         # Test if current token has specified `type`
@@ -402,7 +475,7 @@ module RBS
         # @rbs type: Array[Symbol]
         # @rbs returns bool
         def type?(*type)
-          type.any? { current_token && current_token[0] == _1 }
+          type.any? { lookahead1 && lookahead1[0] == _1 }
         end
 
         # Ensure current token is one of the specified in types
@@ -410,7 +483,7 @@ module RBS
         # @rbs types: Array[Symbol]
         # @rbs returns void
         def type!(*types)
-          raise "Unexpected token: #{current_token&.[](0)}, where expected token: #{types.join(",")}" unless type?(*types)
+          raise "Unexpected token: #{lookahead1&.[](0)}, where expected token: #{types.join(",")}" unless type?(*types)
         end
 
         # Reset the current_token to incoming comment `--`
@@ -421,14 +494,21 @@ module RBS
         def skip_to_comment
           return "" if type?(:kMINUS2)
 
+          prefix = +""
+          prefix << lookahead1[1] if lookahead1
+          prefix << lookahead2[1] if lookahead2
+
           if string = scanner.scan_until(/--/)
-            @current_token = [:kMINUS2, "--"]
-            string.delete_suffix("--")
+            @lookahead1 = nil
+            @lookahead2 = [:kMINUS2, "--"]
+            advance(_ = nil)  # The tree is unused because lookahead2 is not a trivia token
+            prefix + string.delete_suffix("--")
           else
             s = scanner.rest
-            @current_token = [:kEOF, ""]
+            @lookahead1 = [:kEOF, ""]
+            @lookahead2 = nil
             scanner.terminate
-            s
+            prefix + s
           end
         end
       end
@@ -441,17 +521,18 @@ module RBS
 
         tree = AST::Tree.new(:rbs_annotation)
         tokenizer.advance(tree)
+        tokenizer.advance(tree)
 
         case
         when tokenizer.type?(:kRBSE)
-          tree << tokenizer.current_token
-          tree << [:EMBEDDED_RBS, tokenizer.scanner.rest]
+          tree << tokenizer.lookahead1
+          rest = tokenizer.rest
+          rest.delete_prefix!("@rbs!")
+          tree << [:EMBEDDED_RBS, rest]
           tokenizer.scanner.terminate
           AST::Annotations::Embedded.new(tree, comments)
         when tokenizer.type?(:kRBS)
-          tree << tokenizer.current_token
-
-          tokenizer.advance(tree)
+          tokenizer.advance(tree, eat: true)
 
           case
           when tokenizer.type?(:tLVAR, :tELVAR)
@@ -488,8 +569,7 @@ module RBS
             AST::Annotations::Yields.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
-          tree << tokenizer.current_token
-          tokenizer.advance(tree)
+          tokenizer.advance(tree, eat: true)
           tree << parse_type_method_type(tokenizer, tree)
           AST::Annotations::Assertion.new(tree, comments)
         when tokenizer.type?(:kLBRACKET)
@@ -506,7 +586,7 @@ module RBS
         tokenizer.consume_token!(:tLVAR, :tELVAR, tree: tree)
 
         if tokenizer.type?(:kCOLON)
-          tree << tokenizer.current_token
+          tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         else
           tree << nil
@@ -540,10 +620,9 @@ module RBS
       def parse_comment(tokenizer)
         tree = AST::Tree.new(:comment)
 
-        tokenizer.type!(:kMINUS2)
+        tokenizer.consume_token(:kMINUS2, tree: tree)
 
-        tree << tokenizer.current_token
-        rest = tokenizer.scanner.rest || ""
+        rest = tokenizer.rest
         tokenizer.scanner.terminate
         tree << [:tCOMMENT, rest]
 
@@ -556,7 +635,7 @@ module RBS
         tree = AST::Tree.new(:tapp)
 
         if tokenizer.type?(:kLBRACKET)
-          tree << tokenizer.current_token
+          tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
 
@@ -569,7 +648,7 @@ module RBS
           break if type.is_a?(AST::Tree)
 
           if tokenizer.type?(:kCOMMA)
-            types << tokenizer.current_token
+            types << tokenizer.lookahead1
             tokenizer.advance(types)
           end
 
@@ -580,7 +659,7 @@ module RBS
         tree << types
 
         if tokenizer.type?(:kRBRACKET)
-          tree << tokenizer.current_token
+          tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
 
@@ -600,38 +679,27 @@ module RBS
       # @rbs returns MethodType | AST::Tree | Types::t | nil
       def parse_type_method_type(tokenizer, parent_tree)
         buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
-        range = (tokenizer.scanner.charpos - (tokenizer.scanner.matched_size || 0) ..)
+        range = (tokenizer.current_position..)
         begin
           if type = RBS::Parser.parse_method_type(buffer, range: range, require_eof: false)
             loc = type.location or raise
-            size = loc.end_pos - loc.start_pos
-            (size - (tokenizer.scanner.matched_size || 0)).times do
-              tokenizer.scanner.skip(/./)
-            end
-            tokenizer.advance(parent_tree)
+            tokenizer.reset(loc.end_pos, parent_tree)
             type
           else
-            tokenizer.advance(parent_tree)
             nil
           end
         rescue RBS::ParsingError
           begin
             if type = RBS::Parser.parse_type(buffer, range: range, require_eof: false)
               loc = type.location or raise
-              size = loc.end_pos - loc.start_pos
-              (size - (tokenizer.scanner.matched_size || 0)).times do
-                tokenizer.scanner.skip(/./)
-              end
-              tokenizer.advance(parent_tree)
+              tokenizer.reset(loc.end_pos, parent_tree)
               type
             else
-              tokenizer.advance(parent_tree)
               nil
             end
           rescue RBS::ParsingError
-            content = (tokenizer.scanner.matched || "") + (tokenizer.scanner.rest || "")
             tree = AST::Tree.new(:type_syntax_error)
-            tree << [:tSOURCE, content]
+            tree << [:tSOURCE, tokenizer.rest]
             tokenizer.scanner.terminate
             tree
           end
@@ -656,17 +724,12 @@ module RBS
       # @rbs returns Types::t | AST::Tree | nil
       def parse_type(tokenizer, parent_tree)
         buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
-        range = (tokenizer.scanner.charpos - (tokenizer.scanner.matched_size || 0) ..)
+        range = (tokenizer.current_position..)
         if type = RBS::Parser.parse_type(buffer, range: range, require_eof: false)
           loc = type.location or raise
-          size = loc.end_pos - loc.start_pos
-          (size - (tokenizer.scanner.matched_size || 0)).times do
-            tokenizer.scanner.skip(/./)
-          end
-          tokenizer.advance(parent_tree)
+          tokenizer.reset(loc.end_pos, parent_tree)
           type
         else
-          tokenizer.advance(parent_tree)
           nil
         end
       rescue RBS::ParsingError
@@ -682,7 +745,7 @@ module RBS
         tree = AST::Tree.new(:rbs_annotation)
 
         while tokenizer.type?(:tANNOTATION)
-          tree << tokenizer.current_token
+          tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
 
@@ -695,7 +758,7 @@ module RBS
         tree = AST::Tree.new(:rbs_inherits)
 
         if tokenizer.type?(:kINHERITS)
-          tree << tokenizer.current_token
+          tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
 
@@ -712,7 +775,7 @@ module RBS
         tree = AST::Tree.new(:override)
 
         if tokenizer.type?(:kOVERRIDE)
-          tree << tokenizer.current_token
+          tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
 
@@ -727,7 +790,7 @@ module RBS
         tree = AST::Tree.new(:use)
 
         if tokenizer.type?(:kUSE)
-          tree << tokenizer.current_token
+          tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
 
@@ -735,7 +798,7 @@ module RBS
           tree << parse_use_clause(tokenizer)
 
           if tokenizer.type?(:kCOMMA)
-            tree << tokenizer.advance(tree)
+            tokenizer.advance(tree, eat: true)
           else
             tree << nil
           end
@@ -759,18 +822,18 @@ module RBS
         tree = AST::Tree.new(:use_clause)
 
         if tokenizer.type?(:kCOLON2)
-          tree << tokenizer.current_token
+          tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
 
         while true
           case
           when tokenizer.type?(:tUIDENT)
-            tree << tokenizer.advance(tree)
+            tokenizer.advance(tree, eat: true)
 
             case
             when tokenizer.type?(:kCOLON2)
-              tree << tokenizer.advance(tree)
+              tokenizer.advance(tree, eat: true)
             else
               break
             end
@@ -781,11 +844,11 @@ module RBS
 
         case
         when tokenizer.type?(:tLVAR)
-          tree << tokenizer.advance(tree)
+          tokenizer.advance(tree, eat: true)
         when tokenizer.type?(:tIFIDENT)
-          tree << tokenizer.advance(tree)
+          tokenizer.advance(tree, eat: true)
         when tokenizer.type?(:kSTAR)
-          tree << tokenizer.advance(tree)
+          tokenizer.advance(tree, eat: true)
           return tree
         end
 

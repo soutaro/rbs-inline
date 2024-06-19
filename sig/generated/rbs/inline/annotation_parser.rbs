@@ -121,10 +121,6 @@ module RBS
       def yield_empty_annotation: (Array[Prism::Comment] comments, Array[Prism::Comment] empty_comments, Array[Prism::Comment] lines, Integer offset) { (Array[Prism::Comment], bool is_annotation) -> void } -> void
 
       class Tokenizer
-        attr_reader scanner: StringScanner
-
-        attr_reader current_token: token?
-
         KEYWORDS: Hash[String, Symbol]
 
         KW_RE: ::Regexp
@@ -133,13 +129,48 @@ module RBS
 
         PUNCTS_RE: Regexp
 
+        attr_reader scanner: StringScanner
+
+        # Token that comes after the current position
+        attr_reader lookahead1: token?
+
+        # Token that comes after `lookahead1`
+        attr_reader lookahead2: token?
+
+        # Returns the current char position of the scanner
+        #
+        # ```
+        # foo bar baz
+        # ^^^             lookahead1
+        #     ^^^         lookahead2
+        #         ^    <= scanner.charpos
+        # ```
+        def current_position: () -> Integer
+
         # @rbs scanner: StringScanner
         # @rbs returns void
         def initialize: (StringScanner scanner) -> void
 
-        # @rbs tree: AST::Tree
-        # @rbs returns token?
-        def advance: (AST::Tree tree) -> token?
+        # Advances the scanner
+        #
+        # @rbs tree: AST::Tree -- Tree to insert trivia tokens
+        # @rbs eat: bool -- true to add the current lookahead token into the tree
+        # @rbs returns void
+        def advance: (AST::Tree tree, ?eat: bool) -> void
+
+        # Returns true if the scanner cannot consume next token
+        def stuck?: () -> bool
+
+        # Skips characters
+        #
+        # This method ensures the `current_position` will be the given `position`.
+        #
+        # @rbs size: Integer -- The new position
+        # @rbs tree: AST::Tree -- Tree to insert trivia tokens
+        # @rbs returns void
+        def reset: (untyped position, AST::Tree tree) -> void
+
+        def rest: () -> String
 
         # Consume given token type and inserts the token to the tree or `nil`
         #
@@ -150,10 +181,10 @@ module RBS
 
         # Consume given token type and inserts the token to the tree or raise
         #
-        # @rbs type: Array[Symbol]
+        # @rbs types: Array[Symbol]
         # @rbs tree: AST::Tree
         # @rbs returns void
-        def consume_token!: (*untyped types, tree: AST::Tree) -> void
+        def consume_token!: (*Symbol types, tree: AST::Tree) -> void
 
         # Test if current token has specified `type`
         #
