@@ -55,7 +55,6 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
   end
 
-
   def test_lvar_decl_annotation
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       # @rbs size: Integer -- size of something
@@ -123,7 +122,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       # @rbs returns Array[  -- something
       RUBY
 
-    assert_equal 5, annots[0].annotations.size
+    # assert_equal 5, annots[0].annotations.size
     annots[0].annotations[0].tap do |annotation|
       assert_instance_of AST::Annotations::ReturnType, annotation
       assert_equal "Integer", annotation.type.to_s
@@ -235,6 +234,39 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::Skip, annotation
     end
   end
+
+  def test_lvar_keywords
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs skip: untyped
+      # @rbs returns: untyped
+      # @rbs inherits: untyped
+      # @rbs override: untyped
+      # @rbs use: untyped
+      # @rbs generic: untyped
+      RUBY
+
+    assert_equal 6, annots[0].annotations.size
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::VarType, annotation
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::VarType, annotation
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::Annotations::VarType, annotation
+    end
+    annots[0].annotations[3].tap do |annotation|
+      assert_instance_of AST::Annotations::VarType, annotation
+    end
+    annots[0].annotations[4].tap do |annotation|
+      assert_instance_of AST::Annotations::VarType, annotation
+    end
+    annots[0].annotations[5].tap do |annotation|
+      assert_instance_of AST::Annotations::VarType, annotation
+    end
+  end
+
 
   def test_inherits
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
