@@ -147,6 +147,8 @@ module RBS
         # ```
         def current_position: () -> Integer
 
+        def lookaheads: () -> Array[Symbol?]
+
         # @rbs scanner: StringScanner
         # @rbs returns void
         def initialize: (StringScanner scanner) -> void
@@ -191,6 +193,12 @@ module RBS
         # @rbs type: Array[Symbol]
         # @rbs returns bool
         def type?: (*Symbol type) -> bool
+
+        # Test if lookahead2 token have specified `type`
+        #
+        # @rbs type: Symbol -- The type of the lookahead2 token
+        # @rbs returns bool
+        def type2?: (*Symbol type) -> bool
 
         # Ensure current token is one of the specified in types
         #

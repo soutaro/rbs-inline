@@ -348,6 +348,10 @@ module RBS
           start
         end
 
+        def lookaheads #:: Array[Symbol?]
+          [lookahead1&.[](0), lookahead2&.[](0)]
+        end
+
         # @rbs scanner: StringScanner
         # @rbs returns void
         def initialize(scanner)
@@ -478,6 +482,14 @@ module RBS
           type.any? { lookahead1 && lookahead1[0] == _1 }
         end
 
+        # Test if lookahead2 token have specified `type`
+        #
+        # @rbs type: Symbol -- The type of the lookahead2 token
+        # @rbs returns bool
+        def type2?(*type)
+          type.any? { lookahead2 && lookahead2[0] == _1 }
+        end
+
         # Ensure current token is one of the specified in types
         #
         # @rbs types: Array[Symbol]
@@ -538,6 +550,10 @@ module RBS
           when tokenizer.type?(:tLVAR, :tELVAR)
             tree << parse_var_decl(tokenizer)
             AST::Annotations::VarType.new(tree, comments)
+          when tokenizer.type?(:kSKIP, :kRETURNS, :kINHERITS, :kOVERRIDE, :kUSE, :kGENERIC, :kYIELDS) &&
+            tokenizer.type2?(:kCOLON)
+            tree << parse_var_decl(tokenizer)
+            AST::Annotations::VarType.new(tree, comments)
           when tokenizer.type?(:kSKIP)
             AST::Annotations::Skip.new(tree, comments)
           when tokenizer.type?(:kRETURNS)
@@ -583,7 +599,7 @@ module RBS
       def parse_var_decl(tokenizer)
         tree = AST::Tree.new(:var_decl)
 
-        tokenizer.consume_token!(:tLVAR, :tELVAR, tree: tree)
+        tokenizer.advance(tree, eat: true)
 
         if tokenizer.type?(:kCOLON)
           tree << tokenizer.lookahead1
