@@ -61,11 +61,20 @@ module RBS
             node.name
           end
 
-          def method_type_annotations #:: Array[Annotations::Assertion]
+          def annotated_method_types #:: Array[MethodType]
             if comments
-              comments.each_annotation.select do |annotation|
-                annotation.is_a?(Annotations::Assertion) && annotation.type.is_a?(MethodType)
-              end #: Array[Annotations::Assertion]
+              comments.each_annotation.filter_map do |annotation|
+                case annotation
+                when Annotations::Assertion
+                  if annotation.type.is_a?(MethodType)
+                    annotation.type
+                  end
+                when Annotations::Method
+                  if annotation.type
+                    annotation.type
+                  end
+                end
+              end
             else
               []
             end
@@ -105,10 +114,9 @@ module RBS
           end
 
           def method_overloads #:: Array[RBS::AST::Members::MethodDefinition::Overload]
-            if !(annots = method_type_annotations).empty?
-              annots.map do
-                method_type = _1.type #: MethodType
-
+            case
+            when (method_types = annotated_method_types).any?
+              method_types.map do |method_type|
                 RBS::AST::Members::MethodDefinition::Overload.new(
                   method_type: method_type,
                   annotations: []

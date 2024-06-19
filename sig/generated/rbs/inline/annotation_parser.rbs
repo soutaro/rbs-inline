@@ -234,6 +234,9 @@ module RBS
       # @rbs returns AST::Tree
       def parse_type_app: (Tokenizer tokenizer) -> AST::Tree
 
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_method_type_annotation: (Tokenizer) -> AST::Tree
+
       # Parse a RBS method type or type and returns it
       #
       # It tries parsing a method type, and then parsing a type if failed.
@@ -246,6 +249,17 @@ module RBS
       # @rbs parent_tree: AST::Tree
       # @rbs returns MethodType | AST::Tree | Types::t | nil
       def parse_type_method_type: (Tokenizer tokenizer, AST::Tree parent_tree) -> (MethodType | AST::Tree | Types::t | nil)
+
+      # Parse a RBS method type
+      #
+      # If parsing failed, it returns a Tree(`:type_syntax_error), consuming all of the remaining input.
+      #
+      # Note that this doesn't recognize `--` comment unlike `parse_type`.
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs parent_tree: AST::Tree
+      # @rbs returns MethodType | AST::Tree
+      def parse_method_type: (Tokenizer tokenizer, AST::Tree parent_tree) -> (MethodType | AST::Tree)
 
       # Parse a RBS type and returns it
       #

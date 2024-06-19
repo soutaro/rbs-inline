@@ -19,11 +19,11 @@ module RBS
         #          | IvarType
         #          | Yields
         #          | Embedded
+        #          | Method
         #        #  | Def
         #        #  | AttrReader | AttrWriter | AttrAccessor
         #        #  | Include | Extend | Prepend
         #        #  | Alias
-
 
         class Base
           attr_reader :source #:: CommentLines
@@ -467,6 +467,29 @@ module RBS
             @source = source
 
             @content = tree.nth_token!(1)[1]
+          end
+        end
+
+        # `@rbs METHOD-TYPE``
+        #
+        class Method < Base
+          attr_reader :type #:: MethodType?
+
+          attr_reader :method_type_source #:: String
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            case type = tree.nth_tree!(1).non_trivia_trees[0]
+            when MethodType
+              @type = type
+              @method_type_source = type.location&.source || raise
+            else
+              @type = nil
+              @method_type_source = type.to_s
+            end
           end
         end
       end

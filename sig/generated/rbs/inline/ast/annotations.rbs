@@ -4,7 +4,7 @@ module RBS
   module Inline
     module AST
       module Annotations
-        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | Assertion | Application | RBSAnnotation | Override | IvarType | Yields | Embedded
+        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | Assertion | Application | RBSAnnotation | Override | IvarType | Yields | Embedded | Method
 
         class Base
           attr_reader source: CommentLines
@@ -177,6 +177,16 @@ module RBS
         # `# @rbs!` annotation
         class Embedded < Base
           attr_reader content: String
+
+          # @rbs override
+          def initialize: ...
+        end
+
+        # `@rbs METHOD-TYPE``
+        class Method < Base
+          attr_reader type: MethodType?
+
+          attr_reader method_type_source: String
 
           # @rbs override
           def initialize: ...
