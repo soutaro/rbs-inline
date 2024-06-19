@@ -19,7 +19,7 @@ module RBS
         def initialize: (Symbol type) -> untyped
 
         # @rbs tok: tree
-        # @rbs returns self
+        # @rbs return: self
         def <<: (tree tok) -> self
 
         # Returns the source code associated to the tree
@@ -30,7 +30,7 @@ module RBS
         # Raises if the value is not a token or nil.
         #
         # @rbs index: Integer
-        # @rbs returns token?
+        # @rbs return: token?
         def nth_token: (Integer index) -> token?
 
         # Returns n-th token from the children
@@ -38,7 +38,7 @@ module RBS
         # Returns `nil` if the value is not a token.
         #
         # @rbs index: Integer
-        # @rbs returns token?
+        # @rbs return: token?
         def nth_token?: (Integer index) -> token?
 
         # Returns n-th token from the children
@@ -46,7 +46,7 @@ module RBS
         # Raises if the value is not token.
         #
         # @rbs index: Integer
-        # @rbs returns token
+        # @rbs return: token
         def nth_token!: (Integer index) -> token
 
         # Returns n-th tree from the children
@@ -54,7 +54,7 @@ module RBS
         # Raises if the value is not a tree or nil.
         #
         # @rbs index: Integer
-        # @rbs returns Tree?
+        # @rbs return: Tree?
         def nth_tree: (Integer index) -> Tree?
 
         # Returns n-th tree from the children
@@ -62,7 +62,7 @@ module RBS
         # Returns `nil` if the value is not a tree or nil.
         #
         # @rbs index: Integer
-        # @rbs returns Tree?
+        # @rbs return: Tree?
         def nth_tree?: (Integer index) -> Tree?
 
         # Returns n-th tree from the children
@@ -70,7 +70,7 @@ module RBS
         # Raises if the value is not a tree.
         #
         # @rbs index: Integer
-        # @rbs returns Tree
+        # @rbs return: Tree
         def nth_tree!: (Integer index) -> Tree
 
         # Returns n-th type from the children
@@ -78,7 +78,7 @@ module RBS
         # Raises if the value is not a type or nil.
         #
         # @rbs index: Integer
-        # @rbs returns Types::t?
+        # @rbs return: Types::t?
         def nth_type: (Integer index) -> Types::t?
 
         # Returns n-th type from the children
@@ -86,7 +86,7 @@ module RBS
         # Returns `nil` if the value is not a type.
         #
         # @rbs index: Integer
-        # @rbs returns Types::t?
+        # @rbs return: Types::t?
         def nth_type?: (Integer index) -> Types::t?
 
         # Returns n-th type from the children
@@ -94,7 +94,7 @@ module RBS
         # Raises if the value is not a type.
         #
         # @rbs index: Integer
-        # @rbs returns Types::t
+        # @rbs return: Types::t
         def nth_type!: (Integer index) -> Types::t
 
         # Returns n-th method type from the children
@@ -102,7 +102,7 @@ module RBS
         # Raises if the value is not a method type or `nil`.
         #
         # @rbs index: Integer
-        # @rbs returns MethodType?
+        # @rbs return: MethodType?
         def nth_method_type: (Integer index) -> MethodType?
 
         # Returns n-th method type from the children
@@ -110,7 +110,7 @@ module RBS
         # Returns `nil` if the value is not a method type.
         #
         # @rbs index: Integer
-        # @rbs returns MethodType?
+        # @rbs return: MethodType?
         def nth_method_type?: (Integer index) -> MethodType?
 
         # Returns n-th method tree from the children
@@ -118,7 +118,7 @@ module RBS
         # Raises if the value is not a method tree.
         #
         # @rbs index: Integer
-        # @rbs returns MethodType
+        # @rbs return: MethodType
         def nth_method_type!: (Integer index) -> MethodType
       end
     end

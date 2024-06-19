@@ -72,10 +72,10 @@ module RBS
           # @rbs comments: AnnotationParser::ParsingResult?
           def initialize: (Prism::AliasMethodNode node, AnnotationParser::ParsingResult? comments) -> untyped
 
-          # @rbs returns Symbol -- the name of *old* method
+          # @rbs return: Symbol -- the name of *old* method
           def old_name: () -> Symbol
 
-          # @rbs returns Symbol -- the name of *new* method
+          # @rbs return: Symbol -- the name of *new* method
           def new_name: () -> Symbol
         end
 
@@ -94,10 +94,10 @@ module RBS
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs application: Annotations::Application?
-          # @rbs returns void
+          # @rbs return: void
           def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Application? application) -> void
 
-          # @rbs returns ::RBS::AST::Members::Include
+          # @rbs return: ::RBS::AST::Members::Include
           #            | ::RBS::AST::Members::Extend
           #            | ::RBS::AST::Members::Prepend
           #            | nil
@@ -114,11 +114,11 @@ module RBS
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs assertion: Annotations::Assertion?
-          # @rbs returns void
+          # @rbs return: void
           def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> void
 
           # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
-          def rbs: () -> untyped
+          def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
 
           # Returns the type of the attribute
           #

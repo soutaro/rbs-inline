@@ -319,14 +319,14 @@ module RBS
             super(node.location)
           end
 
-          # @rbs returns Symbol -- the name of *old* method
+          # @rbs return: Symbol -- the name of *old* method
           def old_name
             raise unless node.old_name.is_a?(Prism::SymbolNode)
             value = node.old_name.value or raise
             value.to_sym
           end
 
-          # @rbs returns Symbol -- the name of *new* method
+          # @rbs return: Symbol -- the name of *new* method
           def new_name
             raise unless node.new_name.is_a?(Prism::SymbolNode)
             value = node.new_name.value or raise
@@ -349,7 +349,7 @@ module RBS
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs application: Annotations::Application?
-          # @rbs returns void
+          # @rbs return: void
           def initialize(node, comments, application)
             super(node.location)
 
@@ -358,7 +358,7 @@ module RBS
             @application = application
           end
 
-          # @rbs returns ::RBS::AST::Members::Include
+          # @rbs return: ::RBS::AST::Members::Include
           #            | ::RBS::AST::Members::Extend
           #            | ::RBS::AST::Members::Prepend
           #            | nil
@@ -414,7 +414,7 @@ module RBS
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs assertion: Annotations::Assertion?
-          # @rbs returns void
+          # @rbs return: void
           def initialize(node, comments, assertion)
             super(node.location)
 

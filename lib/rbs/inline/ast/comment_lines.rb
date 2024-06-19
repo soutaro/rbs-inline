@@ -30,11 +30,11 @@ module RBS
         def string #:: String
           comments.map {|comment| comment.location.slice[1..] || "" }.join("\n")
         end
- 
+
         # Translates the cursor index of `#string` into the cursor index of a specific comment object
         #
         # @rbs index: Integer
-        # @rbs returns [Prism::Comment, Integer]?
+        # @rbs return: [Prism::Comment, Integer]?
         def comment_location(index)
           comments.each do |comment|
             comment_length = comment.location.length

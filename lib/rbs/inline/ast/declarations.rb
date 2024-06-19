@@ -6,7 +6,7 @@ module RBS
       module Declarations
         module ConstantUtil
           # @rbs node: Prism::Node
-          # @rbs returns TypeName?
+          # @rbs return: TypeName?
           def type_name(node)
             case node
             when Prism::ConstantReadNode, Prism::ConstantPathNode
@@ -24,7 +24,7 @@ module RBS
 
         # @rbs module-self _WithComments
         module Generics
-          # @rbs returns Array[RBS::AST::TypeParam]
+          # @rbs return: Array[RBS::AST::TypeParam]
           def type_params
             if comments = comments()
               comments.each_annotation.filter_map do |annotation|
@@ -87,7 +87,7 @@ module RBS
           # @rbs node: Prism::ClassNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs super_app: Annotations::Application?
-          # @rbs returns void
+          # @rbs return: void
           def initialize(node, comments, super_app)
             super(node, comments)
 
@@ -176,7 +176,7 @@ module RBS
           end
 
           # @rbs %a{pure}
-          # @rbs returns Types::t
+          # @rbs return: Types::t
           def type
             if assertion
               case assertion.type
@@ -218,7 +218,7 @@ module RBS
           end
 
           # @rbs %a{pure}
-          # @rbs returns TypeName?
+          # @rbs return: TypeName?
           def constant_name
             TypeName.new(name: node.name, namespace: Namespace.empty)
           end
