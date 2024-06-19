@@ -14,7 +14,7 @@ class RBS::Inline::WriterTest < Minitest::Test
   def test_method_type
     output = translate(<<~RUBY)
       class Foo
-        #:: () -> String
+        # @rbs () -> String
         #:: (String) -> Integer
         def foo(x = nil)
         end
@@ -35,7 +35,7 @@ class RBS::Inline::WriterTest < Minitest::Test
 
     assert_equal <<~RBS, output
       class Foo
-        # :: () -> String
+        # @rbs () -> String
         # :: (String) -> Integer
         def foo: () -> String
                | (String) -> Integer

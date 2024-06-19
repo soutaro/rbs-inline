@@ -48,7 +48,7 @@ module RBS
           # Returns the name of the method
           def method_name: () -> Symbol
 
-          def method_type_annotations: () -> Array[Annotations::Assertion]
+          def annotated_method_types: () -> Array[MethodType]
 
           def return_type: () -> Types::t?
 

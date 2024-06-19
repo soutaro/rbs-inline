@@ -522,4 +522,40 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_equal "\n   type t = Integer | String", annotation.content
     end
   end
+
+  def test_method_type_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs (String) -> void
+      # @rbs -> untyped
+      # @rbs { () -> void } -> Integer
+      # @rbs -> [String
+      # @rbs [A] { () -> A } -> Array[A]
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::Method, annotation
+      assert_equal "(String) -> void", annotation.type.to_s
+      assert_equal "(String) -> void", annotation.method_type_source
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::Method, annotation
+      assert_equal "() -> untyped", annotation.type.to_s
+      assert_equal "-> untyped", annotation.method_type_source
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::Annotations::Method, annotation
+      assert_equal "() { () -> void } -> Integer", annotation.type.to_s
+      assert_equal "{ () -> void } -> Integer", annotation.method_type_source
+    end
+    annots[0].annotations[3].tap do |annotation|
+      assert_instance_of AST::Annotations::Method, annotation
+      assert_nil annotation.type
+      assert_equal "-> [String", annotation.method_type_source
+    end
+    annots[0].annotations[4].tap do |annotation|
+      assert_instance_of AST::Annotations::Method, annotation
+      assert_equal "[A] () { () -> A } -> Array[A]", annotation.type.to_s
+      assert_equal "[A] { () -> A } -> Array[A]", annotation.method_type_source
+    end
+  end
 end

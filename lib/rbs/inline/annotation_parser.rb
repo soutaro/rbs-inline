@@ -321,6 +321,9 @@ module RBS
           "--" => :kMINUS2,
           "<" => :kLT,
           "." => :kDOT,
+          "->" => :kARROW,
+          "{" => :kLBRACE,
+          "(" => :kLPAREN,
         } #:: Hash[String, Symbol]
         PUNCTS_RE = Regexp.union(PUNCTS.keys) #:: Regexp
 
@@ -583,6 +586,9 @@ module RBS
           when tokenizer.type?(:kYIELDS)
             tree << parse_yields(tokenizer)
             AST::Annotations::Yields.new(tree, comments)
+          when tokenizer.type?(:kLPAREN, :kARROW, :kLBRACE, :kLBRACKET)
+            tree << parse_method_type_annotation(tokenizer)
+            AST::Annotations::Method.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON2)
           tokenizer.advance(tree, eat: true)
@@ -682,6 +688,15 @@ module RBS
         tree
       end
 
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_method_type_annotation(tokenizer)
+        tree = AST::Tree.new(:method_type_annotation)
+
+        tree << parse_method_type(tokenizer, tree)
+
+        tree
+      end
+
       # Parse a RBS method type or type and returns it
       #
       # It tries parsing a method type, and then parsing a type if failed.
@@ -719,6 +734,37 @@ module RBS
             tokenizer.scanner.terminate
             tree
           end
+        end
+      end
+
+      # Parse a RBS method type
+      #
+      # If parsing failed, it returns a Tree(`:type_syntax_error), consuming all of the remaining input.
+      #
+      # Note that this doesn't recognize `--` comment unlike `parse_type`.
+      #
+      # @rbs tokenizer: Tokenizer
+      # @rbs parent_tree: AST::Tree
+      # @rbs returns MethodType | AST::Tree
+      def parse_method_type(tokenizer, parent_tree)
+        buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
+        range = (tokenizer.current_position..)
+        begin
+          if type = RBS::Parser.parse_method_type(buffer, range: range, require_eof: false)
+            loc = type.location or raise
+            tokenizer.reset(loc.end_pos, parent_tree)
+            type
+          else
+            tree = AST::Tree.new(:type_syntax_error)
+            tree << [:tSOURCE, tokenizer.rest]
+            tokenizer.scanner.terminate
+            tree
+          end
+        rescue RBS::ParsingError
+          tree = AST::Tree.new(:type_syntax_error)
+          tree << [:tSOURCE, tokenizer.rest]
+          tokenizer.scanner.terminate
+          tree
         end
       end
 
