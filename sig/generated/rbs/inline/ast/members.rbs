@@ -54,13 +54,17 @@ module RBS
 
           def var_type_hash: () -> Hash[Symbol, Types::t?]
 
+          def splat_param_type_annotation: () -> Annotations::SplatParamType?
+
+          def double_splat_param_type_annotation: () -> Annotations::DoubleSplatParamType?
+
           def method_overloads: () -> Array[RBS::AST::Members::MethodDefinition::Overload]
 
           def method_annotations: () -> Array[RBS::AST::Annotation]
 
           def override_annotation: () -> AST::Annotations::Override?
 
-          def yields_annotation: () -> AST::Annotations::Yields?
+          def block_type_annotation: () -> AST::Annotations::BlockType?
         end
 
         class RubyAlias < RubyBase

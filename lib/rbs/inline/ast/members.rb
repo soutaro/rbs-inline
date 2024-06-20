@@ -113,6 +113,22 @@ module RBS
             types
           end
 
+          def splat_param_type_annotation #:: Annotations::SplatParamType?
+            if comments
+              comments.each_annotation.find do |annotation|
+                annotation.is_a?(Annotations::SplatParamType)
+              end #: Annotations::SplatParamType?
+            end
+          end
+
+          def double_splat_param_type_annotation #:: Annotations::DoubleSplatParamType?
+            if comments
+              comments.each_annotation.find do |annotation|
+                annotation.is_a?(Annotations::DoubleSplatParamType)
+              end #: Annotations::DoubleSplatParamType?
+            end
+          end
+
           def method_overloads #:: Array[RBS::AST::Members::MethodDefinition::Overload]
             case
             when (method_types = annotated_method_types).any?
@@ -154,22 +170,15 @@ module RBS
                 end
 
                 if (rest = node.parameters.rest).is_a?(Prism::RestParameterNode)
-                  rest_type =
-                    if rest.name
-                      var_type_hash[rest.name]
-                    end
+                  splat_param_type = splat_param_type_annotation
 
-                  if rest_type
-                    if rest_type.is_a?(Types::ClassInstance)
-                      if rest_type.name.name == :Array && rest_type.name.namespace.empty?
-                        rest_type = rest_type.args[0]
-                      end
-                    end
+                  if splat_param_type && splat_param_type.type
+                    splat_type = splat_param_type.type
                   end
 
                   rest_positionals = Types::Function::Param.new(
                     name: rest.name,
-                    type: rest_type || Types::Bases::Any.new(location: nil),
+                    type: splat_type || Types::Bases::Any.new(location: nil),
                     location: nil
                   )
                 end
@@ -193,58 +202,29 @@ module RBS
                 end
 
                 if (kw_rest = node.parameters.keyword_rest).is_a?(Prism::KeywordRestParameterNode)
-                  rest_type =
-                    if kw_rest.name
-                      var_type_hash[kw_rest.name]
-                    end
+                  double_splat_param_type = double_splat_param_type_annotation
 
-                  if rest_type
-                    if rest_type.is_a?(Types::ClassInstance)
-                      if rest_type.name.name == :Hash && rest_type.name.namespace.empty?
-                        rest_type = rest_type.args[1]
-                      end
-                    end
+                  if double_splat_param_type && double_splat_param_type.type
+                    double_splat_type = double_splat_param_type.type
                   end
 
                   rest_keywords = Types::Function::Param.new(
                     name: kw_rest.name,
-                    type: rest_type || Types::Bases::Any.new(location: nil),
+                    type: double_splat_type || Types::Bases::Any.new(location: nil),
                     location: nil)
                 end
 
                 if node.parameters.block
-                  if (block_name = node.parameters.block.name) && (var_type = var_type_hash[block_name])
-                    if var_type.is_a?(Types::Optional)
-                      optional = true
-                      var_type = var_type.type
-                    else
-                      optional = false
-                    end
-
-                    if var_type.is_a?(Types::Proc)
-                      block = Types::Block.new(type: var_type.type, self_type: var_type.self_type, required: !optional)
-                    end
-                  else
-                    block = Types::Block.new(
-                      type: Types::UntypedFunction.new(return_type: Types::Bases::Any.new(location: nil)),
-                      required: false,
-                      self_type: nil
-                    )
-                  end
-                end
-              end
-
-              if annotation = yields_annotation
-                case annotation.block_type
-                when Types::Block
-                  block = annotation.block_type
-                else
                   block = Types::Block.new(
                     type: Types::UntypedFunction.new(return_type: Types::Bases::Any.new(location: nil)),
-                    required: !annotation.optional,
+                    required: false,
                     self_type: nil
                   )
                 end
+              end
+
+              if type = block_type_annotation&.type
+                block = type
               end
 
               [
@@ -297,11 +277,11 @@ module RBS
             end
           end
 
-          def yields_annotation #:: AST::Annotations::Yields?
+          def block_type_annotation #:: AST::Annotations::BlockType?
             if comments
               comments.each_annotation.find do |annotation|
-                annotation.is_a?(AST::Annotations::Yields)
-              end #: AST::Annotations::Yields?
+                annotation.is_a?(AST::Annotations::BlockType)
+              end #: AST::Annotations::BlockType?
             end
           end
         end

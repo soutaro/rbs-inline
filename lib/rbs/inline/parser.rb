@@ -296,7 +296,7 @@ module RBS
       end
 
       # @rbs new_visibility: RBS::AST::Members::visibility?
-      # @rbs block: ^() -> void
+      # @rbs &block: () -> void
       # @rbs return: void
       def push_visibility(new_visibility, &block)
         old_visibility = current_visibility
