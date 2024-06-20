@@ -554,4 +554,34 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_equal "[A] { () -> A } -> Array[A]", annotation.method_type_source
     end
   end
+
+  def test_splat_param_type_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs *keys: Symbol -- the name of keys
+      # @rbs *: Integer
+      # @rbs *: Array[Strin
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::SplatParamType, annotation
+      assert_equal :keys, annotation.name
+      assert_equal "Symbol", annotation.type.to_s
+      assert_equal "Symbol", annotation.type_source
+      assert_equal "-- the name of keys", annotation.comment
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::SplatParamType, annotation
+      assert_nil annotation.name
+      assert_equal "Integer", annotation.type.to_s
+      assert_equal "Integer", annotation.type_source
+      assert_nil annotation.comment
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::Annotations::SplatParamType, annotation
+      assert_nil annotation.name
+      assert_nil annotation.type
+      assert_equal "Array[Strin", annotation.type_source
+      assert_nil annotation.comment
+    end
+  end
 end

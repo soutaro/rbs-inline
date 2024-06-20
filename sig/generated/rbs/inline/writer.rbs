@@ -14,7 +14,7 @@ module RBS
       # @rbs decls: Array[AST::Declarations::t]
       def self.write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls) -> untyped
 
-      # @rbs lines: Array[String]
+      # @rbs *lines: String
       # @rbs return: void
       def header: (*String lines) -> void
 

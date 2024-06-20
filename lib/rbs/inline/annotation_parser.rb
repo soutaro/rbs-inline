@@ -456,7 +456,7 @@ module RBS
 
         # Consume given token type and inserts the token to the tree or `nil`
         #
-        # @rbs type: Array[Symbol]
+        # @rbs *types: Symbol
         # @rbs tree: AST::Tree
         # @rbs return: void
         def consume_token(*types, tree:)
@@ -469,7 +469,7 @@ module RBS
 
         # Consume given token type and inserts the token to the tree or raise
         #
-        # @rbs types: Array[Symbol]
+        # @rbs *types: Symbol
         # @rbs tree: AST::Tree
         # @rbs return: void
         def consume_token!(*types, tree:)
@@ -479,23 +479,23 @@ module RBS
 
         # Test if current token has specified `type`
         #
-        # @rbs type: Array[Symbol]
+        # @rbs types: *Symbol
         # @rbs return: bool
-        def type?(*type)
-          type.any? { lookahead1 && lookahead1[0] == _1 }
+        def type?(*types)
+          types.any? { lookahead1 && lookahead1[0] == _1 }
         end
 
         # Test if lookahead2 token have specified `type`
         #
-        # @rbs type: Symbol -- The type of the lookahead2 token
+        # @rbs *types: Symbol -- The type of the lookahead2 token
         # @rbs return: bool
-        def type2?(*type)
-          type.any? { lookahead2 && lookahead2[0] == _1 }
+        def type2?(*types)
+          types.any? { lookahead2 && lookahead2[0] == _1 }
         end
 
         # Ensure current token is one of the specified in types
         #
-        # @rbs types: Array[Symbol]
+        # @rbs *types: Symbol
         # @rbs return: void
         def type!(*types)
           raise "Unexpected token: #{lookahead1&.[](0)}, where expected token: #{types.join(",")}" unless type?(*types)
@@ -583,6 +583,9 @@ module RBS
           when tokenizer.type?(:kSELF, :tATIDENT)
             tree << parse_ivar_type(tokenizer)
             AST::Annotations::IvarType.new(tree, comments)
+          when tokenizer.type?(:kSTAR)
+            tree << parse_splat_param_type(tokenizer)
+            AST::Annotations::SplatParamType.new(tree, comments)
           when tokenizer.type?(:kYIELDS)
             tree << parse_yields(tokenizer)
             AST::Annotations::Yields.new(tree, comments)
@@ -957,7 +960,7 @@ module RBS
       # ```
       #
       # @rbs tokenizer: Tokenizer
-      # @rbs types: Array[Symbol]
+      # @rbs *types: Symbol
       # @rbs block: ^() -> AST::Tree
       # @rbs return: AST::Tree?
       def parse_optional(tokenizer, *types, &block)
@@ -1002,6 +1005,23 @@ module RBS
         tokenizer.consume_token(:kDOT, tree: tree)
 
         tokenizer.consume_token(:tATIDENT, tree: tree)
+        tokenizer.consume_token(:kCOLON, tree: tree)
+
+        tree << parse_type(tokenizer, tree)
+
+        tree << parse_optional(tokenizer, :kMINUS2) do
+          parse_comment(tokenizer)
+        end
+
+        tree
+      end
+
+      #:: (Tokenizer) -> AST::Tree
+      def parse_splat_param_type(tokenizer)
+        tree = AST::Tree.new(:splat_param_type)
+
+        tokenizer.consume_token!(:kSTAR, tree: tree)
+        tokenizer.consume_token(:tLVAR, tree: tree)
         tokenizer.consume_token(:kCOLON, tree: tree)
 
         tree << parse_type(tokenizer, tree)

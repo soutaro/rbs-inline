@@ -20,15 +20,14 @@ class RBS::Inline::WriterTest < Minitest::Test
         end
 
         # @rbs x: Integer
-        # @rbs y: Array[String]
         # @rbs foo: Symbol
         # @rbs bar: Integer?
         # @rbs rest: Hash[Symbol, String?]
         # @rbs return: void
-        def f(x=0, *y, foo:, bar: nil, **rest)
+        def f(x=0, foo:, bar: nil, **rest)
         end
 
-        def g(x=0, *y, foo:, bar: nil, **rest)
+        def g(x=0, foo:, bar: nil, **rest)
         end
       end
     RUBY
@@ -41,17 +40,51 @@ class RBS::Inline::WriterTest < Minitest::Test
                | (String) -> Integer
 
         # @rbs x: Integer
-        # @rbs y: Array[String]
         # @rbs foo: Symbol
         # @rbs bar: Integer?
         # @rbs rest: Hash[Symbol, String?]
         # @rbs return: void
-        def f: (?Integer x, *String y, foo: Symbol, ?bar: Integer?, **String? rest) -> void
+        def f: (?Integer x, foo: Symbol, ?bar: Integer?, **String? rest) -> void
 
-        def g: (?untyped x, *untyped y, foo: untyped, ?bar: untyped, **untyped rest) -> untyped
+        def g: (?untyped x, foo: untyped, ?bar: untyped, **untyped rest) -> untyped
       end
     RBS
   end
+
+  def test_method_type__splat
+    output = translate(<<~RUBY)
+      class Foo
+        def f(*x)
+        end
+
+        # @rbs *x: Integer
+        def g(*x)
+        end
+
+        def h(*)
+        end
+
+        # @rbs *: String
+        def i(*)
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        def f: (*untyped x) -> untyped
+
+        # @rbs *x: Integer
+        def g: (*Integer x) -> untyped
+
+        def h: (*untyped) -> untyped
+
+        # @rbs *: String
+        def i: (*String) -> untyped
+      end
+    RBS
+  end
+
 
   def test_method_type__return_assertion
     output = translate(<<~RUBY)

@@ -176,33 +176,33 @@ module RBS
 
         # Consume given token type and inserts the token to the tree or `nil`
         #
-        # @rbs type: Array[Symbol]
+        # @rbs *types: Symbol
         # @rbs tree: AST::Tree
         # @rbs return: void
-        def consume_token: (*untyped types, tree: AST::Tree) -> void
+        def consume_token: (*Symbol types, tree: AST::Tree) -> void
 
         # Consume given token type and inserts the token to the tree or raise
         #
-        # @rbs types: Array[Symbol]
+        # @rbs *types: Symbol
         # @rbs tree: AST::Tree
         # @rbs return: void
         def consume_token!: (*Symbol types, tree: AST::Tree) -> void
 
         # Test if current token has specified `type`
         #
-        # @rbs type: Array[Symbol]
+        # @rbs types: *Symbol
         # @rbs return: bool
-        def type?: (*Symbol type) -> bool
+        def type?: (*untyped types) -> bool
 
         # Test if lookahead2 token have specified `type`
         #
-        # @rbs type: Symbol -- The type of the lookahead2 token
+        # @rbs *types: Symbol -- The type of the lookahead2 token
         # @rbs return: bool
-        def type2?: (*Symbol type) -> bool
+        def type2?: (*Symbol types) -> bool
 
         # Ensure current token is one of the specified in types
         #
-        # @rbs types: Array[Symbol]
+        # @rbs *types: Symbol
         # @rbs return: void
         def type!: (*Symbol types) -> void
 
@@ -327,7 +327,7 @@ module RBS
       # ```
       #
       # @rbs tokenizer: Tokenizer
-      # @rbs types: Array[Symbol]
+      # @rbs *types: Symbol
       # @rbs block: ^() -> AST::Tree
       # @rbs return: AST::Tree?
       def parse_optional: (Tokenizer tokenizer, *Symbol types) { () -> AST::Tree } -> AST::Tree?
@@ -338,6 +338,9 @@ module RBS
 
       # :: (Tokenizer) -> AST::Tree
       def parse_ivar_type: (Tokenizer) -> AST::Tree
+
+      # :: (Tokenizer) -> AST::Tree
+      def parse_splat_param_type: (Tokenizer) -> AST::Tree
 
       # :: (Tokenizer) -> AST::Tree
       def parse_yields: (Tokenizer) -> AST::Tree

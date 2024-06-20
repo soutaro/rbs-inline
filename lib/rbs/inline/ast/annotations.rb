@@ -20,6 +20,7 @@ module RBS
         #          | Yields
         #          | Embedded
         #          | Method
+        #          | SplatParamType
         #        #  | Def
         #        #  | AttrReader | AttrWriter | AttrAccessor
         #        #  | Include | Extend | Prepend
@@ -71,6 +72,40 @@ module RBS
               true
             else
               false
+            end
+          end
+        end
+
+        class SplatParamType < Base
+          attr_reader :name #:: Symbol?
+
+          attr_reader :type #:: Types::t?
+
+          attr_reader :comment #:: String?
+
+          attr_reader :type_source #:: String
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            annotation = tree.nth_tree!(1)
+
+            if name = annotation.nth_token?(1)
+              @name = name[1].to_sym
+            end
+
+            if type = annotation.nth_type?(3)
+              @type = type
+              @type_source = type.location&.source || raise
+            else
+              @type = nil
+              @type_source = annotation.nth_tree!(3)&.to_s || raise
+            end
+
+            if comment = annotation.nth_tree(4)
+              @comment = comment.to_s
             end
           end
         end

@@ -113,6 +113,14 @@ module RBS
             types
           end
 
+          def splat_param_type_annotation #:: Annotations::SplatParamType?
+            if comments
+              comments.each_annotation.find do |annotation|
+                annotation.is_a?(Annotations::SplatParamType)
+              end #: Annotations::SplatParamType?
+            end
+          end
+
           def method_overloads #:: Array[RBS::AST::Members::MethodDefinition::Overload]
             case
             when (method_types = annotated_method_types).any?
@@ -154,22 +162,15 @@ module RBS
                 end
 
                 if (rest = node.parameters.rest).is_a?(Prism::RestParameterNode)
-                  rest_type =
-                    if rest.name
-                      var_type_hash[rest.name]
-                    end
+                  splat_param_type = splat_param_type_annotation
 
-                  if rest_type
-                    if rest_type.is_a?(Types::ClassInstance)
-                      if rest_type.name.name == :Array && rest_type.name.namespace.empty?
-                        rest_type = rest_type.args[0]
-                      end
-                    end
+                  if splat_param_type && splat_param_type.type
+                    splat_type = splat_param_type.type
                   end
 
                   rest_positionals = Types::Function::Param.new(
                     name: rest.name,
-                    type: rest_type || Types::Bases::Any.new(location: nil),
+                    type: splat_type || Types::Bases::Any.new(location: nil),
                     location: nil
                   )
                 end

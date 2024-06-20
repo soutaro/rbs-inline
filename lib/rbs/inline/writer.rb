@@ -20,7 +20,7 @@ module RBS
         writer.output
       end
 
-      # @rbs lines: Array[String]
+      # @rbs *lines: String
       # @rbs return: void
       def header(*lines)
         lines.each do |line|
