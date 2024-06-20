@@ -317,6 +317,7 @@ module RBS
           "[" => :kLBRACKET,
           "]" => :kRBRACKET,
           "," => :kCOMMA,
+          "**" => :kSTAR2,
           "*" => :kSTAR,
           "--" => :kMINUS2,
           "<" => :kLT,
@@ -586,6 +587,9 @@ module RBS
           when tokenizer.type?(:kSTAR)
             tree << parse_splat_param_type(tokenizer)
             AST::Annotations::SplatParamType.new(tree, comments)
+          when tokenizer.type?(:kSTAR2)
+            tree << parse_splat_param_type(tokenizer)
+            AST::Annotations::DoubleSplatParamType.new(tree, comments)
           when tokenizer.type?(:kYIELDS)
             tree << parse_yields(tokenizer)
             AST::Annotations::Yields.new(tree, comments)
@@ -1020,7 +1024,7 @@ module RBS
       def parse_splat_param_type(tokenizer)
         tree = AST::Tree.new(:splat_param_type)
 
-        tokenizer.consume_token!(:kSTAR, tree: tree)
+        tokenizer.consume_token!(:kSTAR, :kSTAR2, tree: tree)
         tokenizer.consume_token(:tLVAR, tree: tree)
         tokenizer.consume_token(:kCOLON, tree: tree)
 

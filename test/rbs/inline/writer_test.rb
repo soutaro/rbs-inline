@@ -22,12 +22,11 @@ class RBS::Inline::WriterTest < Minitest::Test
         # @rbs x: Integer
         # @rbs foo: Symbol
         # @rbs bar: Integer?
-        # @rbs rest: Hash[Symbol, String?]
         # @rbs return: void
-        def f(x=0, foo:, bar: nil, **rest)
+        def f(x=0, foo:, bar: nil)
         end
 
-        def g(x=0, foo:, bar: nil, **rest)
+        def g(x=0, foo:, bar: nil)
         end
       end
     RUBY
@@ -42,11 +41,10 @@ class RBS::Inline::WriterTest < Minitest::Test
         # @rbs x: Integer
         # @rbs foo: Symbol
         # @rbs bar: Integer?
-        # @rbs rest: Hash[Symbol, String?]
         # @rbs return: void
-        def f: (?Integer x, foo: Symbol, ?bar: Integer?, **String? rest) -> void
+        def f: (?Integer x, foo: Symbol, ?bar: Integer?) -> void
 
-        def g: (?untyped x, foo: untyped, ?bar: untyped, **untyped rest) -> untyped
+        def g: (?untyped x, foo: untyped, ?bar: untyped) -> untyped
       end
     RBS
   end
@@ -85,6 +83,39 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_method_type__double_splat
+    output = translate(<<~RUBY)
+      class Foo
+        def f(**x)
+        end
+
+        # @rbs **x: Integer
+        def g(**x)
+        end
+
+        def h(**)
+        end
+
+        # @rbs **: String
+        def i(**)
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        def f: (**untyped x) -> untyped
+
+        # @rbs **x: Integer
+        def g: (**Integer x) -> untyped
+
+        def h: (**untyped) -> untyped
+
+        # @rbs **: String
+        def i: (**String) -> untyped
+      end
+    RBS
+  end
 
   def test_method_type__return_assertion
     output = translate(<<~RUBY)

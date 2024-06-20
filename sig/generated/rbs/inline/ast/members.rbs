@@ -56,6 +56,8 @@ module RBS
 
           def splat_param_type_annotation: () -> Annotations::SplatParamType?
 
+          def double_splat_param_type_annotation: () -> Annotations::DoubleSplatParamType?
+
           def method_overloads: () -> Array[RBS::AST::Members::MethodDefinition::Overload]
 
           def method_annotations: () -> Array[RBS::AST::Annotation]

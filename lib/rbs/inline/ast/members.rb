@@ -121,6 +121,14 @@ module RBS
             end
           end
 
+          def double_splat_param_type_annotation #:: Annotations::DoubleSplatParamType?
+            if comments
+              comments.each_annotation.find do |annotation|
+                annotation.is_a?(Annotations::DoubleSplatParamType)
+              end #: Annotations::DoubleSplatParamType?
+            end
+          end
+
           def method_overloads #:: Array[RBS::AST::Members::MethodDefinition::Overload]
             case
             when (method_types = annotated_method_types).any?
@@ -194,22 +202,15 @@ module RBS
                 end
 
                 if (kw_rest = node.parameters.keyword_rest).is_a?(Prism::KeywordRestParameterNode)
-                  rest_type =
-                    if kw_rest.name
-                      var_type_hash[kw_rest.name]
-                    end
+                  double_splat_param_type = double_splat_param_type_annotation
 
-                  if rest_type
-                    if rest_type.is_a?(Types::ClassInstance)
-                      if rest_type.name.name == :Hash && rest_type.name.namespace.empty?
-                        rest_type = rest_type.args[1]
-                      end
-                    end
+                  if double_splat_param_type && double_splat_param_type.type
+                    double_splat_type = double_splat_param_type.type
                   end
 
                   rest_keywords = Types::Function::Param.new(
                     name: kw_rest.name,
-                    type: rest_type || Types::Bases::Any.new(location: nil),
+                    type: double_splat_type || Types::Bases::Any.new(location: nil),
                     location: nil)
                 end
 

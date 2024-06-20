@@ -4,7 +4,7 @@ module RBS
   module Inline
     module AST
       module Annotations
-        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | Assertion | Application | RBSAnnotation | Override | IvarType | Yields | Embedded | Method | SplatParamType
+        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | Assertion | Application | RBSAnnotation | Override | IvarType | Yields | Embedded | Method | SplatParamType | DoubleSplatParamType
 
         class Base
           attr_reader source: CommentLines
@@ -31,7 +31,7 @@ module RBS
           def complete?: () -> bool
         end
 
-        class SplatParamType < Base
+        class SpecialVarTypeAnnotation < Base
           attr_reader name: Symbol?
 
           attr_reader type: Types::t?
@@ -42,6 +42,14 @@ module RBS
 
           # @rbs override
           def initialize: ...
+        end
+
+        # `@rbs *x: T`
+        class SplatParamType < SpecialVarTypeAnnotation
+        end
+
+        # `@rbs` **x: T
+        class DoubleSplatParamType < SpecialVarTypeAnnotation
         end
 
         # `@rbs return: T`

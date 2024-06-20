@@ -21,6 +21,7 @@ module RBS
         #          | Embedded
         #          | Method
         #          | SplatParamType
+        #          | DoubleSplatParamType
         #        #  | Def
         #        #  | AttrReader | AttrWriter | AttrAccessor
         #        #  | Include | Extend | Prepend
@@ -76,7 +77,7 @@ module RBS
           end
         end
 
-        class SplatParamType < Base
+        class SpecialVarTypeAnnotation < Base
           attr_reader :name #:: Symbol?
 
           attr_reader :type #:: Types::t?
@@ -108,6 +109,14 @@ module RBS
               @comment = comment.to_s
             end
           end
+        end
+
+        # `@rbs *x: T`
+        class SplatParamType < SpecialVarTypeAnnotation
+        end
+
+        # `@rbs` **x: T
+        class DoubleSplatParamType < SpecialVarTypeAnnotation
         end
 
         # `@rbs return: T`
