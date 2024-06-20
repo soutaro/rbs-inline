@@ -17,16 +17,16 @@ module RBS
         #          | RBSAnnotation
         #          | Override
         #          | IvarType
-        #          | Yields
         #          | Embedded
         #          | Method
         #          | SplatParamType
         #          | DoubleSplatParamType
+        #          | BlockType
         #        #  | Def
         #        #  | AttrReader | AttrWriter | AttrAccessor
         #        #  | Include | Extend | Prepend
         #        #  | Alias
-
+ 
         class Base
           attr_reader :source #:: CommentLines
           attr_reader :tree #:: Tree
@@ -117,6 +117,53 @@ module RBS
 
         # `@rbs` **x: T
         class DoubleSplatParamType < SpecialVarTypeAnnotation
+        end
+
+        # `@rbs &block: METHOD-TYPE` or `@rbs &block: ? METHOD-TYPE`
+        class BlockType < Base
+          attr_reader :name #:: Symbol?
+
+          attr_reader :type #:: Types::Block?
+
+          attr_reader :comment #:: String?
+
+          attr_reader :type_source #:: String
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            annotation = tree.nth_tree!(1)
+
+            if name = annotation.nth_token?(1)
+              @name = name[1].to_sym
+            end
+
+            optional = annotation.nth_token?(3)
+
+            if type_token = annotation.nth_token?(4)
+              block_src = type_token[1]
+
+              proc_type = ::RBS::Parser.parse_type("^" + block_src, require_eof: true) rescue RBS::ParsingError
+              if proc_type.is_a?(Types::Proc)
+                @type = Types::Block.new(
+                  type: proc_type.type,
+                  required: !optional,
+                  self_type: proc_type.self_type
+                )
+              end
+
+              @type_source = block_src
+            else
+              @type = nil
+              @type_source = ""
+            end
+
+            if comment = annotation.nth_tree(5)
+              @comment = comment.to_s
+            end
+          end
         end
 
         # `@rbs return: T`
@@ -251,54 +298,6 @@ module RBS
           # @rbs return: bool
           def complete?
             types ? true : false
-          end
-        end
-
-        # `# @rbs yields () -> void -- Comment`
-        #
-        class Yields < Base
-          # The type of block
-          #
-          # * Types::Block when syntactically correct input is given
-          # * String when syntax error is reported
-          # * `nil` when nothing is given
-          #
-          attr_reader :block_type #:: Types::Block | String | nil
-
-          # The content of the comment or `nil`
-          #
-          attr_reader :comment #:: String?
-
-          # If `[optional]` token is inserted just after `yields` token
-          #
-          # The Types::Block instance has correct `required` attribute based on the `[optional]` token.
-          # This is for the other cases, syntax error or omitted.
-          #
-          attr_reader :optional #:: bool
-
-          # @rbs override
-          def initialize(tree, comments)
-            @tree = tree
-            @source = comments
-
-            yields_tree = tree.nth_tree!(1)
-            @optional = yields_tree.nth_token?(1).is_a?(Array)
-            if block_token = yields_tree.nth_token(2)
-              block_src = block_token[1]
-              proc_src = "^" + block_src
-              proc_type = ::RBS::Parser.parse_type(proc_src, require_eof: true) rescue RBS::ParsingError
-              if proc_type.is_a?(Types::Proc)
-                @block_type = Types::Block.new(
-                  type: proc_type.type,
-                  required: !optional,
-                  self_type: proc_type.self_type
-                )
-              else
-                @block_type = block_src
-              end
-            end
-
-            @comment = yields_tree.nth_tree?(3)&.to_s
           end
         end
 

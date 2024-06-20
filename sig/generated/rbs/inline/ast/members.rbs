@@ -64,7 +64,7 @@ module RBS
 
           def override_annotation: () -> AST::Annotations::Override?
 
-          def yields_annotation: () -> AST::Annotations::Yields?
+          def block_type_annotation: () -> AST::Annotations::BlockType?
         end
 
         class RubyAlias < RubyBase

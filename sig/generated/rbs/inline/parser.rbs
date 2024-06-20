@@ -89,7 +89,7 @@ module RBS
       def visit_call_node: ...
 
       # @rbs new_visibility: RBS::AST::Members::visibility?
-      # @rbs block: ^() -> void
+      # @rbs &block: () -> void
       # @rbs return: void
       def push_visibility: (RBS::AST::Members::visibility? new_visibility) { () -> void } -> void
 

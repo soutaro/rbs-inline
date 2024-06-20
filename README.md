@@ -30,7 +30,7 @@ class Person
     "Person(name = #{name}, addresses = #{addresses.join(", ")})"
   end
 
-  # @rbs yields (String) -> void
+  # @rbs &block: (String) -> void
   def each_address(&block) #:: void
     addresses.each(&block)
   end

@@ -169,11 +169,11 @@ class RBS::Inline::WriterTest < Minitest::Test
   def test_method__block
     output = translate(<<~RUBY)
       class Foo
-        # @rbs block: ^(String) [self: Symbol] -> Integer
+        # @rbs &block: (String) [self: Symbol] -> Integer
         def foo(&block)
         end
 
-        # @rbs block: (^(String) [self: Symbol] -> Integer)?
+        # @rbs &block: ? (String) [self: Symbol] -> Integer
         def bar(&block)
         end
       end
@@ -181,10 +181,10 @@ class RBS::Inline::WriterTest < Minitest::Test
 
     assert_equal <<~RBS, output
       class Foo
-        # @rbs block: ^(String) [self: Symbol] -> Integer
+        # @rbs &block: (String) [self: Symbol] -> Integer
         def foo: () { (String) [self: Symbol] -> Integer } -> untyped
 
-        # @rbs block: (^(String) [self: Symbol] -> Integer)?
+        # @rbs &block: ? (String) [self: Symbol] -> Integer
         def bar: () ?{ (String) [self: Symbol] -> Integer } -> untyped
       end
     RBS
@@ -555,49 +555,14 @@ class RBS::Inline::WriterTest < Minitest::Test
   def test_method_type__block_yields_untyped
     output = translate(<<~RUBY)
       class Foo
-        # @rbs yields
         def foo(&)
-        end
-
-        # @rbs yields [optional] ()
-        def bar
         end
       end
     RUBY
 
     assert_equal <<~RBS, output
       class Foo
-        # @rbs yields
-        def foo: () { (?) -> untyped } -> untyped
-
-        # @rbs yields [optional] ()
-        def bar: () ?{ (?) -> untyped } -> untyped
-      end
-    RBS
-  end
-
-  def test_method_type__block_yields_typed
-    output = translate(<<~RUBY)
-      class Foo
-        # @rbs yields () -> void
-        def foo(&)
-        end
-
-        # @rbs yields [optional] () [self: String] -> Integer --
-        #   Something
-        def bar
-        end
-      end
-    RUBY
-
-    assert_equal <<~RBS, output
-      class Foo
-        # @rbs yields () -> void
-        def foo: () { () -> void } -> untyped
-
-        # @rbs yields [optional] () [self: String] -> Integer --
-        #   Something
-        def bar: () ?{ () [self: String] -> Integer } -> untyped
+        def foo: () ?{ (?) -> untyped } -> untyped
       end
     RBS
   end

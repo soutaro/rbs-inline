@@ -464,48 +464,6 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
   end
 
-  def test_yields_annotation
-    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
-        # @rbs yields () [self: String] -> Integer -- Some comments here
-        # @rbs yields () [self: S -- Another comment
-        # @rbs yields -- Another comment
-        # @rbs yields [optional] () -> void
-        # @rbs yields [optional]
-      RUBY
-
-    assert_equal 5, annots[0].annotations.size
-    annots[0].annotations[0].tap do |annotation|
-      assert_instance_of AST::Annotations::Yields, annotation
-      assert_instance_of RBS::Types::Block, annotation.block_type
-      refute annotation.optional
-      assert_equal "-- Some comments here", annotation.comment
-    end
-    annots[0].annotations[1].tap do |annotation|
-      assert_instance_of AST::Annotations::Yields, annotation
-      assert_equal "() [self: S ", annotation.block_type
-      refute annotation.optional
-      assert_equal "-- Another comment", annotation.comment
-    end
-    annots[0].annotations[2].tap do |annotation|
-      assert_instance_of AST::Annotations::Yields, annotation
-      assert_nil annotation.block_type
-      refute annotation.optional
-      assert_equal "-- Another comment", annotation.comment
-    end
-    annots[0].annotations[3].tap do |annotation|
-      assert_instance_of AST::Annotations::Yields, annotation
-      assert_instance_of RBS::Types::Block, annotation.block_type
-      assert annotation.optional
-      assert_nil annotation.comment
-    end
-    annots[0].annotations[4].tap do |annotation|
-      assert_instance_of AST::Annotations::Yields, annotation
-      assert_nil annotation.block_type
-      assert annotation.optional
-      assert_nil annotation.comment
-    end
-  end
-
   def test_embedded_annotation
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       # @rbs!
@@ -611,6 +569,38 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_nil annotation.name
       assert_nil annotation.type
       assert_equal "Array[Strin", annotation.type_source
+      assert_nil annotation.comment
+    end
+  end
+
+  def test_block_type_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs &block: () -> void -- the callback
+      # @rbs &: ? () [self: Integer] -> void
+      # @rbs &: void
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::BlockType, annotation
+      assert_equal :block, annotation.name
+      assert_instance_of RBS::Types::Block, annotation.type
+      assert_predicate annotation.type, :required
+      assert_equal "() -> void ", annotation.type_source
+      assert_equal "-- the callback", annotation.comment
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::BlockType, annotation
+      assert_nil annotation.name
+      assert_instance_of RBS::Types::Block, annotation.type
+      refute_predicate annotation.type, :required
+      assert_equal "() [self: Integer] -> void", annotation.type_source
+      assert_nil annotation.comment
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::Annotations::BlockType, annotation
+      assert_nil annotation.name
+      assert_nil annotation.type
+      assert_equal "void", annotation.type_source
       assert_nil annotation.comment
     end
   end

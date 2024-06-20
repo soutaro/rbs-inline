@@ -215,38 +215,16 @@ module RBS
                 end
 
                 if node.parameters.block
-                  if (block_name = node.parameters.block.name) && (var_type = var_type_hash[block_name])
-                    if var_type.is_a?(Types::Optional)
-                      optional = true
-                      var_type = var_type.type
-                    else
-                      optional = false
-                    end
-
-                    if var_type.is_a?(Types::Proc)
-                      block = Types::Block.new(type: var_type.type, self_type: var_type.self_type, required: !optional)
-                    end
-                  else
-                    block = Types::Block.new(
-                      type: Types::UntypedFunction.new(return_type: Types::Bases::Any.new(location: nil)),
-                      required: false,
-                      self_type: nil
-                    )
-                  end
-                end
-              end
-
-              if annotation = yields_annotation
-                case annotation.block_type
-                when Types::Block
-                  block = annotation.block_type
-                else
                   block = Types::Block.new(
                     type: Types::UntypedFunction.new(return_type: Types::Bases::Any.new(location: nil)),
-                    required: !annotation.optional,
+                    required: false,
                     self_type: nil
                   )
                 end
+              end
+
+              if type = block_type_annotation&.type
+                block = type
               end
 
               [
@@ -299,11 +277,11 @@ module RBS
             end
           end
 
-          def yields_annotation #:: AST::Annotations::Yields?
+          def block_type_annotation #:: AST::Annotations::BlockType?
             if comments
               comments.each_annotation.find do |annotation|
-                annotation.is_a?(AST::Annotations::Yields)
-              end #: AST::Annotations::Yields?
+                annotation.is_a?(AST::Annotations::BlockType)
+              end #: AST::Annotations::BlockType?
             end
           end
         end
