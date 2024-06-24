@@ -16,7 +16,7 @@ module RBS
         attr_reader non_trivia_trees: Array[tree]
 
         # @rbs type: Symbol
-        def initialize: (Symbol type) -> untyped
+        def initialize: (Symbol type) -> void
 
         # @rbs tok: tree
         # @rbs return: self

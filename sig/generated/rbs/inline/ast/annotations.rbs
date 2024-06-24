@@ -27,7 +27,7 @@ module RBS
           # @rbs override
           def initialize: ...
 
-          # :: () -> bool
+          # : () -> bool
           def complete?: () -> bool
         end
 
@@ -93,11 +93,12 @@ module RBS
           def initialize: ...
         end
 
-        # `#:: TYPE`
+        # `#: TYPE`
         class Assertion < Base
           attr_reader type: Types::t | MethodType | nil
 
-          def initialize: (untyped tree, untyped source) -> untyped
+          # @rbs override
+          def initialize: ...
 
           # @rbs return: bool
           def complete?: () -> bool

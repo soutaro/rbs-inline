@@ -26,10 +26,10 @@ module RBS
         #        #  | AttrReader | AttrWriter | AttrAccessor
         #        #  | Include | Extend | Prepend
         #        #  | Alias
- 
+
         class Base
-          attr_reader :source #:: CommentLines
-          attr_reader :tree #:: Tree
+          attr_reader :source #: CommentLines
+          attr_reader :tree #: Tree
 
           # @rbs tree: Tree
           # @rbs source: CommentLines
@@ -41,11 +41,11 @@ module RBS
         end
 
         class VarType < Base
-          attr_reader :name #:: Symbol
+          attr_reader :name #: Symbol
 
-          attr_reader :type #:: Types::t?
+          attr_reader :type #: Types::t?
 
-          attr_reader :comment #:: String?
+          attr_reader :comment #: String?
 
           # @rbs override
           def initialize(tree, source)
@@ -67,7 +67,7 @@ module RBS
             end
           end
 
-          #:: () -> bool
+          #: () -> bool
           def complete?
             if name && type
               true
@@ -78,13 +78,13 @@ module RBS
         end
 
         class SpecialVarTypeAnnotation < Base
-          attr_reader :name #:: Symbol?
+          attr_reader :name #: Symbol?
 
-          attr_reader :type #:: Types::t?
+          attr_reader :type #: Types::t?
 
-          attr_reader :comment #:: String?
+          attr_reader :comment #: String?
 
-          attr_reader :type_source #:: String
+          attr_reader :type_source #: String
 
           # @rbs override
           def initialize(tree, source)
@@ -121,13 +121,13 @@ module RBS
 
         # `@rbs &block: METHOD-TYPE` or `@rbs &block: ? METHOD-TYPE`
         class BlockType < Base
-          attr_reader :name #:: Symbol?
+          attr_reader :name #: Symbol?
 
-          attr_reader :type #:: Types::Block?
+          attr_reader :type #: Types::Block?
 
-          attr_reader :comment #:: String?
+          attr_reader :comment #: String?
 
-          attr_reader :type_source #:: String
+          attr_reader :type_source #: String
 
           # @rbs override
           def initialize(tree, source)
@@ -168,9 +168,9 @@ module RBS
 
         # `@rbs return: T`
         class ReturnType < Base
-          attr_reader :type #:: Types::t?
+          attr_reader :type #: Types::t?
 
-          attr_reader :comment #:: String?
+          attr_reader :comment #: String?
 
           # @rbs override
           def initialize(tree, source)
@@ -201,13 +201,13 @@ module RBS
         # `@rbs @foo: T` or `@rbs self.@foo: T`
         #
         class IvarType < Base
-          attr_reader :name #:: Symbol
+          attr_reader :name #: Symbol
 
-          attr_reader :type #:: Types::t?
+          attr_reader :type #: Types::t?
 
-          attr_reader :class_instance #:: bool
+          attr_reader :class_instance #: bool
 
-          attr_reader :comment #:: String?
+          attr_reader :comment #: String?
 
           # @rbs override
           def initialize(tree, source)
@@ -225,11 +225,12 @@ module RBS
           end
         end
 
-        # `#:: TYPE`
+        # `#: TYPE`
         #
         class Assertion < Base
-          attr_reader :type #:: Types::t | MethodType | nil
+          attr_reader :type #: Types::t | MethodType | nil
 
+          # @rbs override
           def initialize(tree, source)
             @source = source
             @tree = tree
@@ -248,7 +249,7 @@ module RBS
 
           # Returns a type if it's type
           #
-          def type? #:: Types::t?
+          def type? #: Types::t?
             case type
             when MethodType, nil
               nil
@@ -259,7 +260,7 @@ module RBS
 
           # Returns a method type if it's a method type
           #
-          def method_type? #:: MethodType?
+          def method_type? #: MethodType?
             case type
             when MethodType
               type
@@ -272,7 +273,7 @@ module RBS
         # `#[TYPE, ..., TYPE]`
         #
         class Application < Base
-          attr_reader :types #:: Array[Types::t]?
+          attr_reader :types #: Array[Types::t]?
 
           # @rbs override
           def initialize(tree, source)
@@ -303,7 +304,7 @@ module RBS
 
         # `# @rbs %a{a} %a{a} ...`
         class RBSAnnotation < Base
-          attr_reader :contents #:: Array[String]
+          attr_reader :contents #: Array[String]
 
           # @rbs override
           def initialize(tree, comments)
@@ -331,8 +332,8 @@ module RBS
         # `# @rbs inherits T`
         #
         class Inherits < Base
-          attr_reader :super_name #:: TypeName?
-          attr_reader :args #:: Array[Types::t]?
+          attr_reader :super_name #: TypeName?
+          attr_reader :args #: Array[Types::t]?
 
           # @rbs override
           def initialize(tree, source)
@@ -363,7 +364,7 @@ module RBS
 
         # `# @rbs use [USES]`
         class Use < Base
-          attr_reader :clauses #:: Array[RBS::AST::Directives::Use::clause]
+          attr_reader :clauses #: Array[RBS::AST::Directives::Use::clause]
 
           # @rbs override
           def initialize(tree, source)
@@ -415,9 +416,9 @@ module RBS
 
         # `# @rbs module-self [MODULE_SELF]`
         class ModuleSelf < Base
-          attr_reader :constraint #:: RBS::AST::Declarations::Module::Self?
+          attr_reader :constraint #: RBS::AST::Declarations::Module::Self?
 
-          attr_reader :comment #:: String?
+          attr_reader :comment #: String?
 
           # @rbs override
           def initialize(tree, source)
@@ -453,9 +454,9 @@ module RBS
         class Generic < Base
           # TypeParam object or `nil` if syntax error
           #
-          attr_reader :type_param #:: RBS::AST::TypeParam?
+          attr_reader :type_param #: RBS::AST::TypeParam?
 
-          attr_reader :comment #:: String?
+          attr_reader :comment #: String?
 
           # @rbs override
           def initialize(tree, source)
@@ -502,7 +503,7 @@ module RBS
 
         # `# @rbs!` annotation
         class Embedded < Base
-          attr_reader :content #:: String
+          attr_reader :content #: String
 
           # @rbs override
           def initialize(tree, source)
@@ -516,9 +517,9 @@ module RBS
         # `@rbs METHOD-TYPE``
         #
         class Method < Base
-          attr_reader :type #:: MethodType?
+          attr_reader :type #: MethodType?
 
-          attr_reader :method_type_source #:: String
+          attr_reader :method_type_source #: String
 
           # @rbs override
           def initialize(tree, source)

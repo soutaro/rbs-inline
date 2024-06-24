@@ -74,7 +74,7 @@ module RBS
 
           # @rbs node: Prism::AliasMethodNode
           # @rbs comments: AnnotationParser::ParsingResult?
-          def initialize: (Prism::AliasMethodNode node, AnnotationParser::ParsingResult? comments) -> untyped
+          def initialize: (Prism::AliasMethodNode node, AnnotationParser::ParsingResult? comments) -> void
 
           # @rbs return: Symbol -- the name of *old* method
           def old_name: () -> Symbol

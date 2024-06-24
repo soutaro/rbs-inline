@@ -41,8 +41,8 @@ module RBS
       # @rbs return: AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl
       def current_class_module_decl!: () -> (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl)
 
-      # :: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
-      # :: (AST::Declarations::ConstantDecl) -> void
+      # : (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
+      # : (AST::Declarations::ConstantDecl) -> void
       def push_class_module_decl: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
                                 | (AST::Declarations::ConstantDecl) -> void
 

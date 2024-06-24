@@ -12,14 +12,14 @@ module RBS
         #   type t = ruby | rbs
 
         class Base
-          attr_reader :location #:: Prism::Location
+          attr_reader :location #: Prism::Location
 
           # @rbs location: Prism::Location
-          def initialize(location) #:: void
+          def initialize(location) #: void
             @location = location
           end
 
-          def start_line #:: Integer
+          def start_line #: Integer
             location.start_line
           end
         end
@@ -28,8 +28,8 @@ module RBS
         end
 
         class RubyDef < RubyBase
-          attr_reader :node #:: Prism::DefNode
-          attr_reader :comments #:: AnnotationParser::ParsingResult?
+          attr_reader :node #: Prism::DefNode
+          attr_reader :comments #: AnnotationParser::ParsingResult?
 
           # The visibility directly attached to the `def` node
           #
@@ -39,15 +39,15 @@ module RBS
           # def foo() end            # <= nil
           # private def foo() end    # <= :private
           # ```
-          attr_reader :visibility #:: RBS::AST::Members::visibility?
+          attr_reader :visibility #: RBS::AST::Members::visibility?
 
-          attr_reader :assertion #:: Annotations::Assertion?
+          attr_reader :assertion #: Annotations::Assertion?
 
           # @rbs node: Prism::DefNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs visibility: RBS::AST::Members::visibility?
           # @rbs assertion: Annotations::Assertion?
-          def initialize(node, comments, visibility, assertion) #:: void
+          def initialize(node, comments, visibility, assertion) #: void
             @node = node
             @comments = comments
             @visibility = visibility
@@ -57,11 +57,11 @@ module RBS
           end
 
           # Returns the name of the method
-          def method_name #:: Symbol
+          def method_name #: Symbol
             node.name
           end
 
-          def annotated_method_types #:: Array[MethodType]
+          def annotated_method_types #: Array[MethodType]
             if comments
               comments.each_annotation.filter_map do |annotation|
                 case annotation
@@ -80,7 +80,7 @@ module RBS
             end
           end
 
-          def return_type #:: Types::t?
+          def return_type #: Types::t?
             if assertion
               if assertion.type?
                 return assertion.type?
@@ -94,7 +94,7 @@ module RBS
             end
           end
 
-          def var_type_hash #:: Hash[Symbol, Types::t?]
+          def var_type_hash #: Hash[Symbol, Types::t?]
             types = {} #: Hash[Symbol, Types::t?]
 
             if comments
@@ -113,7 +113,7 @@ module RBS
             types
           end
 
-          def splat_param_type_annotation #:: Annotations::SplatParamType?
+          def splat_param_type_annotation #: Annotations::SplatParamType?
             if comments
               comments.each_annotation.find do |annotation|
                 annotation.is_a?(Annotations::SplatParamType)
@@ -121,7 +121,7 @@ module RBS
             end
           end
 
-          def double_splat_param_type_annotation #:: Annotations::DoubleSplatParamType?
+          def double_splat_param_type_annotation #: Annotations::DoubleSplatParamType?
             if comments
               comments.each_annotation.find do |annotation|
                 annotation.is_a?(Annotations::DoubleSplatParamType)
@@ -129,7 +129,7 @@ module RBS
             end
           end
 
-          def method_overloads #:: Array[RBS::AST::Members::MethodDefinition::Overload]
+          def method_overloads #: Array[RBS::AST::Members::MethodDefinition::Overload]
             case
             when (method_types = annotated_method_types).any?
               method_types.map do |method_type|
@@ -250,7 +250,7 @@ module RBS
             end
           end
 
-          def method_annotations #:: Array[RBS::AST::Annotation]
+          def method_annotations #: Array[RBS::AST::Annotation]
             if comments
               comments.each_annotation.flat_map do |annotation|
                 if annotation.is_a?(AST::Annotations::RBSAnnotation)
@@ -269,7 +269,7 @@ module RBS
             end
           end
 
-          def override_annotation #:: AST::Annotations::Override?
+          def override_annotation #: AST::Annotations::Override?
             if comments
               comments.each_annotation.find do |annotation|
                 annotation.is_a?(AST::Annotations::Override)
@@ -277,7 +277,7 @@ module RBS
             end
           end
 
-          def block_type_annotation #:: AST::Annotations::BlockType?
+          def block_type_annotation #: AST::Annotations::BlockType?
             if comments
               comments.each_annotation.find do |annotation|
                 annotation.is_a?(AST::Annotations::BlockType)
@@ -287,12 +287,12 @@ module RBS
         end
 
         class RubyAlias < RubyBase
-          attr_reader :node #:: Prism::AliasMethodNode
-          attr_reader :comments #:: AnnotationParser::ParsingResult?
+          attr_reader :node #: Prism::AliasMethodNode
+          attr_reader :comments #: AnnotationParser::ParsingResult?
 
           # @rbs node: Prism::AliasMethodNode
           # @rbs comments: AnnotationParser::ParsingResult?
-          def initialize(node, comments)
+          def initialize(node, comments) #: void
             @node = node
             @comments = comments
 
@@ -318,13 +318,13 @@ module RBS
           include Declarations::ConstantUtil
 
           # CallNode that calls `include`, `prepend`, and `extend` method
-          attr_reader :node #:: Prism::CallNode
+          attr_reader :node #: Prism::CallNode
 
           # Comments attached to the call node
-          attr_reader :comments #:: AnnotationParser::ParsingResult?
+          attr_reader :comments #: AnnotationParser::ParsingResult?
 
           # Possible following type application annotation
-          attr_reader :application #:: Annotations::Application?
+          attr_reader :application #: Annotations::Application?
 
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
@@ -387,9 +387,9 @@ module RBS
         end
 
         class RubyAttr < RubyBase
-          attr_reader :node #:: Prism::CallNode
-          attr_reader :comments #:: AnnotationParser::ParsingResult?
-          attr_reader :assertion #:: Annotations::Assertion?
+          attr_reader :node #: Prism::CallNode
+          attr_reader :comments #: AnnotationParser::ParsingResult?
+          attr_reader :assertion #: Annotations::Assertion?
 
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
@@ -451,7 +451,7 @@ module RBS
           #
           # Returns `untyped` when not annotated.
           #
-          def attribute_type #:: Types::t
+          def attribute_type #: Types::t
             type = assertion&.type
             raise if type.is_a?(MethodType)
 
@@ -462,10 +462,10 @@ module RBS
         # `private` call without arguments
         #
         class RubyPrivate < RubyBase
-          attr_reader :node #:: Prism::CallNode
+          attr_reader :node #: Prism::CallNode
 
           # @rbs node: Prism::CallNode
-          def initialize(node) #:: void
+          def initialize(node) #: void
             super(node.location)
             @node = node
           end
@@ -474,10 +474,10 @@ module RBS
         # `public` call without arguments
         #
         class RubyPublic < RubyBase
-          attr_reader :node #:: Prism::CallNode
+          attr_reader :node #: Prism::CallNode
 
           # @rbs node: Prism::CallNode
-          def initialize(node) #:: void
+          def initialize(node) #: void
             super(node.location)
             @node = node
           end
@@ -487,20 +487,20 @@ module RBS
         end
 
         class RBSIvar < RBSBase
-          attr_reader :annotation #:: Annotations::IvarType
+          attr_reader :annotation #: Annotations::IvarType
 
-          attr_reader :comment #:: AnnotationParser::ParsingResult
+          attr_reader :comment #: AnnotationParser::ParsingResult
 
           # @rbs comment: AnnotationParser::ParsingResult
           # @rbs annotation: Annotations::IvarType
-          def initialize(comment, annotation) #:: void
+          def initialize(comment, annotation) #: void
             @comment = comment
             @annotation = annotation
 
             super(comment.comments[0].location)
           end
 
-          def rbs #:: RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassInstanceVariable | nil
+          def rbs #: RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassInstanceVariable | nil
             if annotation.type
               if annotation.comment
                 string = annotation.comment.delete_prefix("--").lstrip
@@ -527,13 +527,13 @@ module RBS
         end
 
         class RBSEmbedded < RBSBase
-          attr_reader :annotation #:: Annotations::Embedded
+          attr_reader :annotation #: Annotations::Embedded
 
-          attr_reader :comment #:: AnnotationParser::ParsingResult
+          attr_reader :comment #: AnnotationParser::ParsingResult
 
           # @rbs comment: AnnotationParser::ParsingResult
           # @rbs annotation: Annotations::Embedded
-          def initialize(comment, annotation) #:: void
+          def initialize(comment, annotation) #: void
             @comment = comment
             @annotation = annotation
 
@@ -544,7 +544,7 @@ module RBS
           #
           # Returns `RBS::ParsingError` when the `content` has syntax error.
           #
-          def members #:: Array[RBS::AST::Members::t | RBS::AST::Declarations::t] | RBS::ParsingError
+          def members #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t] | RBS::ParsingError
             source = <<~RBS
               module EmbeddedModuleTest
                 #{annotation.content}

@@ -9,14 +9,14 @@ module RBS
         #
         #   type tree = token | Tree | Types::t | MethodType | nil
 
-        attr_reader :trees #:: Array[tree]
-        attr_reader :type #:: Symbol
+        attr_reader :trees #: Array[tree]
+        attr_reader :type #: Symbol
 
         # Children but without `tWHITESPACE` tokens
-        attr_reader :non_trivia_trees #:: Array[tree]
+        attr_reader :non_trivia_trees #: Array[tree]
 
         # @rbs type: Symbol
-        def initialize(type)
+        def initialize(type) #: void
           @type = type
           @trees = []
           @non_trivia_trees = []
@@ -33,7 +33,7 @@ module RBS
         end
 
         # Returns the source code associated to the tree
-        def to_s #:: String
+        def to_s #: String
           buf = +""
 
           trees.each do |tree|

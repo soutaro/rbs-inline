@@ -91,7 +91,7 @@ module RBS
           # @rbs node: Prism::ConstantWriteNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs assertion: Annotations::Assertion?
-          def initialize: (Prism::ConstantWriteNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> untyped
+          def initialize: (Prism::ConstantWriteNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> void
 
           # @rbs %a{pure}
           # @rbs return: Types::t
