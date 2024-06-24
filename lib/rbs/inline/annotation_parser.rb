@@ -39,7 +39,7 @@ module RBS
         end
 
         # @rbs first_comment: Prism::Comment
-        def initialize(first_comment)
+        def initialize(first_comment) #: void
           @comments = [first_comment]
           @annotations = []
           content = first_comment.location.slice
@@ -103,7 +103,7 @@ module RBS
       attr_reader :input #: Array[Prism::Comment]
 
       # @rbs input: Array[Prism::Comment]
-      def initialize(input)
+      def initialize(input) #: void
         @input = input
       end
 
@@ -425,7 +425,7 @@ module RBS
         #
         # This method ensures the `current_position` will be the given `position`.
         #
-        # @rbs size: Integer -- The new position
+        # @rbs position: Integer -- The new position
         # @rbs tree: AST::Tree -- Tree to insert trivia tokens
         # @rbs return: void
         def reset(position, tree)
@@ -481,7 +481,7 @@ module RBS
 
         # Test if current token has specified `type`
         #
-        # @rbs types: *Symbol
+        # @rbs *types: Symbol
         # @rbs return: bool
         def type?(*types)
           types.any? { lookahead1 && lookahead1[0] == _1 }
@@ -823,7 +823,7 @@ module RBS
         tree
       end
 
-      # @rbs tokznier: Tokenizer
+      # @rbs tokenizer: Tokenizer
       # @rbs return: AST::Tree
       def parse_inherits(tokenizer)
         tree = AST::Tree.new(:rbs_inherits)
@@ -966,7 +966,7 @@ module RBS
       #
       # @rbs tokenizer: Tokenizer
       # @rbs *types: Symbol
-      # @rbs block: ^() -> AST::Tree
+      # @rbs &block: () -> AST::Tree
       # @rbs return: AST::Tree?
       def parse_optional(tokenizer, *types, &block)
         if tokenizer.type?(*types)

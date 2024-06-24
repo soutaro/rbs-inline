@@ -121,13 +121,13 @@ module RBS
 
         # `@rbs &block: METHOD-TYPE` or `@rbs &block: ? METHOD-TYPE`
         class BlockType < Base
-          attr_reader :name #:: Symbol?
+          attr_reader :name #: Symbol?
 
-          attr_reader :type #:: Types::Block?
+          attr_reader :type #: Types::Block?
 
-          attr_reader :comment #:: String?
+          attr_reader :comment #: String?
 
-          attr_reader :type_source #:: String
+          attr_reader :type_source #: String
 
           # @rbs override
           def initialize(tree, source)
@@ -230,6 +230,7 @@ module RBS
         class Assertion < Base
           attr_reader :type #: Types::t | MethodType | nil
 
+          # @rbs override
           def initialize(tree, source)
             @source = source
             @tree = tree

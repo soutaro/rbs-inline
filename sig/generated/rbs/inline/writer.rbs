@@ -8,11 +8,11 @@ module RBS
       attr_reader writer: RBS::Writer
 
       # @rbs buffer: String
-      def initialize: (?String buffer) -> untyped
+      def initialize: (?String buffer) -> void
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
-      def self.write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls) -> untyped
+      def self.write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls) -> void
 
       # @rbs *lines: String
       # @rbs return: void

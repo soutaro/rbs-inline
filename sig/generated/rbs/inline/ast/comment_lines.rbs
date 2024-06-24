@@ -18,7 +18,7 @@ module RBS
         attr_reader comments: Array[Prism::Comment]
 
         # @rbs comments: Array[Prism::Comment]
-        def initialize: (Array[Prism::Comment] comments) -> untyped
+        def initialize: (Array[Prism::Comment] comments) -> void
 
         def lines: () -> Array[String]
 

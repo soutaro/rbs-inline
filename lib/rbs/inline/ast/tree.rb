@@ -16,7 +16,7 @@ module RBS
         attr_reader :non_trivia_trees #: Array[tree]
 
         # @rbs type: Symbol
-        def initialize(type)
+        def initialize(type) #: void
           @type = type
           @trees = []
           @non_trivia_trees = []

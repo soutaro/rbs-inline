@@ -7,14 +7,14 @@ module RBS
       attr_reader :writer #: RBS::Writer
 
       # @rbs buffer: String
-      def initialize(buffer = +"")
+      def initialize(buffer = +"") #: void
         @output = buffer
         @writer = RBS::Writer.new(out: StringIO.new(buffer))
       end
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
-      def self.write(uses, decls)
+      def self.write(uses, decls) #: void
         writer = Writer.new()
         writer.write(uses, decls)
         writer.output

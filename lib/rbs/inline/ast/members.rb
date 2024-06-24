@@ -292,7 +292,7 @@ module RBS
 
           # @rbs node: Prism::AliasMethodNode
           # @rbs comments: AnnotationParser::ParsingResult?
-          def initialize(node, comments)
+          def initialize(node, comments) #: void
             @node = node
             @comments = comments
 

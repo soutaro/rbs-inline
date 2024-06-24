@@ -19,7 +19,7 @@ module RBS
         attr_reader :comments #: Array[Prism::Comment]
 
         # @rbs comments: Array[Prism::Comment]
-        def initialize(comments)
+        def initialize(comments) #: void
           @comments = comments
         end
 

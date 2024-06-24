@@ -31,7 +31,7 @@ module RBS
                            | () -> Enumerator[AST::Annotations::t, void]
 
         # @rbs first_comment: Prism::Comment
-        def initialize: (Prism::Comment first_comment) -> untyped
+        def initialize: (Prism::Comment first_comment) -> void
 
         # @rbs return: Range[Integer]
         def line_range: () -> Range[Integer]
@@ -52,7 +52,7 @@ module RBS
       attr_reader input: Array[Prism::Comment]
 
       # @rbs input: Array[Prism::Comment]
-      def initialize: (Array[Prism::Comment] input) -> untyped
+      def initialize: (Array[Prism::Comment] input) -> void
 
       # @rbs input: Array[Prism::Comment]
       # @rbs return: Array[ParsingResult]
@@ -167,10 +167,10 @@ module RBS
         #
         # This method ensures the `current_position` will be the given `position`.
         #
-        # @rbs size: Integer -- The new position
+        # @rbs position: Integer -- The new position
         # @rbs tree: AST::Tree -- Tree to insert trivia tokens
         # @rbs return: void
-        def reset: (untyped position, AST::Tree tree) -> void
+        def reset: (Integer position, AST::Tree tree) -> void
 
         def rest: () -> String
 
@@ -190,9 +190,9 @@ module RBS
 
         # Test if current token has specified `type`
         #
-        # @rbs types: *Symbol
+        # @rbs *types: Symbol
         # @rbs return: bool
-        def type?: (*untyped types) -> bool
+        def type?: (*Symbol types) -> bool
 
         # Test if lookahead2 token have specified `type`
         #
@@ -283,9 +283,9 @@ module RBS
       # @rbs return: AST::Tree
       def parse_rbs_annotation: (Tokenizer tokenizer) -> AST::Tree
 
-      # @rbs tokznier: Tokenizer
+      # @rbs tokenizer: Tokenizer
       # @rbs return: AST::Tree
-      def parse_inherits: (untyped tokenizer) -> AST::Tree
+      def parse_inherits: (Tokenizer tokenizer) -> AST::Tree
 
       # Parse `@rbs override` annotation
       #
@@ -328,9 +328,9 @@ module RBS
       #
       # @rbs tokenizer: Tokenizer
       # @rbs *types: Symbol
-      # @rbs block: ^() -> AST::Tree
+      # @rbs &block: () -> AST::Tree
       # @rbs return: AST::Tree?
-      def parse_optional: (Tokenizer tokenizer, *Symbol types) ?{ (?) -> untyped } -> AST::Tree?
+      def parse_optional: (Tokenizer tokenizer, *Symbol types) { () -> AST::Tree } -> AST::Tree?
 
       # @rbs tokenizer: Tokenizer
       # @rbs return: AST::Tree
