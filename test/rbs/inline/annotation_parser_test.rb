@@ -152,14 +152,14 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
 
   def test_type_assertion
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
-      #:: (String) -> void
-      #:: [Integer, String]
-      #:: [Integer
-      #:: (
+      #: (String) -> void
+      #: [Integer, String]
+      #: [Integer
+      #: (
       #    String,
       #    Integer,
       #   ) -> void
-      # :: String
+      # : String
       RUBY
 
     annots[0].annotations[0].tap do |annotation|

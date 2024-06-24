@@ -17,22 +17,22 @@ module RBS
       #
       #
       class PathCalculator
-        attr_reader :pwd #:: Pathname
+        attr_reader :pwd #: Pathname
 
-        attr_reader :base_paths #:: Array[Pathname]
+        attr_reader :base_paths #: Array[Pathname]
 
-        attr_reader :output_path #:: Pathname
+        attr_reader :output_path #: Pathname
 
         # @rbs pwd: Pathname
         # @rbs base_paths: Array[Pathname]
         # @rbs output_path: Pathname
-        def initialize(pwd, base_paths, output_path) #:: void
+        def initialize(pwd, base_paths, output_path) #: void
           @pwd = pwd
           @base_paths = base_paths
           @output_path = output_path
         end
 
-        #:: (Pathname) -> Pathname?
+        #: (Pathname) -> Pathname?
         def calculate(path)
           path = pwd + path if path.relative?
           path = path.cleanpath
@@ -55,12 +55,12 @@ module RBS
         end
       end
 
-      attr_reader :stdout, :stderr #:: IO
-      attr_reader :logger #:: Logger
+      attr_reader :stdout, :stderr #: IO
+      attr_reader :logger #: Logger
 
       # @rbs stdout: IO
       # @rbs stderr: IO
-      def initialize(stdout: STDOUT, stderr: STDERR) #:: void
+      def initialize(stdout: STDOUT, stderr: STDERR) #: void
         @stdout = stdout
         @stderr = stderr
         @logger = Logger.new(stderr)

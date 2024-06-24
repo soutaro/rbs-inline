@@ -27,7 +27,7 @@ module RBS
           # @rbs override
           def initialize: ...
 
-          # :: () -> bool
+          # : () -> bool
           def complete?: () -> bool
         end
 
@@ -54,13 +54,13 @@ module RBS
 
         # `@rbs &block: METHOD-TYPE` or `@rbs &block: ? METHOD-TYPE`
         class BlockType < Base
-          attr_reader name: Symbol?
+          attr_reader name: untyped
 
-          attr_reader type: Types::Block?
+          attr_reader type: untyped
 
-          attr_reader comment: String?
+          attr_reader comment: untyped
 
-          attr_reader type_source: String
+          attr_reader type_source: untyped
 
           # @rbs override
           def initialize: ...
@@ -93,7 +93,7 @@ module RBS
           def initialize: ...
         end
 
-        # `#:: TYPE`
+        # `#: TYPE`
         class Assertion < Base
           attr_reader type: Types::t | MethodType | nil
 

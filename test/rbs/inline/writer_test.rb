@@ -15,7 +15,7 @@ class RBS::Inline::WriterTest < Minitest::Test
     output = translate(<<~RUBY)
       class Foo
         # @rbs () -> String
-        #:: (String) -> Integer
+        #: (String) -> Integer
         def foo(x = nil)
         end
 
@@ -34,7 +34,7 @@ class RBS::Inline::WriterTest < Minitest::Test
     assert_equal <<~RBS, output
       class Foo
         # @rbs () -> String
-        # :: (String) -> Integer
+        # : (String) -> Integer
         def foo: () -> String
                | (String) -> Integer
 
@@ -120,17 +120,17 @@ class RBS::Inline::WriterTest < Minitest::Test
   def test_method_type__return_assertion
     output = translate(<<~RUBY)
       class Foo
-        def to_s #:: String
+        def to_s #: String
         end
 
         def foo(
             x,
             y
-          ) #:: void
+          ) #: void
         end
 
         def hoge x,
-          y #:: Integer
+          y #: Integer
         end
       end
     RUBY
@@ -362,12 +362,12 @@ class RBS::Inline::WriterTest < Minitest::Test
   def test_attributes__typed
     output = translate(<<~RUBY)
       class Hello
-        attr_reader :foo, :foo2, "hoge".to_sym #:: String
+        attr_reader :foo, :foo2, "hoge".to_sym #: String
 
         # Attribute of bar
-        attr_writer :bar #:: Array[Integer]
+        attr_writer :bar #: Array[Integer]
 
-        attr_accessor :baz #:: Integer |
+        attr_accessor :baz #: Integer |
       end
     RUBY
 
@@ -465,7 +465,7 @@ class RBS::Inline::WriterTest < Minitest::Test
     output = translate(<<~RUBY)
       VERSION = "hogehoge"
 
-      SIZE = [123] #:: Array[Integer]
+      SIZE = [123] #: Array[Integer]
 
       NAMES = __dir__
 
@@ -511,7 +511,7 @@ class RBS::Inline::WriterTest < Minitest::Test
       module Foo
         # @rbs @foo: String -- This is something
 
-        def foo #:: void
+        def foo #: void
         end
 
         # @rbs self.@foo: Integer -- Something another

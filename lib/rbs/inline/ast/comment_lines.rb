@@ -16,18 +16,18 @@ module RBS
       # And want to translate a location in the string into the location in comment1 and comment2.
       #
       class CommentLines
-        attr_reader :comments #:: Array[Prism::Comment]
+        attr_reader :comments #: Array[Prism::Comment]
 
         # @rbs comments: Array[Prism::Comment]
         def initialize(comments)
           @comments = comments
         end
 
-        def lines #:: Array[String]
+        def lines #: Array[String]
           comments.map {|comment| comment.location.slice }
         end
 
-        def string #:: String
+        def string #: String
           comments.map {|comment| comment.location.slice[1..] || "" }.join("\n")
         end
 

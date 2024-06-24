@@ -25,7 +25,7 @@ module RBS
         # @rbs output_path: Pathname
         def initialize: (Pathname pwd, Array[Pathname] base_paths, Pathname output_path) -> void
 
-        # :: (Pathname) -> Pathname?
+        # : (Pathname) -> Pathname?
         def calculate: (Pathname) -> Pathname?
 
         # @rbs path: Pathname

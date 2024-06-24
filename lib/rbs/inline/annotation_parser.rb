@@ -20,12 +20,12 @@ module RBS
       # ```
       #
       class ParsingResult
-        attr_reader :comments #:: Array[Prism::Comment]
-        attr_reader :annotations #:: Array[AST::Annotations::t | AST::CommentLines]
-        attr_reader :first_comment_offset #:: Integer
+        attr_reader :comments #: Array[Prism::Comment]
+        attr_reader :annotations #: Array[AST::Annotations::t | AST::CommentLines]
+        attr_reader :first_comment_offset #: Integer
 
-        #:: () { (AST::Annotations::t) -> void } -> void
-        #:: () -> Enumerator[AST::Annotations::t, void]
+        #: () { (AST::Annotations::t) -> void } -> void
+        #: () -> Enumerator[AST::Annotations::t, void]
         def each_annotation(&block)
           if block
             annotations.each do |annot|
@@ -77,7 +77,7 @@ module RBS
         end
 
         # @rbs trim: bool -- `true` to trim the leading whitespaces
-        def content(trim: false) #:: String
+        def content(trim: false) #: String
           if trim
             leading_spaces = lines[0][/\A\s*/]
             offset = leading_spaces ? leading_spaces.length : 0
@@ -95,12 +95,12 @@ module RBS
           end
         end
 
-        def lines #:: Array[String]
+        def lines #: Array[String]
           comments.map { _1.location.slice[1...] || "" }
         end
       end
 
-      attr_reader :input #:: Array[Prism::Comment]
+      attr_reader :input #: Array[Prism::Comment]
 
       # @rbs input: Array[Prism::Comment]
       def initialize(input)
@@ -150,15 +150,15 @@ module RBS
       # Test if the comment is an annotation comment
       #
       # - Returns `nil` if the comment is not an annotation.
-      # - Returns `true` if the comment is `#::` or `#[` annotation. (Offset is `1`)
+      # - Returns `true` if the comment is `#:` or `#[` annotation. (Offset is `1`)
       # - Returns Integer if the comment is `#@rbs` annotation. (Offset is the number of leading spaces including `#`)
       #
-      #:: (Prism::Comment) -> (Integer | true | nil)
+      #: (Prism::Comment) -> (Integer | true | nil)
       def annotation_comment?(comment)
         line = comment.location.slice
 
         # No leading whitespace is allowed
-        return true if line.start_with?("#::")
+        return true if line.start_with?("#:")
         return true if line.start_with?("#[")
 
         if match = line.match(/\A#(\s*)@rbs(\b|!)/)
@@ -176,7 +176,7 @@ module RBS
       #
       # Yields an array of comments, and a boolean indicating if the comments may be an annotation.
       #
-      #:: (ParsingResult) { (Array[Prism::Comment], bool is_annotation) -> void } -> void
+      #: (ParsingResult) { (Array[Prism::Comment], bool is_annotation) -> void } -> void
       def each_annotation_paragraph(result, &block)
         yield_paragraph([], result.comments.dup, &block)
       end
@@ -306,7 +306,8 @@ module RBS
           "unchecked" => :kUNCHECKED,
           "self" => :kSELF,
           "skip" => :kSKIP,
-        } #:: Hash[String, Symbol]
+          "yields" => :kYIELDS,
+        } #: Hash[String, Symbol]
         KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
 
         PUNCTS = {
@@ -325,16 +326,16 @@ module RBS
           "(" => :kLPAREN,
           "&" => :kAMP,
           "?" => :kQUESTION,
-        } #:: Hash[String, Symbol]
-        PUNCTS_RE = Regexp.union(PUNCTS.keys) #:: Regexp
+        } #: Hash[String, Symbol]
+        PUNCTS_RE = Regexp.union(PUNCTS.keys) #: Regexp
 
-        attr_reader :scanner #:: StringScanner
+        attr_reader :scanner #: StringScanner
 
         # Token that comes after the current position
-        attr_reader :lookahead1 #:: token?
+        attr_reader :lookahead1 #: token?
 
         # Token that comes after `lookahead1`
-        attr_reader :lookahead2 #:: token?
+        attr_reader :lookahead2 #: token?
 
         # Returns the current char position of the scanner
         #
@@ -345,14 +346,14 @@ module RBS
         #         ^    <= scanner.charpos
         # ```
         #
-        def current_position #:: Integer
+        def current_position #: Integer
           start = scanner.charpos
           start -= lookahead1[1].size if lookahead1
           start -= lookahead2[1].size if lookahead2
           start
         end
 
-        def lookaheads #:: Array[Symbol?]
+        def lookaheads #: Array[Symbol?]
           [lookahead1&.[](0), lookahead2&.[](0)]
         end
 
@@ -416,7 +417,7 @@ module RBS
         end
 
         # Returns true if the scanner cannot consume next token
-        def stuck? #:: bool
+        def stuck? #: bool
           lookahead1.nil? && lookahead2.nil?
         end
 
@@ -447,7 +448,7 @@ module RBS
           advance(tree)
         end
 
-        def rest #:: String
+        def rest #: String
           buf = +""
           buf << lookahead1[1] if lookahead1
           buf << lookahead2[1] if lookahead2
@@ -597,7 +598,7 @@ module RBS
             tree << parse_method_type_annotation(tokenizer)
             AST::Annotations::Method.new(tree, comments)
           end
-        when tokenizer.type?(:kCOLON2)
+        when tokenizer.type?(:kCOLON)
           tokenizer.advance(tree, eat: true)
           tree << parse_type_method_type(tokenizer, tree)
           AST::Annotations::Assertion.new(tree, comments)
@@ -1001,7 +1002,7 @@ module RBS
         tree
       end
 
-      #:: (Tokenizer) -> AST::Tree
+      #: (Tokenizer) -> AST::Tree
       def parse_ivar_type(tokenizer)
         tree = AST::Tree.new(:ivar_type)
 
@@ -1020,7 +1021,7 @@ module RBS
         tree
       end
 
-      #:: (Tokenizer) -> AST::Tree
+      #: (Tokenizer) -> AST::Tree
       def parse_splat_param_type(tokenizer)
         tree = AST::Tree.new(:splat_param_type)
 
@@ -1037,7 +1038,7 @@ module RBS
         tree
       end
 
-      #:: (Tokenizer) -> AST::Tree
+      #: (Tokenizer) -> AST::Tree
       def parse_block_type(tokenizer)
         tree = AST::Tree.new(:block_type)
 

@@ -7,11 +7,11 @@ module RBS
     class Parser < Prism::Visitor
       # The top level declarations
       #
-      attr_reader :decls #:: Array[AST::Declarations::t]
+      attr_reader :decls #: Array[AST::Declarations::t]
 
       # The surrounding declarations
       #
-      attr_reader :surrounding_decls #:: Array[AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl]
+      attr_reader :surrounding_decls #: Array[AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl]
 
       # ParsingResult associated with the line number at the end
       #
@@ -23,16 +23,16 @@ module RBS
       # > [!IMPORTANT]
       # > The values will be removed during parsing.
       #
-      attr_reader :comments #:: Hash[Integer, AnnotationParser::ParsingResult]
+      attr_reader :comments #: Hash[Integer, AnnotationParser::ParsingResult]
 
       # The current visibility applied to single `def` node
       #
       # Assuming it's directly inside `private` or `public` calls.
       # `nil` when the `def` node is not inside `private` or `public` calls.
       #
-      attr_reader :current_visibility #:: RBS::AST::Members::visibility?
+      attr_reader :current_visibility #: RBS::AST::Members::visibility?
 
-      def initialize() #:: void
+      def initialize() #: void
         @decls = []
         @surrounding_decls = []
         @comments = {}
@@ -86,8 +86,8 @@ module RBS
         current_class_module_decl or raise
       end
 
-      #:: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
-      #:: (AST::Declarations::ConstantDecl) -> void
+      #: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
+      #: (AST::Declarations::ConstantDecl) -> void
       def push_class_module_decl(decl)
         if current = current_class_module_decl
           current.members << decl
@@ -114,7 +114,7 @@ module RBS
       # @rbs members: Array[AST::Members::t | AST::Declarations::t] --
       #   The destination.
       #   The method doesn't insert declarations, but have it to please type checker.
-      def load_inner_annotations(start_line, end_line, members) #:: void
+      def load_inner_annotations(start_line, end_line, members) #: void
         comments = inner_annotations(start_line, end_line)
 
         comments.each do |comment|
@@ -191,7 +191,7 @@ module RBS
       #
       # @rbs start_line: Integer
       # @rbs end_line: Integer
-      def inner_annotations(start_line, end_line) #:: Array[AnnotationParser::ParsingResult]
+      def inner_annotations(start_line, end_line) #: Array[AnnotationParser::ParsingResult]
         annotations = comments.each_value.select do |annotation|
           range = annotation.line_range
           start_line < range.begin && range.end < end_line

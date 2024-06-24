@@ -44,24 +44,24 @@ module RBS
         # @rbs generic NODE < Prism::Node
         class ModuleOrClass < Base
           # The node that represents the declaration
-          attr_reader :node #:: NODE
+          attr_reader :node #: NODE
 
           # Leading comment
-          attr_reader :comments #:: AnnotationParser::ParsingResult?
+          attr_reader :comments #: AnnotationParser::ParsingResult?
 
           # Members included in the declaration
-          attr_reader :members #:: Array[Members::t | t]
+          attr_reader :members #: Array[Members::t | t]
 
           # @rbs node: NODE
           # @rbs comments: AnnotationParser::ParsingResult?
-          def initialize(node, comments) #:: void
+          def initialize(node, comments) #: void
             @node = node
             @comments = comments
             @members = []
           end
 
           # Type parameters for the declaration
-          def type_params #:: Array[RBS::AST::TypeParam]
+          def type_params #: Array[RBS::AST::TypeParam]
             if comments = comments()
               comments.each_annotation.filter_map do |annotation|
                 if annotation.is_a?(Annotations::Generic)
@@ -73,7 +73,7 @@ module RBS
             end
           end
 
-          def start_line #:: Integer
+          def start_line #: Integer
             node.location.start_line
           end
         end
@@ -82,7 +82,7 @@ module RBS
           include ConstantUtil
 
           # Type application for super class
-          attr_reader :super_app #:: Annotations::Application?
+          attr_reader :super_app #: Annotations::Application?
 
           # @rbs node: Prism::ClassNode
           # @rbs comments: AnnotationParser::ParsingResult?
@@ -95,12 +95,12 @@ module RBS
           end
 
           # @rbs %a{pure}
-          def class_name #:: TypeName?
+          def class_name #: TypeName?
             type_name(node.constant_path)
           end
 
           # @rbs %a{pure}
-          def super_class #:: RBS::AST::Declarations::Class::Super?
+          def super_class #: RBS::AST::Declarations::Class::Super?
             if comments
               if inherits = comments.each_annotation.find {|a| a.is_a?(Annotations::Inherits) } #: Annotations::Inherits?
                 super_name = inherits.super_name
@@ -141,12 +141,12 @@ module RBS
           include ConstantUtil
 
           # @rbs %a{pure}
-          def module_name #:: TypeName?
+          def module_name #: TypeName?
             type_name(node.constant_path)
           end
 
           # @rbs %a{pure}
-          def module_selfs #:: Array[Annotations::ModuleSelf]
+          def module_selfs #: Array[Annotations::ModuleSelf]
             if comments
               comments.each_annotation.filter_map do |ann|
                 if ann.is_a?(AST::Annotations::ModuleSelf)
@@ -162,9 +162,9 @@ module RBS
         class ConstantDecl < Base
           include ConstantUtil
 
-          attr_reader :node #:: Prism::ConstantWriteNode
-          attr_reader :comments #:: AnnotationParser::ParsingResult?
-          attr_reader :assertion #:: Annotations::Assertion?
+          attr_reader :node #: Prism::ConstantWriteNode
+          attr_reader :comments #: AnnotationParser::ParsingResult?
+          attr_reader :assertion #: Annotations::Assertion?
 
           # @rbs node: Prism::ConstantWriteNode
           # @rbs comments: AnnotationParser::ParsingResult?
@@ -223,7 +223,7 @@ module RBS
             TypeName.new(name: node.name, namespace: Namespace.empty)
           end
 
-          def start_line #:: Integer
+          def start_line #: Integer
             node.location.start_line
           end
         end

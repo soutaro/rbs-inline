@@ -25,8 +25,8 @@ module RBS
 
         attr_reader first_comment_offset: Integer
 
-        # :: () { (AST::Annotations::t) -> void } -> void
-        # :: () -> Enumerator[AST::Annotations::t, void]
+        # : () { (AST::Annotations::t) -> void } -> void
+        # : () -> Enumerator[AST::Annotations::t, void]
         def each_annotation: () { (AST::Annotations::t) -> void } -> void
                            | () -> Enumerator[AST::Annotations::t, void]
 
@@ -66,10 +66,10 @@ module RBS
       # Test if the comment is an annotation comment
       #
       # - Returns `nil` if the comment is not an annotation.
-      # - Returns `true` if the comment is `#::` or `#[` annotation. (Offset is `1`)
+      # - Returns `true` if the comment is `#:` or `#[` annotation. (Offset is `1`)
       # - Returns Integer if the comment is `#@rbs` annotation. (Offset is the number of leading spaces including `#`)
       #
-      # :: (Prism::Comment) -> (Integer | true | nil)
+      # : (Prism::Comment) -> (Integer | true | nil)
       def annotation_comment?: (Prism::Comment) -> (Integer | true | nil)
 
       # Split lines of comments in `result` into paragraphs
@@ -81,7 +81,7 @@ module RBS
       #
       # Yields an array of comments, and a boolean indicating if the comments may be an annotation.
       #
-      # :: (ParsingResult) { (Array[Prism::Comment], bool is_annotation) -> void } -> void
+      # : (ParsingResult) { (Array[Prism::Comment], bool is_annotation) -> void } -> void
       def each_annotation_paragraph: (ParsingResult) { (Array[Prism::Comment], bool is_annotation) -> void } -> void
 
       # The first annotation line is already detected and consumed.
@@ -336,13 +336,13 @@ module RBS
       # @rbs return: AST::Tree
       def parse_generic: (Tokenizer tokenizer) -> AST::Tree
 
-      # :: (Tokenizer) -> AST::Tree
+      # : (Tokenizer) -> AST::Tree
       def parse_ivar_type: (Tokenizer) -> AST::Tree
 
-      # :: (Tokenizer) -> AST::Tree
+      # : (Tokenizer) -> AST::Tree
       def parse_splat_param_type: (Tokenizer) -> AST::Tree
 
-      # :: (Tokenizer) -> AST::Tree
+      # : (Tokenizer) -> AST::Tree
       def parse_block_type: (Tokenizer) -> AST::Tree
     end
   end

@@ -3,8 +3,8 @@
 module RBS
   module Inline
     class Writer
-      attr_reader :output #:: String
-      attr_reader :writer #:: RBS::Writer
+      attr_reader :output #: String
+      attr_reader :writer #: RBS::Writer
 
       # @rbs buffer: String
       def initialize(buffer = +"")
