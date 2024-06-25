@@ -152,30 +152,37 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
 
   def test_type_assertion
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
-      #: (String) -> void
       #: [Integer, String]
       #: [Integer
-      #: (
-      #    String,
-      #    Integer,
-      #   ) -> void
       # : String
       RUBY
 
     annots[0].annotations[0].tap do |annotation|
-      assert_equal "(String) -> void", annotation.type.to_s
-    end
-    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::TypeAssertion, annotation
       assert_equal "[ Integer, String ]", annotation.type.to_s
     end
-    annots[0].annotations[2].tap do |annotation|
-      assert_nil annotation.type
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::SyntaxErrorAssertion, annotation
+      assert_equal "[Integer\n : String", annotation.error_string
     end
-    annots[0].annotations[3].tap do |annotation|
-      assert_equal "(String, Integer) -> void", annotation.type.to_s
+  end
+
+  def test_method_type_assertion
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      #: (String) -> void
+      #: (
+      #    String,
+      #    Integer,
+      #   ) -> void
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::MethodTypeAssertion, annotation
+      assert_equal "(String) -> void", annotation.method_type.to_s
     end
-    annots[0].annotations[4].tap do |annotation|
-      assert_nil annotation
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::MethodTypeAssertion, annotation
+      assert_equal "(String, Integer) -> void", annotation.method_type.to_s
     end
   end
 

@@ -86,12 +86,12 @@ module RBS
 
           attr_reader comments: AnnotationParser::ParsingResult?
 
-          attr_reader assertion: Annotations::Assertion?
+          attr_reader assertion: Annotations::TypeAssertion?
 
           # @rbs node: Prism::ConstantWriteNode
           # @rbs comments: AnnotationParser::ParsingResult?
-          # @rbs assertion: Annotations::Assertion?
-          def initialize: (Prism::ConstantWriteNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> void
+          # @rbs assertion: Annotations::TypeAssertion?
+          def initialize: (Prism::ConstantWriteNode node, AnnotationParser::ParsingResult? comments, Annotations::TypeAssertion? assertion) -> void
 
           # @rbs %a{pure}
           # @rbs return: Types::t

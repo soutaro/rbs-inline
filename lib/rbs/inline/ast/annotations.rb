@@ -12,7 +12,7 @@ module RBS
         #          | Generic
         #          | ModuleSelf
         #          | Skip
-        #          | Assertion
+        #          | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion
         #          | Application
         #          | RBSAnnotation
         #          | Override
@@ -225,48 +225,47 @@ module RBS
           end
         end
 
-        # `#: TYPE`
-        #
-        class Assertion < Base
-          attr_reader :type #: Types::t | MethodType | nil
+        class MethodTypeAssertion < Base
+          attr_reader :method_type #: MethodType
 
           # @rbs override
           def initialize(tree, source)
             @source = source
             @tree = tree
 
-            @type = tree.nth_method_type?(1) || tree.nth_type?(1)
+            @method_type = tree.nth_method_type!(1)
           end
 
-          # @rbs return: bool
-          def complete?
-            if type
-              true
-            else
-              false
-            end
+          def type_source #: String
+            method_type.location&.source || raise
+          end
+        end
+
+        class TypeAssertion < Base
+          attr_reader :type #: Types::t
+
+          # @rbs override
+          def initialize(tree, source)
+            @source = source
+            @tree = tree
+
+            @type = tree.nth_type!(1)
           end
 
-          # Returns a type if it's type
-          #
-          def type? #: Types::t?
-            case type
-            when MethodType, nil
-              nil
-            else
-              type
-            end
+          def type_source #: String
+            type.location&.source || raise
           end
+        end
 
-          # Returns a method type if it's a method type
-          #
-          def method_type? #: MethodType?
-            case type
-            when MethodType
-              type
-            else
-              nil
-            end
+        class SyntaxErrorAssertion < Base
+          attr_reader :error_string #: String
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            @error_string = tree.nth_tree(1).to_s
           end
         end
 

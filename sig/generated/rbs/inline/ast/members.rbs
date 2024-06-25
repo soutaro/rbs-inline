@@ -37,13 +37,13 @@ module RBS
           # ```
           attr_reader visibility: RBS::AST::Members::visibility?
 
-          attr_reader assertion: Annotations::Assertion?
+          attr_reader assertion: Annotations::TypeAssertion?
 
           # @rbs node: Prism::DefNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs visibility: RBS::AST::Members::visibility?
-          # @rbs assertion: Annotations::Assertion?
-          def initialize: (Prism::DefNode node, AnnotationParser::ParsingResult? comments, RBS::AST::Members::visibility? visibility, Annotations::Assertion? assertion) -> void
+          # @rbs assertion: Annotations::TypeAssertion?
+          def initialize: (Prism::DefNode node, AnnotationParser::ParsingResult? comments, RBS::AST::Members::visibility? visibility, Annotations::TypeAssertion? assertion) -> void
 
           # Returns the name of the method
           def method_name: () -> Symbol
@@ -119,13 +119,13 @@ module RBS
 
           attr_reader comments: AnnotationParser::ParsingResult?
 
-          attr_reader assertion: Annotations::Assertion?
+          attr_reader assertion: Annotations::TypeAssertion?
 
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
-          # @rbs assertion: Annotations::Assertion?
+          # @rbs assertion: Annotations::TypeAssertion?
           # @rbs return: void
-          def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> void
+          def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::TypeAssertion? assertion) -> void
 
           # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
           def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?

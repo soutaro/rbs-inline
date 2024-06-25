@@ -105,13 +105,13 @@ module RBS
       # @rbs return: AST::Annotations::Application?
       def application_annotation: (Node node) -> AST::Annotations::Application?
 
-      # Fetch Assertion annotation which is associated to `node`
+      # Fetch TypeAssertion annotation which is associated to `node`
       #
       # The assertion annotation is removed from `comments`.
       #
       # @rbs node: Node | Location
-      # @rbs return: AST::Annotations::Assertion?
-      def assertion_annotation: (Node | Location node) -> AST::Annotations::Assertion?
+      # @rbs return: AST::Annotations::TypeAssertion?
+      def assertion_annotation: (Node | Location node) -> AST::Annotations::TypeAssertion?
 
       # @rbs override
       def visit_constant_write_node: ...

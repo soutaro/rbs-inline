@@ -602,8 +602,17 @@ module RBS
           end
         when tokenizer.type?(:kCOLON)
           tokenizer.advance(tree, eat: true)
-          tree << parse_type_method_type(tokenizer, tree)
-          AST::Annotations::Assertion.new(tree, comments)
+          type = parse_type_method_type(tokenizer, tree)
+          tree << type
+
+          case type
+          when MethodType
+            AST::Annotations::MethodTypeAssertion.new(tree, comments)
+          when AST::Tree, nil
+            AST::Annotations::SyntaxErrorAssertion.new(tree, comments)
+          else
+            AST::Annotations::TypeAssertion.new(tree, comments)
+          end
         when tokenizer.type?(:kLBRACKET)
           tree << parse_type_app(tokenizer)
           AST::Annotations::Application.new(tree, comments)
