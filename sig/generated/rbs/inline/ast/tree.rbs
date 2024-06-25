@@ -3,11 +3,11 @@
 module RBS
   module Inline
     module AST
+      type token = [ Symbol, String ]
+
+      type tree = token | Tree | Types::t | MethodType | nil
+
       class Tree
-        type token = [ Symbol, String ]
-
-        type tree = token | Tree | Types::t | MethodType | nil
-
         attr_reader trees: Array[tree]
 
         attr_reader type: Symbol
@@ -24,6 +24,12 @@ module RBS
 
         # Returns the source code associated to the tree
         def to_s: () -> String
+
+        # Returns `true` if token at the given index is of the given type
+        def token?: (untyped type, at: untyped) -> untyped
+
+        # Returns `true` if tree at the given index is of the given type
+        def tree?: (untyped type, at: untyped) -> untyped
 
         # Returns n-th token from the children
         #

@@ -198,12 +198,32 @@ module RBS
 
         # `@rbs METHOD-TYPE``
         class Method < Base
+          type method_type = [ MethodType, method_type? ] | String
+
+          attr_reader method_types: method_type?
+
+          # `true` if the method definition is overloading something
+          attr_reader overloading: bool
+
           attr_reader type: MethodType?
 
           attr_reader method_type_source: String
 
           # @rbs override
           def initialize: ...
+
+          # : (Array[tree]) -> method_type?
+          def construct_method_types: (Array[tree]) -> method_type?
+
+          # @rbs () { (MethodType) -> void } -> void
+          #    | () -> Enumerator[MethodType, void]
+          def each_method_type: () { (MethodType) -> void } -> void
+                              | () -> Enumerator[MethodType, void]
+
+          # Returns the parsing error overload string
+          #
+          # Returns `nil` if no parsing error found.
+          def error_source: () -> String?
         end
       end
     end

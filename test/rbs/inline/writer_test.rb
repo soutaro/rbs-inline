@@ -655,4 +655,29 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_method_type_rbs_dot3
+    output = translate(<<~RUBY)
+      class X
+        # @rbs ...
+        def foo
+        end
+
+        # @rbs () -> void | ...
+        def bar
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class X
+        # @rbs ...
+        def foo: ...
+
+        # @rbs () -> void | ...
+        def bar: () -> void
+               | ...
+      end
+    RBS
+  end
 end

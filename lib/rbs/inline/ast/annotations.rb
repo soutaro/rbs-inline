@@ -517,6 +517,14 @@ module RBS
         # `@rbs METHOD-TYPE``
         #
         class Method < Base
+          # @rbs! type method_type = [MethodType, method_type?] | String
+
+          attr_reader :method_types #: method_type?
+
+          # `true` if the method definition is overloading something
+          #
+          attr_reader :overloading #: bool
+
           attr_reader :type #: MethodType?
 
           attr_reader :method_type_source #: String
@@ -526,13 +534,67 @@ module RBS
             @tree = tree
             @source = source
 
-            case type = tree.nth_tree!(1).non_trivia_trees[0]
+            overloads = tree.nth_tree!(1)
+            @method_types = construct_method_types(overloads.non_trivia_trees.dup)
+            @overloading = overloads.token?(:kDOT3, at: -1)
+          end
+
+          #: (Array[tree]) -> method_type?
+          def construct_method_types(children)
+            first = children.shift
+
+            case first
             when MethodType
-              @type = type
-              @method_type_source = type.location&.source || raise
+              children.shift
+              [
+                first,
+                construct_method_types(children)
+              ]
+            when Array
+              # `...`
+              nil
+            when AST::Tree
+              # Syntax error
+              first.to_s
+            end
+          end
+
+          # @rbs () { (MethodType) -> void } -> void
+          #    | () -> Enumerator[MethodType, void]
+          def each_method_type
+            if block_given?
+              type = self.method_types
+
+              while true
+                if type.is_a?(Array)
+                  yield type[0]
+                  type = type[1]
+                else
+                  break
+                end
+              end
             else
-              @type = nil
-              @method_type_source = type.to_s
+              enum_for :each_method_type
+            end
+          end
+
+          # Returns the parsing error overload string
+          #
+          # Returns `nil` if no parsing error found.
+          #
+          def error_source #: String?
+            type = self.method_types
+
+            while true
+              if type.is_a?(Array)
+                type = type[1]
+              else
+                break
+              end
+            end
+
+            if type.is_a?(String)
+              type
             end
           end
         end

@@ -48,7 +48,10 @@ module RBS
           # Returns the name of the method
           def method_name: () -> Symbol
 
-          def annotated_method_types: () -> Array[MethodType]
+          # Returns `nil` if no `@rbs METHOD-TYPE` or `#:` annotation is given
+          #
+          # Returns an empty array if only `...` method type is given.
+          def annotated_method_types: () -> Array[MethodType]?
 
           def return_type: () -> Types::t?
 
@@ -58,10 +61,13 @@ module RBS
 
           def double_splat_param_type_annotation: () -> Annotations::DoubleSplatParamType?
 
+          def overloading?: () -> bool
+
           def method_overloads: () -> Array[RBS::AST::Members::MethodDefinition::Overload]
 
           def method_annotations: () -> Array[RBS::AST::Annotation]
 
+          # Returns the `@rbs override` annotation
           def override_annotation: () -> AST::Annotations::Override?
 
           def block_type_annotation: () -> AST::Annotations::BlockType?
