@@ -41,6 +41,8 @@ module RBS
           # ```
           attr_reader :visibility #: RBS::AST::Members::visibility?
 
+          # Assertion given at the end of the method name
+          #
           attr_reader :assertion #: Annotations::TypeAssertion?
 
           # @rbs node: Prism::DefNode
@@ -68,7 +70,7 @@ module RBS
           def annotated_method_types #: Array[MethodType]?
             if comments
               method_type_annotations = comments.each_annotation.select do |annotation|
-                annotation.is_a?(Annotations::MethodTypeAssertion) || annotation.is_a?(Annotations::Method)
+                annotation.is_a?(Annotations::MethodTypeAssertion) || annotation.is_a?(Annotations::Method) || annotation.is_a?(Annotations::Dot3Assertion)
               end
 
               return nil if method_type_annotations.empty?
@@ -139,6 +141,9 @@ module RBS
               comments.each_annotation do |annotation|
                 if annotation.is_a?(Annotations::Method)
                   return true if annotation.overloading
+                end
+                if annotation.is_a?(Annotations::Dot3Assertion)
+                  return true
                 end
               end
               false

@@ -12,7 +12,7 @@ module RBS
         #          | Generic
         #          | ModuleSelf
         #          | Skip
-        #          | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion
+        #          | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion | Dot3Assertion
         #          | Application
         #          | RBSAnnotation
         #          | Override
@@ -266,6 +266,14 @@ module RBS
             @source = source
 
             @error_string = tree.nth_tree(1).to_s
+          end
+        end
+
+        class Dot3Assertion < Base
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
           end
         end
 

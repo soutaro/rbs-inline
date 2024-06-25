@@ -186,6 +186,16 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
   end
 
+  def test_dot3_assertion
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      #: ...
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::Dot3Assertion, annotation
+    end
+  end
+
   def test_type_application
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       #[String, Integer]

@@ -4,7 +4,7 @@ module RBS
   module Inline
     module AST
       module Annotations
-        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion | Application | RBSAnnotation | Override | IvarType | Embedded | Method | SplatParamType | DoubleSplatParamType | BlockType
+        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion | Dot3Assertion | Application | RBSAnnotation | Override | IvarType | Embedded | Method | SplatParamType | DoubleSplatParamType | BlockType
 
         class Base
           attr_reader source: CommentLines
@@ -114,6 +114,11 @@ module RBS
         class SyntaxErrorAssertion < Base
           attr_reader error_string: String
 
+          # @rbs override
+          def initialize: ...
+        end
+
+        class Dot3Assertion < Base
           # @rbs override
           def initialize: ...
         end

@@ -37,6 +37,7 @@ module RBS
           # ```
           attr_reader visibility: RBS::AST::Members::visibility?
 
+          # Assertion given at the end of the method name
           attr_reader assertion: Annotations::TypeAssertion?
 
           # @rbs node: Prism::DefNode
