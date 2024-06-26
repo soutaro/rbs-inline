@@ -41,12 +41,14 @@ module RBS
           # ```
           attr_reader :visibility #: RBS::AST::Members::visibility?
 
-          attr_reader :assertion #: Annotations::Assertion?
+          # Assertion given at the end of the method name
+          #
+          attr_reader :assertion #: Annotations::TypeAssertion?
 
           # @rbs node: Prism::DefNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs visibility: RBS::AST::Members::visibility?
-          # @rbs assertion: Annotations::Assertion?
+          # @rbs assertion: Annotations::TypeAssertion?
           def initialize(node, comments, visibility, assertion) #: void
             @node = node
             @comments = comments
@@ -61,31 +63,36 @@ module RBS
             node.name
           end
 
-          def annotated_method_types #: Array[MethodType]
+          # Returns `nil` if no `@rbs METHOD-TYPE` or `#:` annotation is given
+          #
+          # Returns an empty array if only `...` method type is given.
+          #
+          def annotated_method_types #: Array[MethodType]?
             if comments
-              comments.each_annotation.filter_map do |annotation|
+              method_type_annotations = comments.each_annotation.select do |annotation|
+                annotation.is_a?(Annotations::MethodTypeAssertion) || annotation.is_a?(Annotations::Method) || annotation.is_a?(Annotations::Dot3Assertion)
+              end
+
+              return nil if method_type_annotations.empty?
+
+              method_type_annotations.each_with_object([]) do |annotation, method_types| #$ Array[MethodType]
                 case annotation
-                when Annotations::Assertion
-                  if annotation.type.is_a?(MethodType)
-                    annotation.type
-                  end
+                when Annotations::MethodTypeAssertion
+                  method_types << annotation.method_type
                 when Annotations::Method
-                  if annotation.type
-                    annotation.type
+                  annotation.each_method_type do
+                    method_types << _1
                   end
                 end
               end
-            else
-              []
             end
           end
 
           def return_type #: Types::t?
             if assertion
-              if assertion.type?
-                return assertion.type?
-              end
+              return assertion.type
             end
+
             if comments
               annot = comments.each_annotation.find {|annot| annot.is_a?(Annotations::ReturnType ) } #: Annotations::ReturnType?
               if annot
@@ -129,9 +136,25 @@ module RBS
             end
           end
 
+          def overloading? #: bool
+            if comments
+              comments.each_annotation do |annotation|
+                if annotation.is_a?(Annotations::Method)
+                  return true if annotation.overloading
+                end
+                if annotation.is_a?(Annotations::Dot3Assertion)
+                  return true
+                end
+              end
+              false
+            else
+              false
+            end
+          end
+
           def method_overloads #: Array[RBS::AST::Members::MethodDefinition::Overload]
             case
-            when (method_types = annotated_method_types).any?
+            when method_types = annotated_method_types
               method_types.map do |method_type|
                 RBS::AST::Members::MethodDefinition::Overload.new(
                   method_type: method_type,
@@ -269,6 +292,7 @@ module RBS
             end
           end
 
+          # Returns the `@rbs override` annotation
           def override_annotation #: AST::Annotations::Override?
             if comments
               comments.each_annotation.find do |annotation|
@@ -389,11 +413,11 @@ module RBS
         class RubyAttr < RubyBase
           attr_reader :node #: Prism::CallNode
           attr_reader :comments #: AnnotationParser::ParsingResult?
-          attr_reader :assertion #: Annotations::Assertion?
+          attr_reader :assertion #: Annotations::TypeAssertion?
 
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
-          # @rbs assertion: Annotations::Assertion?
+          # @rbs assertion: Annotations::TypeAssertion?
           # @rbs return: void
           def initialize(node, comments, assertion)
             super(node.location)

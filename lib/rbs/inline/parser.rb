@@ -257,8 +257,8 @@ module RBS
             if assertion_comment && comment_line
               comments.delete(comment_line)
               assertion = assertion_comment.each_annotation.find do |annotation|
-                annotation.is_a?(AST::Annotations::Assertion)
-              end #: AST::Annotations::Assertion?
+                annotation.is_a?(AST::Annotations::TypeAssertion)
+              end #: AST::Annotations::TypeAssertion?
             end
 
             current_class_module_decl!.members << AST::Members::RubyAttr.new(node, comment, assertion)
@@ -338,12 +338,12 @@ module RBS
         end
       end
 
-      # Fetch Assertion annotation which is associated to `node`
+      # Fetch TypeAssertion annotation which is associated to `node`
       #
       # The assertion annotation is removed from `comments`.
       #
       # @rbs node: Node | Location
-      # @rbs return: AST::Annotations::Assertion?
+      # @rbs return: AST::Annotations::TypeAssertion?
       def assertion_annotation(node)
         if node.is_a?(Prism::Location)
           location = node
@@ -357,8 +357,8 @@ module RBS
         if app_comment && comment_line
           comments.delete(comment_line)
           app_comment.each_annotation.find do |annotation|
-            annotation.is_a?(AST::Annotations::Assertion)
-          end #: AST::Annotations::Assertion?
+            annotation.is_a?(AST::Annotations::TypeAssertion)
+          end #: AST::Annotations::TypeAssertion?
         end
       end
 

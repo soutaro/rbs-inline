@@ -206,7 +206,7 @@ module RBS
               annotations: member.method_annotations,
               location: nil,
               comment: comment,
-              overloading: false,
+              overloading: member.overloading?,
               visibility: member.visibility
             )
           ]

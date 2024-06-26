@@ -3,12 +3,12 @@
 module RBS
   module Inline
     module AST
-      class Tree
-        # @rbs!
-        #   type token = [Symbol, String]
-        #
-        #   type tree = token | Tree | Types::t | MethodType | nil
+      # @rbs!
+      #   type token = [Symbol, String]
+      #
+      #   type tree = token | Tree | Types::t | MethodType | nil
 
+      class Tree
         attr_reader :trees #: Array[tree]
         attr_reader :type #: Symbol
 
@@ -50,6 +50,20 @@ module RBS
           end
 
           buf
+        end
+
+        # Returns `true` if token at the given index is of the given type
+        def token?(type, at:)
+          if tok = nth_token?(at)
+            tok[0] == type
+          end
+        end
+
+         # Returns `true` if tree at the given index is of the given type
+         def tree?(type, at:)
+          if tree = nth_tree?(at)
+            tree.type == type
+          end
         end
 
         # Returns n-th token from the children

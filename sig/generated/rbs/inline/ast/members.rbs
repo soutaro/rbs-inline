@@ -37,18 +37,22 @@ module RBS
           # ```
           attr_reader visibility: RBS::AST::Members::visibility?
 
-          attr_reader assertion: Annotations::Assertion?
+          # Assertion given at the end of the method name
+          attr_reader assertion: Annotations::TypeAssertion?
 
           # @rbs node: Prism::DefNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs visibility: RBS::AST::Members::visibility?
-          # @rbs assertion: Annotations::Assertion?
-          def initialize: (Prism::DefNode node, AnnotationParser::ParsingResult? comments, RBS::AST::Members::visibility? visibility, Annotations::Assertion? assertion) -> void
+          # @rbs assertion: Annotations::TypeAssertion?
+          def initialize: (Prism::DefNode node, AnnotationParser::ParsingResult? comments, RBS::AST::Members::visibility? visibility, Annotations::TypeAssertion? assertion) -> void
 
           # Returns the name of the method
           def method_name: () -> Symbol
 
-          def annotated_method_types: () -> Array[MethodType]
+          # Returns `nil` if no `@rbs METHOD-TYPE` or `#:` annotation is given
+          #
+          # Returns an empty array if only `...` method type is given.
+          def annotated_method_types: () -> Array[MethodType]?
 
           def return_type: () -> Types::t?
 
@@ -58,10 +62,13 @@ module RBS
 
           def double_splat_param_type_annotation: () -> Annotations::DoubleSplatParamType?
 
+          def overloading?: () -> bool
+
           def method_overloads: () -> Array[RBS::AST::Members::MethodDefinition::Overload]
 
           def method_annotations: () -> Array[RBS::AST::Annotation]
 
+          # Returns the `@rbs override` annotation
           def override_annotation: () -> AST::Annotations::Override?
 
           def block_type_annotation: () -> AST::Annotations::BlockType?
@@ -113,13 +120,13 @@ module RBS
 
           attr_reader comments: AnnotationParser::ParsingResult?
 
-          attr_reader assertion: Annotations::Assertion?
+          attr_reader assertion: Annotations::TypeAssertion?
 
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
-          # @rbs assertion: Annotations::Assertion?
+          # @rbs assertion: Annotations::TypeAssertion?
           # @rbs return: void
-          def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Assertion? assertion) -> void
+          def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::TypeAssertion? assertion) -> void
 
           # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
           def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?

@@ -164,11 +164,11 @@ module RBS
 
           attr_reader :node #: Prism::ConstantWriteNode
           attr_reader :comments #: AnnotationParser::ParsingResult?
-          attr_reader :assertion #: Annotations::Assertion?
+          attr_reader :assertion #: Annotations::TypeAssertion?
 
           # @rbs node: Prism::ConstantWriteNode
           # @rbs comments: AnnotationParser::ParsingResult?
-          # @rbs assertion: Annotations::Assertion?
+          # @rbs assertion: Annotations::TypeAssertion?
           def initialize(node, comments, assertion) #: void
             @node = node
             @comments = comments

@@ -320,12 +320,14 @@ module RBS
           "*" => :kSTAR,
           "--" => :kMINUS2,
           "<" => :kLT,
+          "..." => :kDOT3,
           "." => :kDOT,
           "->" => :kARROW,
           "{" => :kLBRACE,
           "(" => :kLPAREN,
           "&" => :kAMP,
           "?" => :kQUESTION,
+          "|" => :kVBAR,
         } #: Hash[String, Symbol]
         PUNCTS_RE = Regexp.union(PUNCTS.keys) #: Regexp
 
@@ -594,14 +596,29 @@ module RBS
           when tokenizer.type?(:kAMP)
             tree << parse_block_type(tokenizer)
             AST::Annotations::BlockType.new(tree, comments)
-          when tokenizer.type?(:kLPAREN, :kARROW, :kLBRACE, :kLBRACKET)
+          when tokenizer.type?(:kLPAREN, :kARROW, :kLBRACE, :kLBRACKET, :kDOT3)
             tree << parse_method_type_annotation(tokenizer)
             AST::Annotations::Method.new(tree, comments)
           end
         when tokenizer.type?(:kCOLON)
           tokenizer.advance(tree, eat: true)
-          tree << parse_type_method_type(tokenizer, tree)
-          AST::Annotations::Assertion.new(tree, comments)
+
+          if tokenizer.type?(:kDOT3)
+            tokenizer.advance(tree, eat: true)
+            AST::Annotations::Dot3Assertion.new(tree, comments)
+          else
+            type = parse_type_method_type(tokenizer, tree)
+            tree << type
+
+            case type
+            when MethodType
+              AST::Annotations::MethodTypeAssertion.new(tree, comments)
+            when AST::Tree, nil
+              AST::Annotations::SyntaxErrorAssertion.new(tree, comments)
+            else
+              AST::Annotations::TypeAssertion.new(tree, comments)
+            end
+          end
         when tokenizer.type?(:kLBRACKET)
           tree << parse_type_app(tokenizer)
           AST::Annotations::Application.new(tree, comments)
@@ -701,7 +718,28 @@ module RBS
       def parse_method_type_annotation(tokenizer)
         tree = AST::Tree.new(:method_type_annotation)
 
-        tree << parse_method_type(tokenizer, tree)
+        until tokenizer.type?(:kEOF)
+          if tokenizer.type?(:kDOT3)
+            tree << tokenizer.lookahead1
+            tokenizer.advance(tree)
+            break
+          else
+            method_type = parse_method_type(tokenizer, tree)
+            case method_type
+            when MethodType
+              tree << method_type
+
+              if tokenizer.type?(:kVBAR)
+                tokenizer.advance(tree, eat: true)
+              else
+                break
+              end
+            when AST::Tree
+              tree << method_type
+              break
+            end
+          end
+        end
 
         tree
       end

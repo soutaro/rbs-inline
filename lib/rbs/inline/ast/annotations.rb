@@ -12,7 +12,7 @@ module RBS
         #          | Generic
         #          | ModuleSelf
         #          | Skip
-        #          | Assertion
+        #          | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion | Dot3Assertion
         #          | Application
         #          | RBSAnnotation
         #          | Override
@@ -225,48 +225,55 @@ module RBS
           end
         end
 
-        # `#: TYPE`
-        #
-        class Assertion < Base
-          attr_reader :type #: Types::t | MethodType | nil
+        class MethodTypeAssertion < Base
+          attr_reader :method_type #: MethodType
 
           # @rbs override
           def initialize(tree, source)
             @source = source
             @tree = tree
 
-            @type = tree.nth_method_type?(1) || tree.nth_type?(1)
+            @method_type = tree.nth_method_type!(1)
           end
 
-          # @rbs return: bool
-          def complete?
-            if type
-              true
-            else
-              false
-            end
+          def type_source #: String
+            method_type.location&.source || raise
+          end
+        end
+
+        class TypeAssertion < Base
+          attr_reader :type #: Types::t
+
+          # @rbs override
+          def initialize(tree, source)
+            @source = source
+            @tree = tree
+
+            @type = tree.nth_type!(1)
           end
 
-          # Returns a type if it's type
-          #
-          def type? #: Types::t?
-            case type
-            when MethodType, nil
-              nil
-            else
-              type
-            end
+          def type_source #: String
+            type.location&.source || raise
           end
+        end
 
-          # Returns a method type if it's a method type
-          #
-          def method_type? #: MethodType?
-            case type
-            when MethodType
-              type
-            else
-              nil
-            end
+        class SyntaxErrorAssertion < Base
+          attr_reader :error_string #: String
+
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
+
+            @error_string = tree.nth_tree(1).to_s
+          end
+        end
+
+        class Dot3Assertion < Base
+          # @rbs override
+          def initialize(tree, source)
+            @tree = tree
+            @source = source
           end
         end
 
@@ -517,6 +524,14 @@ module RBS
         # `@rbs METHOD-TYPE``
         #
         class Method < Base
+          # @rbs! type method_type = [MethodType, method_type?] | String
+
+          attr_reader :method_types #: method_type?
+
+          # `true` if the method definition is overloading something
+          #
+          attr_reader :overloading #: bool
+
           attr_reader :type #: MethodType?
 
           attr_reader :method_type_source #: String
@@ -526,13 +541,67 @@ module RBS
             @tree = tree
             @source = source
 
-            case type = tree.nth_tree!(1).non_trivia_trees[0]
+            overloads = tree.nth_tree!(1)
+            @method_types = construct_method_types(overloads.non_trivia_trees.dup)
+            @overloading = overloads.token?(:kDOT3, at: -1)
+          end
+
+          #: (Array[tree]) -> method_type?
+          def construct_method_types(children)
+            first = children.shift
+
+            case first
             when MethodType
-              @type = type
-              @method_type_source = type.location&.source || raise
+              children.shift
+              [
+                first,
+                construct_method_types(children)
+              ]
+            when Array
+              # `...`
+              nil
+            when AST::Tree
+              # Syntax error
+              first.to_s
+            end
+          end
+
+          # @rbs () { (MethodType) -> void } -> void
+          #    | () -> Enumerator[MethodType, void]
+          def each_method_type
+            if block_given?
+              type = self.method_types
+
+              while true
+                if type.is_a?(Array)
+                  yield type[0]
+                  type = type[1]
+                else
+                  break
+                end
+              end
             else
-              @type = nil
-              @method_type_source = type.to_s
+              enum_for :each_method_type
+            end
+          end
+
+          # Returns the parsing error overload string
+          #
+          # Returns `nil` if no parsing error found.
+          #
+          def error_source #: String?
+            type = self.method_types
+
+            while true
+              if type.is_a?(Array)
+                type = type[1]
+              else
+                break
+              end
+            end
+
+            if type.is_a?(String)
+              type
             end
           end
         end
