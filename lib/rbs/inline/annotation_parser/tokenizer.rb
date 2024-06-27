@@ -1,42 +1,106 @@
 module RBS
   module Inline
     class AnnotationParser
+      module Tokens
+        K_RETURN = :kRETURN
+        K_INHERITS = :kINHERITS
+        K_AS = :kAS
+        K_OVERRIDE = :kOVERRIDE
+        K_USE = :kUSE
+        K_MODULE_SELF = :kMODULESELF
+        K_GENERIC = :kGENERIC
+        K_IN = :kIN
+        K_OUT = :kOUT
+        K_UNCHECKED = :kUNCHECKED
+        K_SELF = :kSELF
+        K_SKIP = :kSKIP
+        K_YIELDS = :kYIELDS
+        K_MODULE = :kMODULE
+        K_COLON2 = :kCOLON2
+        K_COLON = :kCOLON
+        K_LBRACKET = :kLBRACKET
+        K_RBRACKET = :kRBRACKET
+        K_COMMA = :kCOMMA
+        K_STAR2 = :kSTAR2
+        K_STAR = :kSTAR
+        K_MINUS2 = :kMINUS2
+        K_LT = :kLT
+        K_DOT3 = :kDOT3
+        K_DOT = :kDOT
+        K_ARROW = :kARROW
+        K_LBRACE = :kLBRACE
+        K_LPAREN = :kLPAREN
+        K_AMP = :kAMP
+        K_QUESTION = :kQUESTION
+        K_VBAR = :kVBAR
+
+        K_EOF = :kEOF
+
+        # `@rbs!`
+        K_RBSE = :kRBSE
+
+        # `@rbs`
+        K_RBS = :kRBS
+
+        T_UIDENT = :tUIDENT
+        T_IFIDENT = :tIFIDENT
+        T_LVAR = :tLVAR
+
+        # The body of comment string following `--`
+        T_COMMENT = :tCOMMENT
+
+        # Type/method type source
+        T_SOURCE = :tSOURCE
+
+        # Block type source
+        T_BLOCKSTR = :tBLOCKSTR
+
+        # `!` local variable
+        T_ELVAR = :tELVAR
+
+        T_ATIDENT = :tATIDENT
+        T_ANNOTATION = :tANNOTATION
+        T_WHITESPACE = :tWHITESPACE
+      end
+
       class Tokenizer
+        include Tokens
+
         KEYWORDS = {
-          "return" => :kRETURN,
-          "inherits" => :kINHERITS,
-          "as" => :kAS,
-          "override" => :kOVERRIDE,
-          "use" => :kUSE,
-          "module-self" => :kMODULESELF,
-          "generic" => :kGENERIC,
-          "in" => :kIN,
-          "out" => :kOUT,
-          "unchecked" => :kUNCHECKED,
-          "self" => :kSELF,
-          "skip" => :kSKIP,
-          "yields" => :kYIELDS,
+          "return" => K_RETURN,
+          "inherits" => K_INHERITS,
+          "as" => K_AS,
+          "override" => K_OVERRIDE,
+          "use" => K_USE,
+          "module-self" => K_MODULE_SELF,
+          "generic" => K_GENERIC,
+          "in" => K_IN,
+          "out" => K_OUT,
+          "unchecked" => K_UNCHECKED,
+          "self" => K_SELF,
+          "skip" => K_SKIP,
+          "yields" => K_YIELDS,
         } #: Hash[String, Symbol]
         KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
 
         PUNCTS = {
-          "::" => :kCOLON2,
-          ":" => :kCOLON,
-          "[" => :kLBRACKET,
-          "]" => :kRBRACKET,
-          "," => :kCOMMA,
-          "**" => :kSTAR2,
-          "*" => :kSTAR,
-          "--" => :kMINUS2,
-          "<" => :kLT,
-          "..." => :kDOT3,
-          "." => :kDOT,
-          "->" => :kARROW,
-          "{" => :kLBRACE,
-          "(" => :kLPAREN,
-          "&" => :kAMP,
-          "?" => :kQUESTION,
-          "|" => :kVBAR,
+          "::" => K_COLON2,
+          ":" => K_COLON,
+          "[" => K_LBRACKET,
+          "]" => K_RBRACKET,
+          "," => K_COMMA,
+          "**" => K_STAR2,
+          "*" => K_STAR,
+          "--" => K_MINUS2,
+          "<" => K_LT,
+          "..." => K_DOT3,
+          "." => K_DOT,
+          "->" => K_ARROW,
+          "{" => K_LBRACE,
+          "(" => K_LPAREN,
+          "&" => K_AMP,
+          "?" => K_QUESTION,
+          "|" => K_VBAR,
         } #: Hash[String, Symbol]
         PUNCTS_RE = Regexp.union(PUNCTS.keys) #: Regexp
 
@@ -112,37 +176,37 @@ module RBS
           lookahead_tokens[2].clear
 
           while s = scanner.scan(/\s+/)
-            lookahead_tokens[2] << [:tWHITESPACE, s]
+            lookahead_tokens[2] << [T_WHITESPACE, s]
           end
 
           lookahead =
             case
             when scanner.eos?
-              [:kEOF, ""]
+              [K_EOF, ""]
             when s = scanner.scan(/@rbs!/)
-              [:kRBSE, s]
+              [K_RBSE, s]
             when s = scanner.scan(/@rbs\b/)
-              [:kRBS, s]
+              [K_RBS, s]
             when s = scanner.scan(PUNCTS_RE)
               [PUNCTS.fetch(s), s]
             when s = scanner.scan(KW_RE)
               [KEYWORDS.fetch(s), s]
             when s = scanner.scan(/[A-Z]\w*/)
-              [:tUIDENT, s]
+              [T_UIDENT, s]
             when s = scanner.scan(/_[A-Z]\w*/)
-              [:tIFIDENT, s]
+              [T_IFIDENT, s]
             when s = scanner.scan(/[a-z]\w*/)
-              [:tLVAR, s]
+              [T_LVAR, s]
             when s = scanner.scan(/![a-z]\w*/)
-              [:tELVAR, s]
+              [T_ELVAR, s]
             when s = scanner.scan(/@\w+/)
-              [:tATIDENT, s]
+              [T_ATIDENT, s]
             when s = scanner.scan(/%a\{[^}]+\}/)
-              [:tANNOTATION, s]
+              [T_ANNOTATION, s]
             when s = scanner.scan(/%a\[[^\]]+\]/)
-              [:tANNOTATION, s]
+              [T_ANNOTATION, s]
             when s = scanner.scan(/%a\([^)]+\)/)
-              [:tANNOTATION, s]
+              [T_ANNOTATION, s]
             end #: token?
 
           lookahead_tokens[3] = lookahead
@@ -262,7 +326,7 @@ module RBS
           lookahead_tokens[0].each { prefix << _1[1] }
           lookahead_tokens[0].clear
 
-          if type?(:kMINUS2)
+          if type?(K_MINUS2)
             return prefix
           end
 
@@ -270,7 +334,7 @@ module RBS
           lookahead_tokens[2].each { prefix << _1[1] }
           lookahead_tokens[2].clear
 
-          if type2?(:kMINUS2)
+          if type2?(K_MINUS2)
             advance(_ = nil)  # The tree is unused because no trivia tokens are left
             return prefix
           end
@@ -278,12 +342,12 @@ module RBS
           prefix << lookahead2[1] if lookahead2
 
           if string = scanner.scan_until(/--/)
-            @lookahead_tokens = [[], nil, [], [:kMINUS2, "--"]]
+            @lookahead_tokens = [[], nil, [], [K_MINUS2, "--"]]
             advance(_ = nil)  # The tree is unused because no trivia tokens are left
             prefix + string.delete_suffix("--")
           else
             s = scanner.rest
-            @lookahead_tokens = [[], [:kEOF, ""], [], nil]
+            @lookahead_tokens = [[], [K_EOF, ""], [], nil]
             scanner.terminate
             prefix + s
           end

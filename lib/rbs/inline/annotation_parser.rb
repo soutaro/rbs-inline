@@ -100,6 +100,8 @@ module RBS
         end
       end
 
+      include Tokens
+
       attr_reader :input #: Array[Prism::Comment]
 
       # @rbs input: Array[Prism::Comment]
@@ -303,7 +305,7 @@ module RBS
         tokenizer.advance(tree)
 
         case
-        when tokenizer.type?(:kRBSE)
+        when tokenizer.type?(K_RBSE)
           tokenizer.consume_trivias(tree)
           tree << tokenizer.lookahead1
           rest = tokenizer.rest
@@ -311,60 +313,60 @@ module RBS
           tree << [:EMBEDDED_RBS, rest]
           tokenizer.scanner.terminate
           AST::Annotations::Embedded.new(tree, comments)
-        when tokenizer.type?(:kRBS)
+        when tokenizer.type?(K_RBS)
           tokenizer.advance(tree, eat: true)
 
           case
-          when tokenizer.type?(:tLVAR, :tELVAR)
+          when tokenizer.type?(T_LVAR, :tELVAR)
             tree << parse_var_decl(tokenizer)
             AST::Annotations::VarType.new(tree, comments)
-          when tokenizer.type?(:kSKIP, :kINHERITS, :kOVERRIDE, :kUSE, :kGENERIC) &&
-            tokenizer.type2?(:kCOLON)
+          when tokenizer.type?(K_SKIP, K_INHERITS, K_OVERRIDE, K_USE, K_GENERIC) &&
+            tokenizer.type2?(K_COLON)
             tree << parse_var_decl(tokenizer)
             AST::Annotations::VarType.new(tree, comments)
-          when tokenizer.type?(:kSKIP)
+          when tokenizer.type?(K_SKIP)
             AST::Annotations::Skip.new(tree, comments)
-          when tokenizer.type?(:kRETURN)
+          when tokenizer.type?(K_RETURN)
             tree << parse_return_type_decl(tokenizer)
             AST::Annotations::ReturnType.new(tree, comments)
-          when tokenizer.type?(:tANNOTATION)
+          when tokenizer.type?(T_ANNOTATION)
             tree << parse_rbs_annotation(tokenizer)
             AST::Annotations::RBSAnnotation.new(tree, comments)
-          when tokenizer.type?(:kINHERITS)
+          when tokenizer.type?(K_INHERITS)
             tree << parse_inherits(tokenizer)
             AST::Annotations::Inherits.new(tree, comments)
-          when tokenizer.type?(:kOVERRIDE)
+          when tokenizer.type?(K_OVERRIDE)
             tree << parse_override(tokenizer)
             AST::Annotations::Override.new(tree, comments)
-          when tokenizer.type?(:kUSE)
+          when tokenizer.type?(K_USE)
             tree << parse_use(tokenizer)
             AST::Annotations::Use.new(tree, comments)
-          when tokenizer.type?(:kMODULESELF)
+          when tokenizer.type?(K_MODULE_SELF)
             tree << parse_module_self(tokenizer)
             AST::Annotations::ModuleSelf.new(tree, comments)
-          when tokenizer.type?(:kGENERIC)
+          when tokenizer.type?(K_GENERIC)
             tree << parse_generic(tokenizer)
             AST::Annotations::Generic.new(tree, comments)
-          when tokenizer.type?(:kSELF, :tATIDENT)
+          when tokenizer.type?(K_SELF, T_ATIDENT)
             tree << parse_ivar_type(tokenizer)
             AST::Annotations::IvarType.new(tree, comments)
-          when tokenizer.type?(:kSTAR)
+          when tokenizer.type?(K_STAR)
             tree << parse_splat_param_type(tokenizer)
             AST::Annotations::SplatParamType.new(tree, comments)
-          when tokenizer.type?(:kSTAR2)
+          when tokenizer.type?(K_STAR2)
             tree << parse_splat_param_type(tokenizer)
             AST::Annotations::DoubleSplatParamType.new(tree, comments)
-          when tokenizer.type?(:kAMP)
+          when tokenizer.type?(K_AMP)
             tree << parse_block_type(tokenizer)
             AST::Annotations::BlockType.new(tree, comments)
-          when tokenizer.type?(:kLPAREN, :kARROW, :kLBRACE, :kLBRACKET, :kDOT3)
+          when tokenizer.type?(K_LPAREN, K_ARROW, K_LBRACE, K_LBRACKET, K_DOT3)
             tree << parse_method_type_annotation(tokenizer)
             AST::Annotations::Method.new(tree, comments)
           end
-        when tokenizer.type?(:kCOLON)
+        when tokenizer.type?(K_COLON)
           tokenizer.advance(tree, eat: true)
 
-          if tokenizer.type?(:kDOT3)
+          if tokenizer.type?(K_DOT3)
             tokenizer.advance(tree, eat: true)
             AST::Annotations::Dot3Assertion.new(tree, comments)
           else
@@ -380,7 +382,7 @@ module RBS
               AST::Annotations::TypeAssertion.new(tree, comments)
             end
           end
-        when tokenizer.type?(:kLBRACKET)
+        when tokenizer.type?(K_LBRACKET)
           tree << parse_type_app(tokenizer)
           AST::Annotations::Application.new(tree, comments)
         end
@@ -393,7 +395,7 @@ module RBS
 
         tokenizer.advance(tree, eat: true)
 
-        if tokenizer.type?(:kCOLON)
+        if tokenizer.type?(K_COLON)
           tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         else
@@ -403,7 +405,7 @@ module RBS
         tokenizer.consume_trivias(tree)
         tree << parse_type(tokenizer, tree)
 
-        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+        tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
@@ -415,10 +417,10 @@ module RBS
       def parse_return_type_decl(tokenizer)
         tree = AST::Tree.new(:return_type_decl)
 
-        tokenizer.consume_token!(:kRETURN, tree: tree)
-        tokenizer.consume_token(:kCOLON, tree: tree)
+        tokenizer.consume_token!(K_RETURN, tree: tree)
+        tokenizer.consume_token(K_COLON, tree: tree)
         tree << parse_type(tokenizer, tree)
-        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+        tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
@@ -430,11 +432,11 @@ module RBS
       def parse_comment(tokenizer)
         tree = AST::Tree.new(:comment)
 
-        tokenizer.consume_token(:kMINUS2, tree: tree)
+        tokenizer.consume_token(K_MINUS2, tree: tree)
 
         rest = tokenizer.rest
         tokenizer.scanner.terminate
-        tree << [:tCOMMENT, rest]
+        tree << [T_COMMENT, rest]
 
         tree
       end
@@ -444,7 +446,7 @@ module RBS
       def parse_type_app(tokenizer)
         tree = AST::Tree.new(:tapp)
 
-        if tokenizer.type?(:kLBRACKET)
+        if tokenizer.type?(K_LBRACKET)
           tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
@@ -457,18 +459,18 @@ module RBS
           break unless type
           break if type.is_a?(AST::Tree)
 
-          if tokenizer.type?(:kCOMMA)
+          if tokenizer.type?(K_COMMA)
             types << tokenizer.lookahead1
             tokenizer.advance(types)
           end
 
-          if tokenizer.type?(:kRBRACKET)
+          if tokenizer.type?(K_RBRACKET)
             break
           end
         end
         tree << types
 
-        if tokenizer.type?(:kRBRACKET)
+        if tokenizer.type?(K_RBRACKET)
           tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
@@ -480,8 +482,8 @@ module RBS
       def parse_method_type_annotation(tokenizer)
         tree = AST::Tree.new(:method_type_annotation)
 
-        until tokenizer.type?(:kEOF)
-          if tokenizer.type?(:kDOT3)
+        until tokenizer.type?(K_EOF)
+          if tokenizer.type?(K_DOT3)
             tree << tokenizer.lookahead1
             tokenizer.advance(tree)
             break
@@ -491,7 +493,7 @@ module RBS
             when MethodType
               tree << method_type
 
-              if tokenizer.type?(:kVBAR)
+              if tokenizer.type?(K_VBAR)
                 tokenizer.advance(tree, eat: true)
               else
                 break
@@ -540,7 +542,7 @@ module RBS
             end
           rescue RBS::ParsingError
             tree = AST::Tree.new(:type_syntax_error)
-            tree << [:tSOURCE, tokenizer.rest]
+            tree << [T_SOURCE, tokenizer.rest]
             tokenizer.scanner.terminate
             tree
           end
@@ -567,13 +569,13 @@ module RBS
             type
           else
             tree = AST::Tree.new(:type_syntax_error)
-            tree << [:tSOURCE, tokenizer.rest]
+            tree << [T_SOURCE, tokenizer.rest]
             tokenizer.scanner.terminate
             tree
           end
         rescue RBS::ParsingError
           tree = AST::Tree.new(:type_syntax_error)
-          tree << [:tSOURCE, tokenizer.rest]
+          tree << [T_SOURCE, tokenizer.rest]
           tokenizer.scanner.terminate
           tree
         end
@@ -609,7 +611,7 @@ module RBS
       rescue RBS::ParsingError
         content = tokenizer.skip_to_comment
         tree = AST::Tree.new(:type_syntax_error)
-        tree << [:tSOURCE, content]
+        tree << [T_SOURCE, content]
         tree
       end
 
@@ -618,7 +620,7 @@ module RBS
       def parse_rbs_annotation(tokenizer)
         tree = AST::Tree.new(:rbs_annotation)
 
-        while tokenizer.type?(:tANNOTATION)
+        while tokenizer.type?(T_ANNOTATION)
           tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
@@ -631,7 +633,7 @@ module RBS
       def parse_inherits(tokenizer)
         tree = AST::Tree.new(:rbs_inherits)
 
-        if tokenizer.type?(:kINHERITS)
+        if tokenizer.type?(K_INHERITS)
           tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
@@ -648,7 +650,7 @@ module RBS
       def parse_override(tokenizer)
         tree = AST::Tree.new(:override)
 
-        if tokenizer.type?(:kOVERRIDE)
+        if tokenizer.type?(K_OVERRIDE)
           tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
@@ -663,15 +665,15 @@ module RBS
       def parse_use(tokenizer)
         tree = AST::Tree.new(:use)
 
-        if tokenizer.type?(:kUSE)
+        if tokenizer.type?(K_USE)
           tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
 
-        while tokenizer.type?(:kCOLON2, :tUIDENT, :tIFIDENT, :tLVAR)
+        while tokenizer.type?(K_COLON2, T_UIDENT, :tIFIDENT, :tLVAR)
           tree << parse_use_clause(tokenizer)
 
-          if tokenizer.type?(:kCOMMA)
+          if tokenizer.type?(K_COMMA)
             tokenizer.advance(tree, eat: true)
           else
             tree << nil
@@ -695,18 +697,18 @@ module RBS
       def parse_use_clause(tokenizer)
         tree = AST::Tree.new(:use_clause)
 
-        if tokenizer.type?(:kCOLON2)
+        if tokenizer.type?(K_COLON2)
           tree << tokenizer.lookahead1
           tokenizer.advance(tree)
         end
 
         while true
           case
-          when tokenizer.type?(:tUIDENT)
+          when tokenizer.type?(T_UIDENT)
             tokenizer.advance(tree, eat: true)
 
             case
-            when tokenizer.type?(:kCOLON2)
+            when tokenizer.type?(K_COLON2)
               tokenizer.advance(tree, eat: true)
             else
               break
@@ -717,20 +719,20 @@ module RBS
         end
 
         case
-        when tokenizer.type?(:tLVAR)
+        when tokenizer.type?(T_LVAR)
           tokenizer.advance(tree, eat: true)
-        when tokenizer.type?(:tIFIDENT)
+        when tokenizer.type?(T_IFIDENT)
           tokenizer.advance(tree, eat: true)
-        when tokenizer.type?(:kSTAR)
+        when tokenizer.type?(K_STAR)
           tokenizer.advance(tree, eat: true)
           return tree
         end
 
-        if tokenizer.type?(:kAS)
+        if tokenizer.type?(K_AS)
           as_tree = AST::Tree.new(:as)
 
-          tokenizer.consume_token!(:kAS, tree: as_tree)
-          tokenizer.consume_token(:tLVAR, :tIFIDENT, :tUIDENT, tree: as_tree)
+          tokenizer.consume_token!(K_AS, tree: as_tree)
+          tokenizer.consume_token(T_LVAR, T_IFIDENT, T_UIDENT, tree: as_tree)
 
           tree << as_tree
         else
@@ -745,10 +747,10 @@ module RBS
       def parse_module_self(tokenizer)
         tree = AST::Tree.new(:module_self)
 
-        tokenizer.consume_token!(:kMODULESELF, tree: tree)
+        tokenizer.consume_token!(K_MODULE_SELF, tree: tree)
         tree << parse_type(tokenizer, tree)
 
-        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+        tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
@@ -760,7 +762,7 @@ module RBS
       # ```rb
       # # Test if tokenize has `--` token, then parse comment or insert `nil` to tree
       #
-      # tree << parse_optional(tokenizer, :kMINUS2) do
+      # tree << parse_optional(tokenizer, K_MINUS2) do
       #   parse_comment(tokenizer)
       # end
       # ```
@@ -786,23 +788,23 @@ module RBS
       def parse_generic(tokenizer)
         tree = AST::Tree.new(:generic)
 
-        tokenizer.consume_token!(:kGENERIC, tree: tree)
+        tokenizer.consume_token!(K_GENERIC, tree: tree)
 
-        tokenizer.consume_token(:kUNCHECKED, tree: tree)
-        tokenizer.consume_token(:kIN, :kOUT, tree: tree)
+        tokenizer.consume_token(K_UNCHECKED, tree: tree)
+        tokenizer.consume_token(K_IN, K_OUT, tree: tree)
 
-        tokenizer.consume_token(:tUIDENT, tree: tree)
+        tokenizer.consume_token(T_UIDENT, tree: tree)
 
-        tree << parse_optional(tokenizer, :kLT, tree: tree) do
+        tree << parse_optional(tokenizer, K_LT, tree: tree) do
           bound = AST::Tree.new(:upper_bound)
 
-          tokenizer.consume_token!(:kLT, tree: bound)
+          tokenizer.consume_token!(K_LT, tree: bound)
           bound << parse_type(tokenizer, bound)
 
           bound
         end
 
-        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+        tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
@@ -813,15 +815,15 @@ module RBS
       def parse_ivar_type(tokenizer)
         tree = AST::Tree.new(:ivar_type)
 
-        tokenizer.consume_token(:kSELF, tree: tree)
-        tokenizer.consume_token(:kDOT, tree: tree)
+        tokenizer.consume_token(K_SELF, tree: tree)
+        tokenizer.consume_token(K_DOT, tree: tree)
 
-        tokenizer.consume_token(:tATIDENT, tree: tree)
-        tokenizer.consume_token(:kCOLON, tree: tree)
+        tokenizer.consume_token(T_ATIDENT, tree: tree)
+        tokenizer.consume_token(K_COLON, tree: tree)
 
         tree << parse_type(tokenizer, tree)
 
-        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+        tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
@@ -832,13 +834,13 @@ module RBS
       def parse_splat_param_type(tokenizer)
         tree = AST::Tree.new(:splat_param_type)
 
-        tokenizer.consume_token!(:kSTAR, :kSTAR2, tree: tree)
-        tokenizer.consume_token(:tLVAR, tree: tree)
-        tokenizer.consume_token(:kCOLON, tree: tree)
+        tokenizer.consume_token!(K_STAR, :kSTAR2, tree: tree)
+        tokenizer.consume_token(T_LVAR, tree: tree)
+        tokenizer.consume_token(K_COLON, tree: tree)
 
         tree << parse_type(tokenizer, tree)
 
-        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+        tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
@@ -849,21 +851,21 @@ module RBS
       def parse_block_type(tokenizer)
         tree = AST::Tree.new(:block_type)
 
-        tokenizer.consume_token!(:kAMP, tree: tree)
-        tokenizer.consume_token(:tLVAR, tree: tree)
-        tokenizer.consume_token(:kCOLON, tree: tree)
+        tokenizer.consume_token!(K_AMP, tree: tree)
+        tokenizer.consume_token(T_LVAR, tree: tree)
+        tokenizer.consume_token(K_COLON, tree: tree)
 
-        tokenizer.consume_token(:kQUESTION, tree: tree)
+        tokenizer.consume_token(K_QUESTION, tree: tree)
 
         tokenizer.consume_trivias(tree)
 
         unless (string = tokenizer.skip_to_comment()).empty?
-          tree << [:tBLOCKSTR, string]
+          tree << [T_BLOCKSTR, string]
         else
           tree << nil
         end
 
-        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+        tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
