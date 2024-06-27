@@ -254,11 +254,11 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
 
   def test_lvar_keywords
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
-      # @rbs skip: untyped
+      # @rbs skip : untyped
       # @rbs inherits: untyped
-      # @rbs override: untyped
+      # @rbs override : untyped
       # @rbs use: untyped
-      # @rbs generic: untyped
+      # @rbs generic : untyped
       RUBY
 
     assert_equal 5, annots[0].annotations.size
