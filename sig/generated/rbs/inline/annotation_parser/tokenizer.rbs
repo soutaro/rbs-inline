@@ -14,19 +14,36 @@ module RBS
 
         attr_reader scanner: StringScanner
 
+        # Tokens that comes after the current position
+        #
+        # This is a four tuple of tokens.
+        #
+        # 1. The first array is a trivia tokens before current position
+        # 2. The second token is the first lookahead token after the current position
+        # 3. The third array is a trivia tokens between the first lookahead and the second lookahead
+        # 4. The fourth token is the second lookahead token
+        attr_reader lookahead_tokens: [ Array[token], token?, Array[token], token? ]
+
         # Token that comes after the current position
-        attr_reader lookahead1: token?
+        # @rbs %a{pure}
+        %a{pure}
+        def lookahead1: () -> token?
 
         # Token that comes after `lookahead1`
-        attr_reader lookahead2: token?
+        # @rbs %a{pure}
+        %a{pure}
+        def lookahead2: () -> token?
 
-        # Returns the current char position of the scanner
+        # Returns the current char position of the first lookahead token
         #
         # ```
-        # foo bar baz
-        # ^^^             lookahead1
-        #     ^^^         lookahead2
-        #         ^    <= scanner.charpos
+        # __ foo ___ bar baz
+        # ^^                 Trivia tokens before lookahead1
+        #   ^                #current_position
+        #    ^^^             lookahead1
+        #        ^^^         Trivia tokens between lookahead1 and lookahead2
+        #            ^^^     lookahead2
+        #                ^    <= scanner.charpos
         # ```
         def current_position: () -> Integer
 
@@ -42,6 +59,9 @@ module RBS
         # @rbs eat: bool -- true to add the current lookahead token into the tree
         # @rbs return: void
         def advance: (AST::Tree tree, ?eat: bool) -> void
+
+        # @rbs (AST::Tree?) -> String
+        def consume_trivias: (AST::Tree?) -> String
 
         # Returns true if the scanner cannot consume next token
         def stuck?: () -> bool

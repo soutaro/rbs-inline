@@ -304,6 +304,7 @@ module RBS
 
         case
         when tokenizer.type?(:kRBSE)
+          tokenizer.consume_trivias(tree)
           tree << tokenizer.lookahead1
           rest = tokenizer.rest
           rest.delete_prefix!("@rbs!")
@@ -399,12 +400,11 @@ module RBS
           tree << nil
         end
 
+        tokenizer.consume_trivias(tree)
         tree << parse_type(tokenizer, tree)
 
-        if tokenizer.type?(:kMINUS2)
-          tree << parse_comment(tokenizer)
-        else
-          tree << nil
+        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+          parse_comment(tokenizer)
         end
 
         tree
@@ -418,7 +418,9 @@ module RBS
         tokenizer.consume_token!(:kRETURN, tree: tree)
         tokenizer.consume_token(:kCOLON, tree: tree)
         tree << parse_type(tokenizer, tree)
-        tree << parse_optional(tokenizer, :kMINUS2) { parse_comment(tokenizer) }
+        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+          parse_comment(tokenizer)
+        end
 
         tree
       end
@@ -516,6 +518,7 @@ module RBS
       # @rbs parent_tree: AST::Tree
       # @rbs return: MethodType | AST::Tree | Types::t | nil
       def parse_type_method_type(tokenizer, parent_tree)
+        tokenizer.consume_trivias(parent_tree)
         buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
         range = (tokenizer.current_position..)
         begin
@@ -554,6 +557,7 @@ module RBS
       # @rbs parent_tree: AST::Tree
       # @rbs return: MethodType | AST::Tree
       def parse_method_type(tokenizer, parent_tree)
+        tokenizer.consume_trivias(parent_tree)
         buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
         range = (tokenizer.current_position..)
         begin
@@ -592,6 +596,7 @@ module RBS
       # @rbs parent_tree: AST::Tree
       # @rbs return: Types::t | AST::Tree | nil
       def parse_type(tokenizer, parent_tree)
+        tokenizer.consume_trivias(parent_tree)
         buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
         range = (tokenizer.current_position..)
         if type = RBS::Parser.parse_type(buffer, range: range, require_eof: false)
@@ -743,10 +748,8 @@ module RBS
         tokenizer.consume_token!(:kMODULESELF, tree: tree)
         tree << parse_type(tokenizer, tree)
 
-        if tokenizer.type?(:kMINUS2)
-          tree << parse_comment(tokenizer)
-        else
-          tree << nil
+        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
+          parse_comment(tokenizer)
         end
 
         tree
@@ -762,12 +765,18 @@ module RBS
       # end
       # ```
       #
+      # If `tree:` is given, it consumes trivia tokens before yielding the block.
+      #
       # @rbs tokenizer: Tokenizer
       # @rbs *types: Symbol
+      # @rbs tree: AST::Tree? -- the parent tree to consume leading trivia tokens
       # @rbs &block: () -> AST::Tree
       # @rbs return: AST::Tree?
-      def parse_optional(tokenizer, *types, &block)
+      def parse_optional(tokenizer, *types, tree: nil, &block)
         if tokenizer.type?(*types)
+          if tree
+            tokenizer.consume_trivias(tree)
+          end
           yield
         end
       end
@@ -784,7 +793,7 @@ module RBS
 
         tokenizer.consume_token(:tUIDENT, tree: tree)
 
-        tree << parse_optional(tokenizer, :kLT) do
+        tree << parse_optional(tokenizer, :kLT, tree: tree) do
           bound = AST::Tree.new(:upper_bound)
 
           tokenizer.consume_token!(:kLT, tree: bound)
@@ -793,7 +802,7 @@ module RBS
           bound
         end
 
-        tree << parse_optional(tokenizer, :kMINUS2) do
+        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
@@ -812,7 +821,7 @@ module RBS
 
         tree << parse_type(tokenizer, tree)
 
-        tree << parse_optional(tokenizer, :kMINUS2) do
+        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
@@ -829,7 +838,7 @@ module RBS
 
         tree << parse_type(tokenizer, tree)
 
-        tree << parse_optional(tokenizer, :kMINUS2) do
+        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 
@@ -846,13 +855,15 @@ module RBS
 
         tokenizer.consume_token(:kQUESTION, tree: tree)
 
+        tokenizer.consume_trivias(tree)
+
         unless (string = tokenizer.skip_to_comment()).empty?
           tree << [:tBLOCKSTR, string]
         else
           tree << nil
         end
 
-        tree << parse_optional(tokenizer, :kMINUS2) do
+        tree << parse_optional(tokenizer, :kMINUS2, tree: tree) do
           parse_comment(tokenizer)
         end
 

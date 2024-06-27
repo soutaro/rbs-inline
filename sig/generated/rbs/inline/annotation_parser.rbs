@@ -232,11 +232,14 @@ module RBS
       # end
       # ```
       #
+      # If `tree:` is given, it consumes trivia tokens before yielding the block.
+      #
       # @rbs tokenizer: Tokenizer
       # @rbs *types: Symbol
+      # @rbs tree: AST::Tree? -- the parent tree to consume leading trivia tokens
       # @rbs &block: () -> AST::Tree
       # @rbs return: AST::Tree?
-      def parse_optional: (Tokenizer tokenizer, *Symbol types) { () -> AST::Tree } -> AST::Tree?
+      def parse_optional: (Tokenizer tokenizer, *Symbol types, ?tree: AST::Tree?) { () -> AST::Tree } -> AST::Tree?
 
       # @rbs tokenizer: Tokenizer
       # @rbs return: AST::Tree

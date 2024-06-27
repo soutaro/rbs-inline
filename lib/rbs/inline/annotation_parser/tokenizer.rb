@@ -42,24 +42,45 @@ module RBS
 
         attr_reader :scanner #: StringScanner
 
+        # Tokens that comes after the current position
+        #
+        # This is a four tuple of tokens.
+        #
+        # 1. The first array is a trivia tokens before current position
+        # 2. The second token is the first lookahead token after the current position
+        # 3. The third array is a trivia tokens between the first lookahead and the second lookahead
+        # 4. The fourth token is the second lookahead token
+        #
+        attr_reader :lookahead_tokens #: [Array[token], token?, Array[token], token?]
+
         # Token that comes after the current position
-        attr_reader :lookahead1 #: token?
+        # @rbs %a{pure}
+        def lookahead1 #: token?
+          lookahead_tokens[1]
+        end
 
         # Token that comes after `lookahead1`
-        attr_reader :lookahead2 #: token?
+        # @rbs %a{pure}
+        def lookahead2 #: token?
+          lookahead_tokens[3]
+        end
 
-        # Returns the current char position of the scanner
+        # Returns the current char position of the first lookahead token
         #
         # ```
-        # foo bar baz
-        # ^^^             lookahead1
-        #     ^^^         lookahead2
-        #         ^    <= scanner.charpos
+        # __ foo ___ bar baz
+        # ^^                 Trivia tokens before lookahead1
+        #   ^                #current_position
+        #    ^^^             lookahead1
+        #        ^^^         Trivia tokens between lookahead1 and lookahead2
+        #            ^^^     lookahead2
+        #                ^    <= scanner.charpos
         # ```
         #
         def current_position #: Integer
           start = scanner.charpos
           start -= lookahead1[1].size if lookahead1
+          lookahead_tokens[2].each {|_, s| start -= s.size }
           start -= lookahead2[1].size if lookahead2
           start
         end
@@ -73,8 +94,7 @@ module RBS
         def initialize(scanner)
           @scanner = scanner
 
-          @lookahead1 = nil
-          @lookahead2 = nil
+          @lookahead_tokens = [[], nil, [], nil]
         end
 
         # Advances the scanner
@@ -83,48 +103,64 @@ module RBS
         # @rbs eat: bool -- true to add the current lookahead token into the tree
         # @rbs return: void
         def advance(tree, eat: false)
-          last = lookahead1
-          @lookahead1 = lookahead2
-
+          consume_trivias(tree)
+          last = lookahead_tokens[1]
           tree << last if eat
 
-          case
-          when scanner.eos?
-            @lookahead2 = [:kEOF, ""]
-          when s = scanner.scan(/\s+/)
-            @lookahead2 = [:tWHITESPACE, s]
-          when s = scanner.scan(/@rbs!/)
-            @lookahead2 = [:kRBSE, s]
-          when s = scanner.scan(/@rbs\b/)
-            @lookahead2 = [:kRBS, s]
-          when s = scanner.scan(PUNCTS_RE)
-            @lookahead2 = [PUNCTS.fetch(s), s]
-          when s = scanner.scan(KW_RE)
-            @lookahead2 = [KEYWORDS.fetch(s), s]
-          when s = scanner.scan(/[A-Z]\w*/)
-            @lookahead2 = [:tUIDENT, s]
-          when s = scanner.scan(/_[A-Z]\w*/)
-            @lookahead2 = [:tIFIDENT, s]
-          when s = scanner.scan(/[a-z]\w*/)
-            @lookahead2 = [:tLVAR, s]
-          when s = scanner.scan(/![a-z]\w*/)
-            @lookahead2 = [:tELVAR, s]
-          when s = scanner.scan(/@\w+/)
-            @lookahead2 = [:tATIDENT, s]
-          when s = scanner.scan(/%a\{[^}]+\}/)
-            @lookahead2 = [:tANNOTATION, s]
-          when s = scanner.scan(/%a\[[^\]]+\]/)
-            @lookahead2 = [:tANNOTATION, s]
-          when s = scanner.scan(/%a\([^)]+\)/)
-            @lookahead2 = [:tANNOTATION, s]
-          else
-            @lookahead2 = nil
+          lookahead_tokens[0].replace(lookahead_tokens[2])
+          lookahead_tokens[1] = lookahead_tokens[3]
+          lookahead_tokens[2].clear
+
+          while s = scanner.scan(/\s+/)
+            lookahead_tokens[2] << [:tWHITESPACE, s]
           end
 
-          if lookahead1 && lookahead1[0] == :tWHITESPACE
-            tree << lookahead1
-            advance(tree)
+          lookahead =
+            case
+            when scanner.eos?
+              [:kEOF, ""]
+            when s = scanner.scan(/@rbs!/)
+              [:kRBSE, s]
+            when s = scanner.scan(/@rbs\b/)
+              [:kRBS, s]
+            when s = scanner.scan(PUNCTS_RE)
+              [PUNCTS.fetch(s), s]
+            when s = scanner.scan(KW_RE)
+              [KEYWORDS.fetch(s), s]
+            when s = scanner.scan(/[A-Z]\w*/)
+              [:tUIDENT, s]
+            when s = scanner.scan(/_[A-Z]\w*/)
+              [:tIFIDENT, s]
+            when s = scanner.scan(/[a-z]\w*/)
+              [:tLVAR, s]
+            when s = scanner.scan(/![a-z]\w*/)
+              [:tELVAR, s]
+            when s = scanner.scan(/@\w+/)
+              [:tATIDENT, s]
+            when s = scanner.scan(/%a\{[^}]+\}/)
+              [:tANNOTATION, s]
+            when s = scanner.scan(/%a\[[^\]]+\]/)
+              [:tANNOTATION, s]
+            when s = scanner.scan(/%a\([^)]+\)/)
+              [:tANNOTATION, s]
+            end #: token?
+
+          lookahead_tokens[3] = lookahead
+
+          last
+        end
+
+        # @rbs (AST::Tree?) -> String
+        def consume_trivias(tree)
+          buf = +""
+
+          lookahead_tokens[0].each do |tok|
+            tree << tok if tree
+            buf << tok[1]
           end
+          lookahead_tokens[0].clear
+
+          buf
         end
 
         # Returns true if the scanner cannot consume next token
@@ -152,8 +188,7 @@ module RBS
 
           scanner.skip(/.{#{skips}}/)
 
-          @lookahead1 = nil
-          @lookahead2 = nil
+          @lookahead_tokens = [[], nil, [], nil]
 
           advance(tree)
           advance(tree)
@@ -161,7 +196,9 @@ module RBS
 
         def rest #: String
           buf = +""
+          lookahead_tokens[0].each {|_, s| buf << s }
           buf << lookahead1[1] if lookahead1
+          lookahead_tokens[2].each {|_, s| buf << s }
           buf << lookahead2[1] if lookahead2
           buf << scanner.rest
           buf
@@ -220,21 +257,33 @@ module RBS
         #
         # @rbs return: String -- String that is skipped
         def skip_to_comment
-          return "" if type?(:kMINUS2)
-
           prefix = +""
+
+          lookahead_tokens[0].each { prefix << _1[1] }
+          lookahead_tokens[0].clear
+
+          if type?(:kMINUS2)
+            return prefix
+          end
+
           prefix << lookahead1[1] if lookahead1
+          lookahead_tokens[2].each { prefix << _1[1] }
+          lookahead_tokens[2].clear
+
+          if type2?(:kMINUS2)
+            advance(_ = nil)  # The tree is unused because no trivia tokens are left
+            return prefix
+          end
+
           prefix << lookahead2[1] if lookahead2
 
           if string = scanner.scan_until(/--/)
-            @lookahead1 = nil
-            @lookahead2 = [:kMINUS2, "--"]
-            advance(_ = nil)  # The tree is unused because lookahead2 is not a trivia token
+            @lookahead_tokens = [[], nil, [], [:kMINUS2, "--"]]
+            advance(_ = nil)  # The tree is unused because no trivia tokens are left
             prefix + string.delete_suffix("--")
           else
             s = scanner.rest
-            @lookahead1 = [:kEOF, ""]
-            @lookahead2 = nil
+            @lookahead_tokens = [[], [:kEOF, ""], [], nil]
             scanner.terminate
             prefix + s
           end

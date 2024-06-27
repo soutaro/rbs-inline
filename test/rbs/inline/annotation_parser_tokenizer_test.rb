@@ -16,13 +16,42 @@ class RBS::Inline::AnnotationParser::TokenizerTest < Minitest::Test
 
     assert_equal 0, tokenizer.current_position
     assert_equal [:kRBS, "@rbs"], tokenizer.lookahead1
-    assert_equal [:tWHITESPACE, " "], tokenizer.lookahead2
+    assert_equal [:tLVAR, "foo"], tokenizer.lookahead2
 
     tokenizer.advance(tree)
 
     assert_equal 5, tokenizer.current_position
     assert_equal [:tLVAR, "foo"], tokenizer.lookahead1
-    assert_equal [:tWHITESPACE, " "], tokenizer.lookahead2
+    assert_equal [:tLVAR, "bar"], tokenizer.lookahead2
+  end
+
+
+  def test_rest
+    tree = AST::Tree.new(:test)
+
+    tokenizer = Tokenizer.new(StringScanner.new("@rbs foo bar : [ ]"))
+    tokenizer.advance(tree)
+    tokenizer.advance(tree)
+
+    assert_equal "@rbs foo bar : [ ]", tokenizer.rest
+
+    tokenizer.advance(tree)
+
+    assert_equal " foo bar : [ ]", tokenizer.rest
+  end
+
+  def test_skip_to_comment__0
+    tree = AST::Tree.new(:test)
+
+    tokenizer = Tokenizer.new(StringScanner.new("@rbs hoge hoge -- Hello"))
+    tokenizer.advance(tree)
+    tokenizer.advance(tree)
+
+    assert_equal "@rbs hoge hoge ", tokenizer.skip_to_comment
+
+    assert_equal 15, tokenizer.current_position
+    assert_equal [:kMINUS2, "--"], tokenizer.lookahead1
+    assert_equal [:tUIDENT, "Hello"], tokenizer.lookahead2
   end
 
   def test_skip_to_comment__1
@@ -36,7 +65,7 @@ class RBS::Inline::AnnotationParser::TokenizerTest < Minitest::Test
 
     assert_equal 5, tokenizer.current_position
     assert_equal [:kMINUS2, "--"], tokenizer.lookahead1
-    assert_equal [:tWHITESPACE, " "], tokenizer.lookahead2
+    assert_equal [:tUIDENT, "Hello"], tokenizer.lookahead2
   end
 
   def test_skip_to_comment__2
@@ -48,11 +77,11 @@ class RBS::Inline::AnnotationParser::TokenizerTest < Minitest::Test
 
     tokenizer.advance(tree)
 
-    assert_equal "", tokenizer.skip_to_comment
+    assert_equal " ", tokenizer.skip_to_comment
 
     assert_equal 5, tokenizer.current_position
     assert_equal [:kMINUS2, "--"], tokenizer.lookahead1
-    assert_equal [:tWHITESPACE, " "], tokenizer.lookahead2
+    assert_equal [:tUIDENT, "Hello"], tokenizer.lookahead2
   end
 
   def test_skip_to_comment__3
@@ -82,7 +111,7 @@ class RBS::Inline::AnnotationParser::TokenizerTest < Minitest::Test
   def test_reset__2
     tree = AST::Tree.new(:test)
 
-    tokenizer = Tokenizer.new(StringScanner.new("@rbs - Hello"))
+    tokenizer = Tokenizer.new(StringScanner.new("@rbs Hello"))
     tokenizer.advance(tree)
     tokenizer.advance(tree)
 
@@ -90,13 +119,13 @@ class RBS::Inline::AnnotationParser::TokenizerTest < Minitest::Test
 
     assert_equal 2, tokenizer.current_position
     assert_equal [:tLVAR, "bs"], tokenizer.lookahead1
-    assert_equal [:tWHITESPACE, " "], tokenizer.lookahead2
+    assert_equal [:tUIDENT, "Hello"], tokenizer.lookahead2
   end
 
   def test_reset__3
     tree = AST::Tree.new(:test)
 
-    tokenizer = Tokenizer.new(StringScanner.new("@rbs - Hello"))
+    tokenizer = Tokenizer.new(StringScanner.new("@rbs Hello"))
     tokenizer.advance(tree)
     tokenizer.advance(tree)
 
