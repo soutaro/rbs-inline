@@ -49,6 +49,8 @@ module RBS
         def lines: () -> Array[String]
       end
 
+      include Tokens
+
       attr_reader input: Array[Prism::Comment]
 
       # @rbs input: Array[Prism::Comment]
@@ -227,7 +229,7 @@ module RBS
       # ```rb
       # # Test if tokenize has `--` token, then parse comment or insert `nil` to tree
       #
-      # tree << parse_optional(tokenizer, :kMINUS2) do
+      # tree << parse_optional(tokenizer, K_MINUS2) do
       #   parse_comment(tokenizer)
       # end
       # ```

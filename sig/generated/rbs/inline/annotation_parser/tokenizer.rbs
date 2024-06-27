@@ -3,7 +3,105 @@
 module RBS
   module Inline
     class AnnotationParser
+      module Tokens
+        K_RETURN: ::Symbol
+
+        K_INHERITS: ::Symbol
+
+        K_AS: ::Symbol
+
+        K_OVERRIDE: ::Symbol
+
+        K_USE: ::Symbol
+
+        K_MODULE_SELF: ::Symbol
+
+        K_GENERIC: ::Symbol
+
+        K_IN: ::Symbol
+
+        K_OUT: ::Symbol
+
+        K_UNCHECKED: ::Symbol
+
+        K_SELF: ::Symbol
+
+        K_SKIP: ::Symbol
+
+        K_YIELDS: ::Symbol
+
+        K_MODULE: ::Symbol
+
+        K_COLON2: ::Symbol
+
+        K_COLON: ::Symbol
+
+        K_LBRACKET: ::Symbol
+
+        K_RBRACKET: ::Symbol
+
+        K_COMMA: ::Symbol
+
+        K_STAR2: ::Symbol
+
+        K_STAR: ::Symbol
+
+        K_MINUS2: ::Symbol
+
+        K_LT: ::Symbol
+
+        K_DOT3: ::Symbol
+
+        K_DOT: ::Symbol
+
+        K_ARROW: ::Symbol
+
+        K_LBRACE: ::Symbol
+
+        K_LPAREN: ::Symbol
+
+        K_AMP: ::Symbol
+
+        K_QUESTION: ::Symbol
+
+        K_VBAR: ::Symbol
+
+        K_EOF: ::Symbol
+
+        # `@rbs!`
+        K_RBSE: ::Symbol
+
+        # `@rbs`
+        K_RBS: ::Symbol
+
+        T_UIDENT: ::Symbol
+
+        T_IFIDENT: ::Symbol
+
+        T_LVAR: ::Symbol
+
+        # The body of comment string following `--`
+        T_COMMENT: ::Symbol
+
+        # Type/method type source
+        T_SOURCE: ::Symbol
+
+        # Block type source
+        T_BLOCKSTR: ::Symbol
+
+        # `!` local variable
+        T_ELVAR: ::Symbol
+
+        T_ATIDENT: ::Symbol
+
+        T_ANNOTATION: ::Symbol
+
+        T_WHITESPACE: ::Symbol
+      end
+
       class Tokenizer
+        include Tokens
+
         KEYWORDS: Hash[String, Symbol]
 
         KW_RE: ::Regexp
