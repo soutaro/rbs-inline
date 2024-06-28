@@ -263,6 +263,9 @@ module RBS
       def parse_module_decl: (Tokenizer) -> AST::Tree
 
       # @rbs (Tokenizer) -> AST::Tree
+      def parse_class_decl: (Tokenizer) -> AST::Tree
+
+      # @rbs (Tokenizer) -> AST::Tree
       def parse_module_name: (Tokenizer) -> AST::Tree
 
       # @rbs (Tokenizer) -> AST::Tree

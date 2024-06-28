@@ -320,13 +320,16 @@ module RBS
           when tokenizer.type?(T_LVAR, :tELVAR)
             tree << parse_var_decl(tokenizer)
             AST::Annotations::VarType.new(tree, comments)
-          when tokenizer.type?(K_SKIP, K_INHERITS, K_OVERRIDE, K_USE, K_GENERIC, K_MODULE) &&
+          when tokenizer.type?(K_SKIP, K_INHERITS, K_OVERRIDE, K_USE, K_GENERIC, K_MODULE, K_CLASS) &&
             tokenizer.type2?(K_COLON)
             tree << parse_var_decl(tokenizer)
             AST::Annotations::VarType.new(tree, comments)
           when tokenizer.type?(K_MODULE)
             tree << parse_module_decl(tokenizer)
             AST::Annotations::ModuleDecl.new(tree, comments)
+          when tokenizer.type?(K_CLASS)
+            tree << parse_class_decl(tokenizer)
+            AST::Annotations::ClassDecl.new(tree, comments)
           when tokenizer.type?(K_SKIP)
             AST::Annotations::Skip.new(tree, comments)
           when tokenizer.type?(K_RETURN)
@@ -898,6 +901,28 @@ module RBS
 
         tree << parse_optional(tokenizer, K_COLON) do
           parse_module_selfs(tokenizer)
+        end
+
+        tree
+      end
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_class_decl(tokenizer)
+        tree = AST::Tree.new(:class_decl)
+
+        tokenizer.consume_token!(K_CLASS, tree: tree)
+
+        tree << parse_module_name(tokenizer)
+
+        tree << parse_optional(tokenizer, K_LBRACKET) do
+          parse_type_params(tokenizer)
+        end
+
+        tree << parse_optional(tokenizer, K_LT) do
+          super_class = AST::Tree.new(:super_class)
+          tokenizer.consume_token!(K_LT, tree: super_class)
+          super_class << parse_type(tokenizer, super_class)
+          super_class
         end
 
         tree

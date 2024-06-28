@@ -696,4 +696,28 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_empty annotation.self_types
     end
   end
+
+  def test_module_decl_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs class Foo
+      # @rbs class Foo[A < Integer] < Array[A]
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::ClassDecl, annotation
+      assert_equal TypeName("Foo"), annotation.name
+      assert_empty annotation.type_params
+      assert_nil annotation.super_class
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::ClassDecl, annotation
+      assert_equal TypeName("Foo"), annotation.name
+      annotation.type_params[0].tap do |param|
+        assert_equal :A, param.name
+        assert_equal "Integer", param.upper_bound.to_s
+      end
+      assert_equal TypeName("Array"), annotation.super_class.name
+      assert_equal ["A"], annotation.super_class.args.map(&:to_s)
+    end
+  end
 end

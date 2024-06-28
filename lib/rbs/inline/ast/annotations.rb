@@ -23,6 +23,7 @@ module RBS
         #          | DoubleSplatParamType
         #          | BlockType
         #          | ModuleDecl
+        #          | ClassDecl
         #        #  | Def
         #        #  | AttrReader | AttrWriter | AttrAccessor
         #        #  | Include | Extend | Prepend
@@ -60,6 +61,18 @@ module RBS
                 upper_bound: upper_bound,
                 location: nil
               ).unchecked!(unchecked)
+            end
+          end
+
+          # @rbs (Types::t) -> RBS::AST::Declarations::Class::Super?
+          def translate_super_class(type)
+            case type
+            when Types::ClassInstance
+              RBS::AST::Declarations::Class::Super.new(
+                name: type.name,
+                args: type.args,
+                location: nil
+              )
             end
           end
 
@@ -697,6 +710,50 @@ module RBS
                     location: type.location
                   )
                 end
+              end
+            end
+          end
+        end
+
+        # `@rbs class Foo`
+        class ClassDecl < Base
+          attr_reader :name #: TypeName?
+
+          attr_reader :type_params #: Array[RBS::AST::TypeParam]
+
+          attr_reader :super_class #: RBS::AST::Declarations::Class::Super?
+
+          include Utils
+
+          # @rbs override
+          def initialize(tree, comments)
+            @tree = tree
+            @source = comments
+
+            decl_tree = tree.nth_tree!(1)
+
+            if type_name = translate_type_name(decl_tree.nth_tree!(1))
+              if type_name.class?
+                @name = type_name
+              end
+            end
+
+            @type_params = []
+            if type_params = decl_tree.nth_tree(2)
+              params = type_params.non_trivia_trees
+              params.shift
+              params.pop
+              params.each_slice(2) do |param, _comma|
+                raise unless param.is_a?(Tree)
+                if type_param = translate_type_param(param)
+                  @type_params << type_param
+                end
+              end
+            end
+
+            if super_tree = decl_tree.nth_tree(3)
+              if type = super_tree.nth_type?(1)
+                @super_class = translate_super_class(type)
               end
             end
           end

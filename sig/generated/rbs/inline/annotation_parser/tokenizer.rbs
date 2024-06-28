@@ -32,6 +32,8 @@ module RBS
 
         K_MODULE: ::Symbol
 
+        K_CLASS: ::Symbol
+
         K_COLON2: ::Symbol
 
         K_COLON: ::Symbol

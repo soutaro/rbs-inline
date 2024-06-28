@@ -16,6 +16,7 @@ module RBS
         K_SKIP = :kSKIP
         K_YIELDS = :kYIELDS
         K_MODULE = :kMODULE
+        K_CLASS = :kCLASS
         K_COLON2 = :kCOLON2
         K_COLON = :kCOLON
         K_LBRACKET = :kLBRACKET
@@ -81,6 +82,7 @@ module RBS
           "skip" => K_SKIP,
           "yields" => K_YIELDS,
           "module" => K_MODULE,
+          "class" => K_CLASS,
         } #: Hash[String, Symbol]
         KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
 
