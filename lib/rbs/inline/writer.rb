@@ -112,8 +112,13 @@ module RBS
           when AST::Declarations::SingletonClassDecl
             translate_singleton_decl(member, rbs)
           when AST::Declarations::BlockDecl
-            if member.module_class_annotation
-              translate_module_block_decl(member, rbs)
+            if annotation = member.module_class_annotation
+              case annotation
+              when AST::Annotations::ModuleDecl
+                translate_module_block_decl(member, rbs)
+              when AST::Annotations::ClassDecl
+                translate_class_block_decl(member, rbs)
+              end
             else
               translate_members(member.members, decl, rbs)
             end
@@ -307,6 +312,34 @@ module RBS
           type_params: annotation.type_params,
           members: members,
           self_types: self_types,
+          annotations: [],
+          location: nil,
+          comment: comment
+        )
+      end
+
+      # @rbs block: AST::Declarations::BlockDecl
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_class_block_decl(block, rbs)
+        annotation = block.module_class_annotation
+        annotation.is_a?(AST::Annotations::ClassDecl) or raise
+
+        return unless annotation.name
+
+        if block.comments
+          comment = RBS::AST::Comment.new(string: block.comments.content(trim: true), location: nil)
+        end
+
+        members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
+
+        translate_members(block.members, nil, members)
+
+        rbs << RBS::AST::Declarations::Class.new(
+          name: annotation.name,
+          type_params: annotation.type_params,
+          members: members,
+          super_class: annotation.super_class,
           annotations: [],
           location: nil,
           comment: comment

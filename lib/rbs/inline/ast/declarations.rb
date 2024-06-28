@@ -250,11 +250,19 @@ module RBS
             node.location.start_line
           end
 
-          def module_class_annotation #: Annotations::ModuleDecl?
+          def module_class_annotation #: Annotations::ModuleDecl | Annotations::ClassDecl | nil
             if comments
-              comments.each_annotation.find do |annotation|
-                annotation.is_a?(Annotations::ModuleDecl)
-              end #: Annotations::ModuleDecl
+              comments.each_annotation.each do |annotation|
+                if annotation.is_a?(Annotations::ModuleDecl)
+                  return annotation
+                end
+
+                if annotation.is_a?(Annotations::ClassDecl)
+                  return annotation
+                end
+              end
+
+              nil
             end
           end
         end

@@ -747,4 +747,26 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_block__class_decl
+    output = translate(<<~RUBY)
+      class Account
+        # @rbs class ::ApplicationController
+        controller do
+          def foo #: Integer
+            123
+          end
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Account
+        # @rbs class ::ApplicationController
+        class ::ApplicationController
+          def foo: () -> Integer
+        end
+      end
+    RBS
+  end
 end

@@ -91,6 +91,11 @@ module RBS
       # @rbs rbs: _Content
       # @rbs return: void
       def translate_module_block_decl: (AST::Declarations::BlockDecl block, _Content rbs) -> void
+
+      # @rbs block: AST::Declarations::BlockDecl
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_class_block_decl: (AST::Declarations::BlockDecl block, _Content rbs) -> void
     end
   end
 end

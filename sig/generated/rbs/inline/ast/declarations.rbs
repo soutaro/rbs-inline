@@ -127,7 +127,7 @@ module RBS
 
           def start_line: () -> Integer
 
-          def module_class_annotation: () -> Annotations::ModuleDecl?
+          def module_class_annotation: () -> (Annotations::ModuleDecl | Annotations::ClassDecl | nil)
         end
       end
     end
