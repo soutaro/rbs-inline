@@ -3,6 +3,12 @@
 module RBS
   module Inline
     class Writer
+      interface _Content
+        def <<: (RBS::AST::Declarations::t | RBS::AST::Members::t) -> void
+
+        def concat: (Array[RBS::AST::Declarations::t | RBS::AST::Members::t]) -> void
+      end
+
       attr_reader output: String
 
       attr_reader writer: RBS::Writer
@@ -24,29 +30,35 @@ module RBS
       def write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls) -> void
 
       # @rbs decl: AST::Declarations::t
-      # @rbs return: RBS::AST::Declarations::t?
-      def translate_decl: (AST::Declarations::t decl) -> RBS::AST::Declarations::t?
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_decl: (AST::Declarations::t decl, _Content rbs) -> void
 
       # @rbs decl: AST::Declarations::ClassDecl
-      # @rbs return: RBS::AST::Declarations::Class?
-      def translate_class_decl: (AST::Declarations::ClassDecl decl) -> RBS::AST::Declarations::Class?
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_class_decl: (AST::Declarations::ClassDecl decl, _Content rbs) -> void
 
       # @rbs decl: AST::Declarations::ModuleDecl
-      # @rbs return: RBS::AST::Declarations::Module?
-      def translate_module_decl: (AST::Declarations::ModuleDecl decl) -> RBS::AST::Declarations::Module?
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_module_decl: (AST::Declarations::ModuleDecl decl, _Content rbs) -> void
 
       # @rbs decl: AST::Declarations::ConstantDecl
-      # @rbs return: RBS::AST::Declarations::Constant?
-      def translate_constant_decl: (AST::Declarations::ConstantDecl decl) -> RBS::AST::Declarations::Constant?
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_constant_decl: (AST::Declarations::ConstantDecl decl, _Content rbs) -> void
 
       # @rbs decl: AST::Declarations::SingletonClassDecl
-      # @rbs return: Array[RBS::AST::Members::t]
-      def translate_singleton_decl: (AST::Declarations::SingletonClassDecl decl) -> Array[RBS::AST::Members::t]
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_singleton_decl: (AST::Declarations::SingletonClassDecl decl, _Content rbs) -> void
 
       # @rbs member: AST::Members::t
       # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
-      # @rbs return: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
-      def translate_member: (AST::Members::t member, AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl decl) -> Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
+      # @rbs rbs: _Content
+      # @rbs return void
+      def translate_member: (AST::Members::t member, AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl decl, _Content rbs) -> void
 
       private
 
