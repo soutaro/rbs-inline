@@ -89,7 +89,7 @@ module RBS
 
         decl.members.each do |member|
           if member.is_a?(AST::Members::Base)
-            translate_member(member, decl, members)
+            translate_member(member, nil, members)
           end
 
           if member.is_a?(AST::Declarations::SingletonClassDecl)
@@ -124,7 +124,7 @@ module RBS
 
         decl.members.each do |member|
           if member.is_a?(AST::Members::Base)
-            translate_member(member, decl, members)
+            translate_member(member, nil, members)
           end
 
           if member.is_a?(AST::Declarations::SingletonClassDecl)
@@ -177,7 +177,8 @@ module RBS
       end
 
       # @rbs member: AST::Members::t
-      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
+      # @rbs decl: AST::Declarations::SingletonClassDecl? --
+      #   The surrouding singleton class definition
       # @rbs rbs: _Content
       # @rbs return void
       def translate_member(member, decl, rbs)
@@ -266,10 +267,10 @@ module RBS
       # ```
       #
       # @rbs member: AST::Members::RubyDef
-      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
+      # @rbs decl: AST::Declarations::SingletonClassDecl?
       # @rbs return: RBS::AST::Members::MethodDefinition::kind
       def method_kind(member, decl)
-        return :singleton if decl.is_a?(AST::Declarations::SingletonClassDecl)
+        return :singleton if decl
 
         case member.node.receiver
         when Prism::SelfNode

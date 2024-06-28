@@ -55,10 +55,11 @@ module RBS
       def translate_singleton_decl: (AST::Declarations::SingletonClassDecl decl, _Content rbs) -> void
 
       # @rbs member: AST::Members::t
-      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
+      # @rbs decl: AST::Declarations::SingletonClassDecl? --
+      #   The surrouding singleton class definition
       # @rbs rbs: _Content
       # @rbs return void
-      def translate_member: (AST::Members::t member, AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl decl, _Content rbs) -> void
+      def translate_member: (AST::Members::t member, AST::Declarations::SingletonClassDecl? decl, _Content rbs) -> void
 
       private
 
@@ -76,9 +77,9 @@ module RBS
       # ```
       #
       # @rbs member: AST::Members::RubyDef
-      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
+      # @rbs decl: AST::Declarations::SingletonClassDecl?
       # @rbs return: RBS::AST::Members::MethodDefinition::kind
-      def method_kind: (AST::Members::RubyDef member, AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl decl) -> RBS::AST::Members::MethodDefinition::kind
+      def method_kind: (AST::Members::RubyDef member, AST::Declarations::SingletonClassDecl? decl) -> RBS::AST::Members::MethodDefinition::kind
     end
   end
 end
