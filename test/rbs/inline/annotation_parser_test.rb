@@ -652,4 +652,48 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_equal "Integer", annotation.error_source
     end
   end
+
+  def test_module_decl_annotation
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      # @rbs module Foo
+      # @rbs module ::Foo::Bar
+      # @rbs module Foo[A < Integer] : BasicObject, _Each[String]
+      # @rbs module foo[ : [Integer]
+      RUBY
+
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::ModuleDecl, annotation
+      assert_equal TypeName("Foo"), annotation.name
+      assert_empty annotation.type_params
+      assert_empty annotation.self_types
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::ModuleDecl, annotation
+      assert_equal TypeName("::Foo::Bar"), annotation.name
+      assert_empty annotation.type_params
+      assert_empty annotation.self_types
+    end
+    annots[0].annotations[2].tap do |annotation|
+      assert_instance_of AST::Annotations::ModuleDecl, annotation
+      assert_equal TypeName("Foo"), annotation.name
+      annotation.type_params[0].tap do |param|
+        assert_equal :A, param.name
+        assert_equal "Integer", param.upper_bound.to_s
+      end
+      annotation.self_types[0].tap do |self_type|
+        assert_equal TypeName("BasicObject"), self_type.name
+        assert_empty self_type.args
+      end
+      annotation.self_types[1].tap do |self_type|
+        assert_equal TypeName("_Each"), self_type.name
+        assert_equal ["String"], self_type.args.map(&:to_s)
+      end
+    end
+    annots[0].annotations[3].tap do |annotation|
+      assert_instance_of AST::Annotations::ModuleDecl, annotation
+      assert_nil annotation.name
+      assert_empty annotation.type_params
+      assert_empty annotation.self_types
+    end
+end
 end

@@ -22,10 +22,77 @@ module RBS
         #          | SplatParamType
         #          | DoubleSplatParamType
         #          | BlockType
+        #          | ModuleDecl
         #        #  | Def
         #        #  | AttrReader | AttrWriter | AttrAccessor
         #        #  | Include | Extend | Prepend
         #        #  | Alias
+
+        module Utils
+          # @rbs (Tree) -> RBS::AST::TypeParam?
+          def translate_type_param(tree)
+            unchecked = tree.nth_token?(0) != nil
+            inout =
+              case tree.nth_token?(1)&.[](0)
+              when nil
+                :invariant
+              when :kIN
+                :contravariant
+              when :kOUT
+                :covariant
+              end #: RBS::AST::TypeParam::variance
+
+            name = tree.nth_token?(2)&.last
+
+            if bound = tree.nth_tree?(3)
+              if type = bound.nth_type?(1)
+                case type
+                when Types::ClassSingleton, Types::ClassInstance, Types::Interface
+                  upper_bound = type
+                end
+              end
+            end
+
+            if name
+              RBS::AST::TypeParam.new(
+                name: name.to_sym,
+                variance: inout,
+                upper_bound: upper_bound,
+                location: nil
+              ).unchecked!(unchecked)
+            end
+          end
+
+          # Assumes the tree is generated through `#parse_module_name`
+          #
+          # Returns a type name, or `nil` if the tree is something invalid.
+          #
+          # @param tree -- A tree object that is generated through `#parse_module_name`
+          #
+          # @rbs (AST::Tree) -> TypeName?
+          def translate_type_name(tree)
+            tokens = tree.non_trivia_trees
+
+            absolute = tokens.shift
+            path = [] #: Array[Symbol]
+
+            tokens.each_slice(2) do |name, colon2|
+              if colon2
+                name or return nil
+                name.is_a?(Array) or return nil
+
+                path << name[1].to_sym
+              end
+            end
+
+            last_token = tokens.pop
+            last_token.is_a?(Array) or return nil
+            name = last_token[1].to_sym
+
+            namespace = Namespace.new(path: path, absolute: absolute ? true : false)
+            TypeName.new(namespace: namespace, name: name)
+          end
+        end
 
         class Base
           attr_reader :source #: CommentLines
@@ -465,44 +532,18 @@ module RBS
 
           attr_reader :comment #: String?
 
+          include Utils
+
           # @rbs override
           def initialize(tree, source)
             @tree = tree
             @source = source
 
             generic_tree = tree.nth_tree!(1)
-            unchecked = generic_tree.nth_token?(1) != nil
-            inout =
-              case generic_tree.nth_token?(2)&.[](0)
-              when nil
-                :invariant
-              when :kIN
-                :contravariant
-              when :kOUT
-                :covariant
-              end #: RBS::AST::TypeParam::variance
 
-            name = generic_tree.nth_token?(3)&.last
+            @type_param = translate_type_param(generic_tree.nth_tree!(1))
 
-            if bound = generic_tree.nth_tree?(4)
-              if type = bound.nth_type?(1)
-                case type
-                when Types::ClassSingleton, Types::ClassInstance, Types::Interface
-                  upper_bound = type
-                end
-              end
-            end
-
-            if name
-              @type_param = RBS::AST::TypeParam.new(
-                name: name.to_sym,
-                variance: inout,
-                upper_bound: upper_bound,
-                location: nil
-              ).unchecked!(unchecked)
-            end
-
-            if comment = generic_tree.nth_tree?(5)
+            if comment = generic_tree.nth_tree?(2)
               @comment = comment.to_s
             end
           end
@@ -602,6 +643,61 @@ module RBS
 
             if type.is_a?(String)
               type
+            end
+          end
+        end
+
+        # `@rbs module Foo`
+        class ModuleDecl < Base
+          attr_reader :name #: TypeName?
+
+          attr_reader :type_params #: Array[RBS::AST::TypeParam]
+
+          attr_reader :self_types #: Array[RBS::AST::Declarations::Module::Self]
+
+          include Utils
+
+          # @rbs override
+          def initialize(tree, comments)
+            @tree = tree
+            @source = comments
+
+            decl_tree = tree.nth_tree!(1)
+
+            if type_name = translate_type_name(decl_tree.nth_tree!(1))
+              if type_name.class?
+                @name = type_name
+              end
+            end
+
+            @type_params = []
+            if type_params = decl_tree.nth_tree(2)
+              params = type_params.non_trivia_trees
+              params.shift
+              params.pop
+              params.each_slice(2) do |param, _comma|
+                raise unless param.is_a?(Tree)
+                if type_param = translate_type_param(param)
+                  @type_params << type_param
+                end
+              end
+            end
+
+            @self_types = []
+            if selfs_tree = decl_tree.nth_tree(3)
+              self_trees = selfs_tree.non_trivia_trees
+              self_trees.shift
+
+              self_trees.each_slice(2) do |type, _comma|
+                case type
+                when Types::ClassInstance, Types::Interface
+                  @self_types << RBS::AST::Declarations::Module::Self.new(
+                    name: type.name,
+                    args: type.args,
+                    location: type.location
+                  )
+                end
+              end
             end
           end
         end

@@ -247,6 +247,9 @@ module RBS
       # @rbs return: AST::Tree
       def parse_generic: (Tokenizer tokenizer) -> AST::Tree
 
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_type_param: (Tokenizer) -> AST::Tree
+
       # : (Tokenizer) -> AST::Tree
       def parse_ivar_type: (Tokenizer) -> AST::Tree
 
@@ -255,6 +258,18 @@ module RBS
 
       # : (Tokenizer) -> AST::Tree
       def parse_block_type: (Tokenizer) -> AST::Tree
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_module_decl: (Tokenizer) -> AST::Tree
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_module_name: (Tokenizer) -> AST::Tree
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_type_params: (Tokenizer) -> AST::Tree
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_module_selfs: (Tokenizer) -> AST::Tree
     end
   end
 end

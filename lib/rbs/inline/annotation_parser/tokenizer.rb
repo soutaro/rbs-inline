@@ -80,6 +80,7 @@ module RBS
           "self" => K_SELF,
           "skip" => K_SKIP,
           "yields" => K_YIELDS,
+          "module" => K_MODULE,
         } #: Hash[String, Symbol]
         KW_RE = /#{Regexp.union(KEYWORDS.keys)}\b/
 
