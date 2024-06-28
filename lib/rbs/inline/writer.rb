@@ -3,6 +3,13 @@
 module RBS
   module Inline
     class Writer
+      # @rbs!
+      #   interface _Content
+      #     def <<: (RBS::AST::Declarations::t | RBS::AST::Members::t) -> void
+      #
+      #     def concat: (Array[RBS::AST::Declarations::t | RBS::AST::Members::t]) -> void
+      #   end
+
       attr_reader :output #: String
       attr_reader :writer #: RBS::Writer
 
@@ -40,29 +47,38 @@ module RBS
           )
         end
 
-        rbs = decls.filter_map do |decl|
-          translate_decl(decl)
+        rbs = [] #: Array[RBS::AST::Declarations::t]
+
+        decls.each do |decl|
+          translate_decl(
+            decl,
+            rbs #: Array[RBS::AST::Declarations::t | RBS::AST::Members::t]
+          )
         end
 
-        writer.write(use_dirs + rbs)
+        writer.write(
+          use_dirs + rbs
+        )
       end
 
       # @rbs decl: AST::Declarations::t
-      # @rbs return: RBS::AST::Declarations::t?
-      def translate_decl(decl)
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_decl(decl, rbs)
         case decl
         when AST::Declarations::ClassDecl
-          translate_class_decl(decl)
+          translate_class_decl(decl, rbs)
         when AST::Declarations::ModuleDecl
-          translate_module_decl(decl)
+          translate_module_decl(decl, rbs)
         when AST::Declarations::ConstantDecl
-          translate_constant_decl(decl)
+          translate_constant_decl(decl, rbs)
         end
       end
 
       # @rbs decl: AST::Declarations::ClassDecl
-      # @rbs return: RBS::AST::Declarations::Class?
-      def translate_class_decl(decl)
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_class_decl(decl, rbs)
         return unless decl.class_name
 
         if decl.comments
@@ -71,23 +87,9 @@ module RBS
 
         members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
 
-        decl.members.each do |member|
-          if member.is_a?(AST::Members::Base)
-            if rbs_member = translate_member(member, decl)
-              members.concat rbs_member
-            end
-          end
+        translate_members(decl.members, nil, members)
 
-          if member.is_a?(AST::Declarations::SingletonClassDecl)
-            members.concat translate_singleton_decl(member)
-          elsif member.is_a?(AST::Declarations::Base)
-            if rbs = translate_decl(member)
-              members << rbs
-            end
-          end
-        end
-
-        RBS::AST::Declarations::Class.new(
+        rbs << RBS::AST::Declarations::Class.new(
           name: decl.class_name,
           type_params: decl.type_params,
           members: members,
@@ -98,9 +100,38 @@ module RBS
         )
       end
 
+      # @rbs members: Array[AST::Declarations::t | AST::Members::t]
+      # @rbs decl: AST::Declarations::SingletonClassDecl?
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_members(members, decl, rbs)
+        members.each do |member|
+          case member
+          when AST::Members::Base
+            translate_member(member, decl, rbs)
+          when AST::Declarations::SingletonClassDecl
+            translate_singleton_decl(member, rbs)
+          when AST::Declarations::BlockDecl
+            if annotation = member.module_class_annotation
+              case annotation
+              when AST::Annotations::ModuleDecl
+                translate_module_block_decl(member, rbs)
+              when AST::Annotations::ClassDecl
+                translate_class_block_decl(member, rbs)
+              end
+            else
+              translate_members(member.members, decl, rbs)
+            end
+          when AST::Declarations::ClassDecl, AST::Declarations::ModuleDecl, AST::Declarations::ConstantDecl
+            translate_decl(member, rbs)
+          end
+        end
+      end
+
       # @rbs decl: AST::Declarations::ModuleDecl
-      # @rbs return: RBS::AST::Declarations::Module?
-      def translate_module_decl(decl)
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_module_decl(decl, rbs)
         return unless decl.module_name
 
         if decl.comments
@@ -109,25 +140,11 @@ module RBS
 
         members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
 
-        decl.members.each do |member|
-          if member.is_a?(AST::Members::Base)
-            if rbs_member = translate_member(member, decl)
-              members.concat rbs_member
-            end
-          end
-
-          if member.is_a?(AST::Declarations::SingletonClassDecl)
-            members.concat translate_singleton_decl(member)
-          elsif member.is_a?(AST::Declarations::Base)
-            if rbs = translate_decl(member)
-              members << rbs
-            end
-          end
-        end
+        translate_members(decl.members, nil, members)
 
         self_types = decl.module_selfs.map { _1.constraint }.compact
 
-        RBS::AST::Declarations::Module.new(
+        rbs << RBS::AST::Declarations::Module.new(
           name: decl.module_name,
           type_params: decl.type_params,
           members: members,
@@ -139,15 +156,16 @@ module RBS
       end
 
       # @rbs decl: AST::Declarations::ConstantDecl
-      # @rbs return: RBS::AST::Declarations::Constant?
-      def translate_constant_decl(decl)
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_constant_decl(decl, rbs)
         return unless decl.constant_name
 
         if decl.comments
           comment = RBS::AST::Comment.new(string: decl.comments.content(trim: true), location: nil)
         end
 
-        RBS::AST::Declarations::Constant.new(
+        rbs << RBS::AST::Declarations::Constant.new(
           name: decl.constant_name,
           type: decl.type,
           comment: comment,
@@ -156,25 +174,22 @@ module RBS
       end
 
       # @rbs decl: AST::Declarations::SingletonClassDecl
-      # @rbs return: Array[RBS::AST::Members::t]
-      def translate_singleton_decl(decl)
-        members = []
-
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_singleton_decl(decl, rbs)
         decl.members.each do |member|
           if member.is_a?(AST::Members::Base)
-            if rbs_member = translate_member(member, decl)
-              members.concat rbs_member
-            end
+            translate_member(member, decl, rbs)
           end
         end
-
-        members
       end
 
       # @rbs member: AST::Members::t
-      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
-      # @rbs return: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]?
-      def translate_member(member, decl)
+      # @rbs decl: AST::Declarations::SingletonClassDecl? --
+      #   The surrouding singleton class definition
+      # @rbs rbs: _Content
+      # @rbs return void
+      def translate_member(member, decl, rbs)
         case member
         when AST::Members::RubyDef
           if member.comments
@@ -184,67 +199,62 @@ module RBS
           kind = method_kind(member, decl)
 
           if member.override_annotation
-            return [
-              RBS::AST::Members::MethodDefinition.new(
-                name: member.method_name,
-                kind: kind,
-                overloads: [],
-                annotations: [],
-                location: nil,
-                comment: comment,
-                overloading: true,
-                visibility: member.visibility
-              )
-            ]
-          end
-
-          [
-            RBS::AST::Members::MethodDefinition.new(
+            rbs << RBS::AST::Members::MethodDefinition.new(
               name: member.method_name,
               kind: kind,
-              overloads: member.method_overloads,
-              annotations: member.method_annotations,
+              overloads: [],
+              annotations: [],
               location: nil,
               comment: comment,
-              overloading: member.overloading?,
+              overloading: true,
               visibility: member.visibility
             )
-          ]
+            return
+          end
+
+          rbs << RBS::AST::Members::MethodDefinition.new(
+            name: member.method_name,
+            kind: kind,
+            overloads: member.method_overloads,
+            annotations: member.method_annotations,
+            location: nil,
+            comment: comment,
+            overloading: member.overloading?,
+            visibility: member.visibility
+          )
         when AST::Members::RubyAlias
           if member.comments
             comment = RBS::AST::Comment.new(string: member.comments.content(trim: true), location: nil)
           end
 
-          [
-            RBS::AST::Members::Alias.new(
-              new_name: member.new_name,
-              old_name: member.old_name,
-              kind: :instance,
-              annotations: [],
-              location: nil,
-              comment: comment
-            )
-          ]
+          rbs << RBS::AST::Members::Alias.new(
+            new_name: member.new_name,
+            old_name: member.old_name,
+            kind: :instance,
+            annotations: [],
+            location: nil,
+            comment: comment
+          )
         when AST::Members::RubyMixin
-          [member.rbs].compact
+          if m = member.rbs
+            rbs << m
+          end
         when AST::Members::RubyAttr
-          member.rbs
+          if m = member.rbs
+            rbs.concat m
+          end
         when AST::Members::RubyPrivate
-          [
-            RBS::AST::Members::Private.new(location: nil)
-          ]
+          rbs << RBS::AST::Members::Private.new(location: nil)
         when AST::Members::RubyPublic
-          [
-            RBS::AST::Members::Public.new(location: nil)
-          ]
+          rbs << RBS::AST::Members::Public.new(location: nil)
         when AST::Members::RBSIvar
-          [
-            member.rbs
-          ].compact
+          if m = member.rbs
+            rbs << m
+          end
         when AST::Members::RBSEmbedded
           case members = member.members
           when Array
-            members
+            rbs.concat members
           end
         end
       end
@@ -265,10 +275,10 @@ module RBS
       # ```
       #
       # @rbs member: AST::Members::RubyDef
-      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl | AST::Declarations::SingletonClassDecl
+      # @rbs decl: AST::Declarations::SingletonClassDecl?
       # @rbs return: RBS::AST::Members::MethodDefinition::kind
       def method_kind(member, decl)
-        return :singleton if decl.is_a?(AST::Declarations::SingletonClassDecl)
+        return :singleton if decl
 
         case member.node.receiver
         when Prism::SelfNode
@@ -276,6 +286,64 @@ module RBS
         else
           :instance
         end
+      end
+
+      # @rbs block: AST::Declarations::BlockDecl
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_module_block_decl(block, rbs)
+        annotation = block.module_class_annotation
+        annotation.is_a?(AST::Annotations::ModuleDecl) or raise
+
+        return unless annotation.name
+
+        if block.comments
+          comment = RBS::AST::Comment.new(string: block.comments.content(trim: true), location: nil)
+        end
+
+        members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
+
+        translate_members(block.members, nil, members)
+
+        self_types = annotation.self_types
+
+        rbs << RBS::AST::Declarations::Module.new(
+          name: annotation.name,
+          type_params: annotation.type_params,
+          members: members,
+          self_types: self_types,
+          annotations: [],
+          location: nil,
+          comment: comment
+        )
+      end
+
+      # @rbs block: AST::Declarations::BlockDecl
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_class_block_decl(block, rbs)
+        annotation = block.module_class_annotation
+        annotation.is_a?(AST::Annotations::ClassDecl) or raise
+
+        return unless annotation.name
+
+        if block.comments
+          comment = RBS::AST::Comment.new(string: block.comments.content(trim: true), location: nil)
+        end
+
+        members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
+
+        translate_members(block.members, nil, members)
+
+        rbs << RBS::AST::Declarations::Class.new(
+          name: annotation.name,
+          type_params: annotation.type_params,
+          members: members,
+          super_class: annotation.super_class,
+          annotations: [],
+          location: nil,
+          comment: comment
+        )
       end
     end
   end

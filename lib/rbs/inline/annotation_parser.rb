@@ -320,10 +320,16 @@ module RBS
           when tokenizer.type?(T_LVAR, :tELVAR)
             tree << parse_var_decl(tokenizer)
             AST::Annotations::VarType.new(tree, comments)
-          when tokenizer.type?(K_SKIP, K_INHERITS, K_OVERRIDE, K_USE, K_GENERIC) &&
+          when tokenizer.type?(K_SKIP, K_INHERITS, K_OVERRIDE, K_USE, K_GENERIC, K_MODULE, K_CLASS) &&
             tokenizer.type2?(K_COLON)
             tree << parse_var_decl(tokenizer)
             AST::Annotations::VarType.new(tree, comments)
+          when tokenizer.type?(K_MODULE)
+            tree << parse_module_decl(tokenizer)
+            AST::Annotations::ModuleDecl.new(tree, comments)
+          when tokenizer.type?(K_CLASS)
+            tree << parse_class_decl(tokenizer)
+            AST::Annotations::ClassDecl.new(tree, comments)
           when tokenizer.type?(K_SKIP)
             AST::Annotations::Skip.new(tree, comments)
           when tokenizer.type?(K_RETURN)
@@ -790,6 +796,19 @@ module RBS
 
         tokenizer.consume_token!(K_GENERIC, tree: tree)
 
+        tree << parse_type_param(tokenizer)
+
+        tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
+          parse_comment(tokenizer)
+        end
+
+        tree
+      end
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_type_param(tokenizer)
+        tree = AST::Tree.new(:type_param)
+
         tokenizer.consume_token(K_UNCHECKED, tree: tree)
         tokenizer.consume_token(K_IN, K_OUT, tree: tree)
 
@@ -802,10 +821,6 @@ module RBS
           bound << parse_type(tokenizer, bound)
 
           bound
-        end
-
-        tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
-          parse_comment(tokenizer)
         end
 
         tree
@@ -867,6 +882,102 @@ module RBS
 
         tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
           parse_comment(tokenizer)
+        end
+
+        tree
+      end
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_module_decl(tokenizer)
+        tree = AST::Tree.new(:module_decl)
+
+        tokenizer.consume_token!(K_MODULE, tree: tree)
+
+        tree << parse_module_name(tokenizer)
+
+        tree << parse_optional(tokenizer, K_LBRACKET) do
+          parse_type_params(tokenizer)
+        end
+
+        tree << parse_optional(tokenizer, K_COLON) do
+          parse_module_selfs(tokenizer)
+        end
+
+        tree
+      end
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_class_decl(tokenizer)
+        tree = AST::Tree.new(:class_decl)
+
+        tokenizer.consume_token!(K_CLASS, tree: tree)
+
+        tree << parse_module_name(tokenizer)
+
+        tree << parse_optional(tokenizer, K_LBRACKET) do
+          parse_type_params(tokenizer)
+        end
+
+        tree << parse_optional(tokenizer, K_LT) do
+          super_class = AST::Tree.new(:super_class)
+          tokenizer.consume_token!(K_LT, tree: super_class)
+          super_class << parse_type(tokenizer, super_class)
+          super_class
+        end
+
+        tree
+      end
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_module_name(tokenizer)
+        tree = AST::Tree.new(:module_name)
+
+        tokenizer.consume_token(K_COLON2, tree: tree)
+
+        while tokenizer.type?(T_UIDENT) && tokenizer.type2?(K_COLON2)
+          tokenizer.consume_token!(T_UIDENT, tree: tree)
+          tokenizer.consume_token!(K_COLON2, tree: tree)
+        end
+
+        tokenizer.consume_token(T_UIDENT, tree: tree)
+
+        tree
+      end
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_type_params(tokenizer)
+        tree = AST::Tree.new(:type_params)
+
+        tokenizer.consume_token!(K_LBRACKET, tree: tree)
+
+        while true
+          if type_param = parse_optional(tokenizer, T_UIDENT, K_UNCHECKED, K_IN, K_OUT) { parse_type_param(tokenizer) }
+            tree << type_param
+            break if tokenizer.type?(K_RBRACKET)
+            tokenizer.consume_token(K_COMMA, tree: tree)
+          else
+            break
+          end
+        end
+
+        tokenizer.consume_token(K_RBRACKET, tree: tree)
+
+        tree
+      end
+
+      # @rbs (Tokenizer) -> AST::Tree
+      def parse_module_selfs(tokenizer)
+        tree = AST::Tree.new(:module_selfs)
+
+        tokenizer.consume_token!(K_COLON, tree: tree)
+
+        while true
+          tree << parse_type(tokenizer, tree)
+          if tokenizer.type?(K_COMMA)
+            tokenizer.advance(tree, eat: true)
+          else
+            break
+          end
         end
 
         tree

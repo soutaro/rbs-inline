@@ -59,8 +59,8 @@ module RBS
           end
         end
 
-         # Returns `true` if tree at the given index is of the given type
-         def tree?(type, at:)
+        # Returns `true` if tree at the given index is of the given type
+        def tree?(type, at:)
           if tree = nth_tree?(at)
             tree.type == type
           end

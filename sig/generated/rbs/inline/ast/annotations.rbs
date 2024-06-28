@@ -4,7 +4,24 @@ module RBS
   module Inline
     module AST
       module Annotations
-        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion | Dot3Assertion | Application | RBSAnnotation | Override | IvarType | Embedded | Method | SplatParamType | DoubleSplatParamType | BlockType
+        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion | Dot3Assertion | Application | RBSAnnotation | Override | IvarType | Embedded | Method | SplatParamType | DoubleSplatParamType | BlockType | ModuleDecl | ClassDecl
+
+        module Utils
+          # @rbs (Tree) -> RBS::AST::TypeParam?
+          def translate_type_param: (Tree) -> RBS::AST::TypeParam?
+
+          # @rbs (Types::t) -> RBS::AST::Declarations::Class::Super?
+          def translate_super_class: (Types::t) -> RBS::AST::Declarations::Class::Super?
+
+          # Assumes the tree is generated through `#parse_module_name`
+          #
+          # Returns a type name, or `nil` if the tree is something invalid.
+          #
+          # @param tree -- A tree object that is generated through `#parse_module_name`
+          #
+          # @rbs (AST::Tree) -> TypeName?
+          def translate_type_name: (AST::Tree) -> TypeName?
+        end
 
         class Base
           attr_reader source: CommentLines
@@ -197,6 +214,8 @@ module RBS
 
           attr_reader comment: String?
 
+          include Utils
+
           # @rbs override
           def initialize: ...
         end
@@ -237,6 +256,34 @@ module RBS
           #
           # Returns `nil` if no parsing error found.
           def error_source: () -> String?
+        end
+
+        # `@rbs module Foo`
+        class ModuleDecl < Base
+          attr_reader name: TypeName?
+
+          attr_reader type_params: Array[RBS::AST::TypeParam]
+
+          attr_reader self_types: Array[RBS::AST::Declarations::Module::Self]
+
+          include Utils
+
+          # @rbs override
+          def initialize: ...
+        end
+
+        # `@rbs class Foo`
+        class ClassDecl < Base
+          attr_reader name: TypeName?
+
+          attr_reader type_params: Array[RBS::AST::TypeParam]
+
+          attr_reader super_class: RBS::AST::Declarations::Class::Super?
+
+          include Utils
+
+          # @rbs override
+          def initialize: ...
         end
       end
     end

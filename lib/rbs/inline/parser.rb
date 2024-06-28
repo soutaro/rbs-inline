@@ -5,13 +5,18 @@
 module RBS
   module Inline
     class Parser < Prism::Visitor
+      # @rbs! type with_members = AST::Declarations::ModuleDecl
+      #                         | AST::Declarations::ClassDecl
+      #                         | AST::Declarations::SingletonClassDecl
+      #                         | AST::Declarations::BlockDecl
+
       # The top level declarations
       #
       attr_reader :decls #: Array[AST::Declarations::t]
 
       # The surrounding declarations
       #
-      attr_reader :surrounding_decls #: Array[AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl]
+      attr_reader :surrounding_decls #: Array[with_members]
 
       # ParsingResult associated with the line number at the end
       #
@@ -76,18 +81,17 @@ module RBS
         ]
       end
 
-      # @rbs return: AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
+      # @rbs return: with_members?
       def current_class_module_decl
         surrounding_decls.last
       end
 
-      # @rbs return: AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl
+      # @rbs return: with_members
       def current_class_module_decl!
         current_class_module_decl or raise
       end
 
-      #: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
-      #: (AST::Declarations::ConstantDecl) -> void
+      #: (with_members) { () -> void } -> void
       def push_class_module_decl(decl)
         if current = current_class_module_decl
           current.members << decl
@@ -96,7 +100,7 @@ module RBS
         end
 
         if block_given?
-          surrounding_decls.push(_ = decl)
+          surrounding_decls.push(decl)
           begin
             yield
           ensure
@@ -370,7 +374,24 @@ module RBS
         assertion = assertion_annotation(node)
 
         decl = AST::Declarations::ConstantDecl.new(node, comment, assertion)
-        push_class_module_decl(decl)
+
+        if current = current_class_module_decl
+          current.members << decl
+        else
+          decls << decl
+        end
+      end
+
+      # @rbs override
+      def visit_block_node(node)
+        return if ignored_node?(node)
+
+        comment = comments.delete(node.location.start_line - 1)
+        block = AST::Declarations::BlockDecl.new(node, comment)
+
+        push_class_module_decl(block) do
+          super
+        end
       end
     end
   end

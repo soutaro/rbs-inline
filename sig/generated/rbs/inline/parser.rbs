@@ -5,11 +5,13 @@ use Prism::*
 module RBS
   module Inline
     class Parser < Prism::Visitor
+      type with_members = AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl | AST::Declarations::BlockDecl
+
       # The top level declarations
       attr_reader decls: Array[AST::Declarations::t]
 
       # The surrounding declarations
-      attr_reader surrounding_decls: Array[AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl]
+      attr_reader surrounding_decls: Array[with_members]
 
       # ParsingResult associated with the line number at the end
       #
@@ -35,16 +37,14 @@ module RBS
       # @rbs return: [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
       def self.parse: (ParseResult result, opt_in: bool) -> [ Array[AST::Annotations::Use], Array[AST::Declarations::t] ]?
 
-      # @rbs return: AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil
-      def current_class_module_decl: () -> (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | nil)
+      # @rbs return: with_members?
+      def current_class_module_decl: () -> with_members?
 
-      # @rbs return: AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl
-      def current_class_module_decl!: () -> (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl)
+      # @rbs return: with_members
+      def current_class_module_decl!: () -> with_members
 
-      # : (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
-      # : (AST::Declarations::ConstantDecl) -> void
-      def push_class_module_decl: (AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl) { () -> void } -> void
-                                | (AST::Declarations::ConstantDecl) -> void
+      # : (with_members) { () -> void } -> void
+      def push_class_module_decl: (with_members) { () -> void } -> void
 
       # Load inner declarations and delete them from `#comments` hash
       #
@@ -115,6 +115,9 @@ module RBS
 
       # @rbs override
       def visit_constant_write_node: ...
+
+      # @rbs override
+      def visit_block_node: ...
     end
   end
 end

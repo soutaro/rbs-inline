@@ -707,4 +707,66 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_block__no_module
+    output = translate(<<~RUBY)
+      module M
+        class_methods do
+          def foo #: Integer
+            123
+          end
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      module M
+        def foo: () -> Integer
+      end
+    RBS
+  end
+
+  def test_block__module_decl
+    output = translate(<<~RUBY)
+      module M
+        # @rbs module ClassMethods[A] : BasicObject
+        class_methods do
+          def foo #: Integer
+            123
+          end
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      module M
+        # @rbs module ClassMethods[A] : BasicObject
+        module ClassMethods[A] : BasicObject
+          def foo: () -> Integer
+        end
+      end
+    RBS
+  end
+
+  def test_block__class_decl
+    output = translate(<<~RUBY)
+      class Account
+        # @rbs class ::ApplicationController
+        controller do
+          def foo #: Integer
+            123
+          end
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Account
+        # @rbs class ::ApplicationController
+        class ::ApplicationController
+          def foo: () -> Integer
+        end
+      end
+    RBS
+  end
 end
