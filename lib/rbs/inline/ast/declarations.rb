@@ -16,7 +16,7 @@ module RBS
         end
 
         # @rbs!
-        #   type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl
+        #   type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl | BlockDecl
         #
         #  interface _WithComments
         #    def comments: () -> AnnotationParser::ParsingResult?
@@ -229,6 +229,34 @@ module RBS
         end
 
         class SingletonClassDecl < ModuleOrClass #[Prism::SingletonClassNode]
+        end
+
+        class BlockDecl < Base
+          attr_reader :node #: Prism::BlockNode
+
+          attr_reader :comments #: AnnotationParser::ParsingResult?
+
+          # Members included in the declaration
+          attr_reader :members #: Array[Members::t | t]
+
+          # @rbs (Prism::BlockNode, AnnotationParser::ParsingResult?) -> void
+          def initialize(node, comments)
+            @node = node
+            @members = []
+            @comments = comments
+          end
+
+          def start_line #: Integer
+            node.location.start_line
+          end
+
+          def module_class_annotation #: Annotations::ModuleDecl?
+            if comments
+              comments.each_annotation.find do |annotation|
+                annotation.is_a?(Annotations::ModuleDecl)
+              end #: Annotations::ModuleDecl
+            end
+          end
         end
       end
     end

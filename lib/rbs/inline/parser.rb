@@ -8,6 +8,7 @@ module RBS
       # @rbs! type with_members = AST::Declarations::ModuleDecl
       #                         | AST::Declarations::ClassDecl
       #                         | AST::Declarations::SingletonClassDecl
+      #                         | AST::Declarations::BlockDecl
 
       # The top level declarations
       #
@@ -378,6 +379,18 @@ module RBS
           current.members << decl
         else
           decls << decl
+        end
+      end
+
+      # @rbs override
+      def visit_block_node(node)
+        return if ignored_node?(node)
+
+        comment = comments.delete(node.location.start_line - 1)
+        block = AST::Declarations::BlockDecl.new(node, comment)
+
+        push_class_module_decl(block) do
+          super
         end
       end
     end

@@ -39,6 +39,12 @@ module RBS
       # @rbs return: void
       def translate_class_decl: (AST::Declarations::ClassDecl decl, _Content rbs) -> void
 
+      # @rbs members: Array[AST::Declarations::t | AST::Members::t]
+      # @rbs decl: AST::Declarations::SingletonClassDecl?
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_members: (Array[AST::Declarations::t | AST::Members::t] members, AST::Declarations::SingletonClassDecl? decl, _Content rbs) -> void
+
       # @rbs decl: AST::Declarations::ModuleDecl
       # @rbs rbs: _Content
       # @rbs return: void
@@ -80,6 +86,11 @@ module RBS
       # @rbs decl: AST::Declarations::SingletonClassDecl?
       # @rbs return: RBS::AST::Members::MethodDefinition::kind
       def method_kind: (AST::Members::RubyDef member, AST::Declarations::SingletonClassDecl? decl) -> RBS::AST::Members::MethodDefinition::kind
+
+      # @rbs block: AST::Declarations::BlockDecl
+      # @rbs rbs: _Content
+      # @rbs return: void
+      def translate_module_block_decl: (AST::Declarations::BlockDecl block, _Content rbs) -> void
     end
   end
 end

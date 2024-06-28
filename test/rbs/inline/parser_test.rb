@@ -47,4 +47,32 @@ class RBS::Inline::ParserTest < Minitest::Test
       end
     RUBY
   end
+
+  def test_block_parsing
+    _, decls = Parser.parse(parse_ruby(<<~RUBY), opt_in: false)
+      controller do
+      end
+
+      module Foo
+        # @rbs module ClassMethods
+        class_methods do
+          def foo() = 123
+        end
+      end
+    RUBY
+
+    assert_equal 2, decls.size
+    decls[0].tap do |decl|
+      assert_instance_of AST::Declarations::BlockDecl, decl
+      assert_nil decl.module_class_annotation
+    end
+    decls[1].tap do |decl|
+      assert_instance_of AST::Declarations::ModuleDecl, decl
+      assert_equal 1, decl.members.size
+      decl.members[0].tap do |member|
+        assert_instance_of AST::Declarations::BlockDecl, member
+        assert_instance_of AST::Annotations::ModuleDecl, member.module_class_annotation
+      end
+    end
+  end
 end
