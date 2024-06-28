@@ -695,5 +695,5 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_empty annotation.type_params
       assert_empty annotation.self_types
     end
-end
+  end
 end
