@@ -21,9 +21,10 @@ module RBS
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
-      def self.write(uses, decls) #: void
+      # @rbs rbs_decls: Array[RBS::AST::Declarations::t]
+      def self.write(uses, decls, rbs_decls) #: void
         writer = Writer.new()
-        writer.write(uses, decls)
+        writer.write(uses, decls, rbs_decls)
         writer.output
       end
 
@@ -38,8 +39,10 @@ module RBS
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
+      # @rbs rbs_decls: Array[RBS::AST::Declarations::t] --
+      #    Top level `rbs!` declarations
       # @rbs return: void
-      def write(uses, decls)
+      def write(uses, decls, rbs_decls)
         use_dirs = uses.map do |use|
           RBS::AST::Directives::Use.new(
             clauses: use.clauses,
@@ -55,6 +58,8 @@ module RBS
             rbs #: Array[RBS::AST::Declarations::t | RBS::AST::Members::t]
           )
         end
+
+        rbs.concat(rbs_decls)
 
         writer.write(
           use_dirs + rbs
@@ -72,6 +77,15 @@ module RBS
           translate_module_decl(decl, rbs)
         when AST::Declarations::ConstantDecl
           translate_constant_decl(decl, rbs)
+        when AST::Declarations::BlockDecl
+          if decl.module_class_annotation
+            case decl.module_class_annotation
+            when AST::Annotations::ModuleDecl
+              translate_module_block_decl(decl, rbs)
+            when AST::Annotations::ClassDecl
+              translate_class_block_decl(decl, rbs)
+            end
+          end
         end
       end
 
@@ -112,13 +126,8 @@ module RBS
           when AST::Declarations::SingletonClassDecl
             translate_singleton_decl(member, rbs)
           when AST::Declarations::BlockDecl
-            if annotation = member.module_class_annotation
-              case annotation
-              when AST::Annotations::ModuleDecl
-                translate_module_block_decl(member, rbs)
-              when AST::Annotations::ClassDecl
-                translate_class_block_decl(member, rbs)
-              end
+            if member.module_class_annotation
+              translate_decl(member, rbs)
             else
               translate_members(member.members, decl, rbs)
             end

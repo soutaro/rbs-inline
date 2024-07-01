@@ -7,8 +7,8 @@ class RBS::Inline::WriterTest < Minitest::Test
 
   def translate(src, opt_in: true)
     src = "# rbs_inline: enabled\n\n" + src
-    uses, decls = Parser.parse(Prism.parse(src, filepath: "a.rb"), opt_in: opt_in)
-    Writer.write(uses, decls)
+    uses, decls, rbs_decls = Parser.parse(Prism.parse(src, filepath: "a.rb"), opt_in: opt_in)
+    Writer.write(uses, decls, rbs_decls)
   end
 
   def test_method_type
@@ -766,6 +766,92 @@ class RBS::Inline::WriterTest < Minitest::Test
         class ::ApplicationController
           def foo: () -> Integer
         end
+      end
+    RBS
+  end
+
+  def test_toplevel_definitions
+    output = translate(<<~RUBY)
+      NAME = "rbs_inline"
+
+      def foo = 123
+
+      alias bar foo
+
+      # @rbs module ApplicationController
+      controller do
+        def foo
+        end
+      end
+
+      class <<self
+        def foo
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      NAME: ::String
+
+      # @rbs module ApplicationController
+      module ApplicationController
+        def foo: () -> untyped
+      end
+    RBS
+  end
+
+  def test_toplevel_rbs!
+    output = translate(<<~RUBY)
+      # @rbs!
+      #   type foo = String
+      #   alias foo bar
+    RUBY
+
+    assert_equal <<~RBS, output
+      type foo = String
+    RBS
+  end
+
+  def test_only_toplevel_rbs!
+    output = translate(<<~RUBY)
+      # @rbs skip
+      module Foo
+        # @rbs! type bar = Symbol
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+    RBS
+  end
+
+  def test_module_block_annotations
+    output = translate(<<~RUBY)
+      # @rbs module ClassMethods
+      class_methods do
+        # @rbs @size: Integer
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      # @rbs module ClassMethods
+      module ClassMethods
+        @size: Integer
+      end
+    RBS
+  end
+
+  def test_sclass_annotations
+    output = translate(<<~RUBY)
+      class String
+        class <<self
+          # @rbs! self.@name: String
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class String
+        self.@name: String
       end
     RBS
   end
