@@ -169,51 +169,51 @@ module RBS
 
       # @rbs override
       def visit_class_node(node)
-        return if ignored_node?(node)
+        process_nesting_node(node) do
+          visit node.constant_path
+          visit node.superclass
 
-        visit node.constant_path
-        visit node.superclass
+          associated_comment = comments.delete(node.location.start_line - 1)
+          if node.superclass
+            app_comment = application_annotation(node.superclass)
+          end
 
-        associated_comment = comments.delete(node.location.start_line - 1)
-        if node.superclass
-          app_comment = application_annotation(node.superclass)
+          class_decl = AST::Declarations::ClassDecl.new(node, associated_comment, app_comment)
+
+          push_class_module_decl(class_decl) do
+            visit node.body
+          end
+
+          load_inner_annotations(node.location.start_line, node.location.end_line, class_decl.members)
         end
-
-        class_decl = AST::Declarations::ClassDecl.new(node, associated_comment, app_comment)
-
-        push_class_module_decl(class_decl) do
-          visit node.body
-        end
-
-        load_inner_annotations(node.location.start_line, node.location.end_line, class_decl.members)
       end
 
       # @rbs override
       def visit_singleton_class_node(node)
-        return if ignored_node?(node)
+        process_nesting_node(node) do
+          associated_comment = comments.delete(node.location.start_line - 1)
+          singleton_decl = AST::Declarations::SingletonClassDecl.new(node, associated_comment)
 
-        associated_comment = comments.delete(node.location.start_line - 1)
-        singleton_decl = AST::Declarations::SingletonClassDecl.new(node, associated_comment)
-
-        push_class_module_decl(singleton_decl) do
-          visit node.body
+          push_class_module_decl(singleton_decl) do
+            visit node.body
+          end
         end
       end
 
       # @rbs override
       def visit_module_node(node)
-        return if ignored_node?(node)
+        process_nesting_node(node) do
+          visit node.constant_path
 
-        visit node.constant_path
+          associated_comment = comments.delete(node.location.start_line - 1)
 
-        associated_comment = comments.delete(node.location.start_line - 1)
+          module_decl = AST::Declarations::ModuleDecl.new(node, associated_comment)
+          push_class_module_decl(module_decl) do
+            visit node.body
+          end
 
-        module_decl = AST::Declarations::ModuleDecl.new(node, associated_comment)
-        push_class_module_decl(module_decl) do
-          visit node.body
+          load_inner_annotations(node.location.start_line, node.location.end_line, module_decl.members)
         end
-
-        load_inner_annotations(node.location.start_line, node.location.end_line, module_decl.members)
       end
 
       # Returns an array of annotations from comments that is located between start_line and end_line
@@ -240,20 +240,21 @@ module RBS
 
       # @rbs override
       def visit_def_node(node)
-        return if ignored_node?(node)
-        return unless current_class_module_decl
+        process_nesting_node(node) do
+          return unless current_class_module_decl
 
-        current_decl = current_class_module_decl!
+          current_decl = current_class_module_decl!
 
-        if node.location
-          associated_comment = comments.delete(node.location.start_line - 1)
+          if node.location
+            associated_comment = comments.delete(node.location.start_line - 1)
+          end
+
+          assertion = assertion_annotation(node.rparen_loc || node&.parameters&.location || node.name_loc)
+
+          current_decl.members << AST::Members::RubyDef.new(node, associated_comment, current_visibility, assertion)
+
+          super
         end
-
-        assertion = assertion_annotation(node.rparen_loc || node&.parameters&.location || node.name_loc)
-
-        current_decl.members << AST::Members::RubyDef.new(node, associated_comment, current_visibility, assertion)
-
-        super
       end
 
       # @rbs override
@@ -346,6 +347,16 @@ module RBS
         end
       end
 
+      # @rbs [A] (Node) { () -> A } -> A?
+      def process_nesting_node(node)
+        yield unless ignored_node?(node)
+      ensure
+        # Delete all inner annotations
+        inner_annotations(node.location.start_line, node.location.end_line)
+        comments.delete(node.location.start_line)
+        comments.delete(node.location.end_line)
+      end
+
       # @rbs node: Node
       # @rbs return: bool
       def ignored_node?(node)
@@ -417,13 +428,13 @@ module RBS
 
       # @rbs override
       def visit_block_node(node)
-        return if ignored_node?(node)
+        process_nesting_node(node) do
+          comment = comments.delete(node.location.start_line - 1)
+          block = AST::Declarations::BlockDecl.new(node, comment)
 
-        comment = comments.delete(node.location.start_line - 1)
-        block = AST::Declarations::BlockDecl.new(node, comment)
-
-        push_class_module_decl(block) do
-          super
+          push_class_module_decl(block) do
+            super
+          end
         end
       end
     end

@@ -811,4 +811,16 @@ class RBS::Inline::WriterTest < Minitest::Test
       type foo = String
     RBS
   end
+
+  def test_only_toplevel_rbs!
+    output = translate(<<~RUBY)
+      # @rbs skip
+      module Foo
+        # @rbs! type bar = Symbol
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+    RBS
+  end
 end

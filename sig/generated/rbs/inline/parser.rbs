@@ -104,6 +104,9 @@ module RBS
       # @rbs return: void
       def push_visibility: (RBS::AST::Members::visibility? new_visibility) { () -> void } -> void
 
+      # @rbs [A] (Node) { () -> A } -> A?
+      def process_nesting_node: [A] (Node) { () -> A } -> A?
+
       # @rbs node: Node
       # @rbs return: bool
       def ignored_node?: (Node node) -> bool
