@@ -8,15 +8,18 @@ RBS::Inline allows embedding RBS type declarations into Ruby code as comments. Y
 > [!IMPORTANT]
 > This gem is a prototype for testing. We plan to merge this feature to rbs-gem and deprecate rbs-inline gem after that.
 
+> [!NOTE]
+> Use Steep >= `1.8.0.dev` to avoid the conflicts on `#:` syntax.
+
 Here is a quick example of embedded declarations.
 
 ```rb
 # rbs_inline: enabled
 
 class Person
-  attr_reader :name #:: String
+  attr_reader :name #: String
 
-  attr_reader :addresses #:: Array[String]
+  attr_reader :addresses #: Array[String]
 
   # @rbs name: String
   # @rbs addresses: Array[String]
@@ -26,7 +29,7 @@ class Person
     @addresses = addresses
   end
 
-  def to_s #:: String
+  def to_s #: String
     "Person(name = #{name}, addresses = #{addresses.join(", ")})"
   end
 
