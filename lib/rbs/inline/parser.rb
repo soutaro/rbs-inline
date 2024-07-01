@@ -197,6 +197,8 @@ module RBS
           push_class_module_decl(singleton_decl) do
             visit node.body
           end
+
+          load_inner_annotations(node.location.start_line, node.location.end_line, singleton_decl.members)
         end
       end
 
@@ -435,6 +437,8 @@ module RBS
           push_class_module_decl(block) do
             super
           end
+
+          load_inner_annotations(node.location.start_line, node.location.end_line, block.members)
         end
       end
     end

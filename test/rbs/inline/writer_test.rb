@@ -823,4 +823,36 @@ class RBS::Inline::WriterTest < Minitest::Test
     assert_equal <<~RBS, output
     RBS
   end
+
+  def test_module_block_annotations
+    output = translate(<<~RUBY)
+      # @rbs module ClassMethods
+      class_methods do
+        # @rbs @size: Integer
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      # @rbs module ClassMethods
+      module ClassMethods
+        @size: Integer
+      end
+    RBS
+  end
+
+  def test_sclass_annotations
+    output = translate(<<~RUBY)
+      class String
+        class <<self
+          # @rbs! self.@name: String
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class String
+        self.@name: String
+      end
+    RBS
+  end
 end
