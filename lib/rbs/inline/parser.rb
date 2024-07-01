@@ -227,6 +227,7 @@ module RBS
       # @rbs override
       def visit_alias_method_node(node)
         return if ignored_node?(node)
+        return unless current_class_module_decl
 
         if node.location
           comment = comments.delete(node.location.start_line - 1)

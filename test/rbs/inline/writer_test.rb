@@ -769,4 +769,34 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_toplevel_definitions
+    output = translate(<<~RUBY)
+      NAME = "rbs_inline"
+
+      def foo = 123
+
+      alias bar foo
+
+      # @rbs module ApplicationController
+      controller do
+        def foo
+        end
+      end
+
+      class <<self
+        def foo
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      NAME: ::String
+
+      # @rbs module ApplicationController
+      module ApplicationController
+        def foo: () -> untyped
+      end
+    RBS
+  end
 end

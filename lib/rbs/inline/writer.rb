@@ -72,6 +72,15 @@ module RBS
           translate_module_decl(decl, rbs)
         when AST::Declarations::ConstantDecl
           translate_constant_decl(decl, rbs)
+        when AST::Declarations::BlockDecl
+          if decl.module_class_annotation
+            case decl.module_class_annotation
+            when AST::Annotations::ModuleDecl
+              translate_module_block_decl(decl, rbs)
+            when AST::Annotations::ClassDecl
+              translate_class_block_decl(decl, rbs)
+            end
+          end
         end
       end
 
@@ -112,13 +121,8 @@ module RBS
           when AST::Declarations::SingletonClassDecl
             translate_singleton_decl(member, rbs)
           when AST::Declarations::BlockDecl
-            if annotation = member.module_class_annotation
-              case annotation
-              when AST::Annotations::ModuleDecl
-                translate_module_block_decl(member, rbs)
-              when AST::Annotations::ClassDecl
-                translate_class_block_decl(member, rbs)
-              end
+            if member.module_class_annotation
+              translate_decl(member, rbs)
             else
               translate_members(member.members, decl, rbs)
             end
