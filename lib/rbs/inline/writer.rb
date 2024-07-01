@@ -21,9 +21,10 @@ module RBS
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
-      def self.write(uses, decls) #: void
+      # @rbs rbs_decls: Array[RBS::AST::Declarations::t]
+      def self.write(uses, decls, rbs_decls) #: void
         writer = Writer.new()
-        writer.write(uses, decls)
+        writer.write(uses, decls, rbs_decls)
         writer.output
       end
 
@@ -38,8 +39,10 @@ module RBS
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
+      # @rbs rbs_decls: Array[RBS::AST::Declarations::t] --
+      #    Top level `rbs!` declarations
       # @rbs return: void
-      def write(uses, decls)
+      def write(uses, decls, rbs_decls)
         use_dirs = uses.map do |use|
           RBS::AST::Directives::Use.new(
             clauses: use.clauses,
@@ -55,6 +58,8 @@ module RBS
             rbs #: Array[RBS::AST::Declarations::t | RBS::AST::Members::t]
           )
         end
+
+        rbs.concat(rbs_decls)
 
         writer.write(
           use_dirs + rbs

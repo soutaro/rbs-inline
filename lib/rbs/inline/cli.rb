@@ -139,10 +139,10 @@ module RBS
 
           logger.debug { "Parsing ruby file #{target}..." }
 
-          if (uses, decls = Parser.parse(Prism.parse_file(target.to_s), opt_in: opt_in))
+          if (uses, decls, rbs_decls = Parser.parse(Prism.parse_file(target.to_s), opt_in: opt_in))
             writer = Writer.new()
             writer.header("Generated from #{target.relative? ? target : target.relative_path_from(Pathname.pwd)} with RBS::Inline")
-            writer.write(uses, decls)
+            writer.write(uses, decls, rbs_decls)
 
             if output
               unless output.parent.directory?

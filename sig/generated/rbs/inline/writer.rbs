@@ -18,7 +18,8 @@ module RBS
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
-      def self.write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls) -> void
+      # @rbs rbs_decls: Array[RBS::AST::Declarations::t]
+      def self.write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls, Array[RBS::AST::Declarations::t] rbs_decls) -> void
 
       # @rbs *lines: String
       # @rbs return: void
@@ -26,8 +27,10 @@ module RBS
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
+      # @rbs rbs_decls: Array[RBS::AST::Declarations::t] --
+      #    Top level `rbs!` declarations
       # @rbs return: void
-      def write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls) -> void
+      def write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls, Array[RBS::AST::Declarations::t] rbs_decls) -> void
 
       # @rbs decl: AST::Declarations::t
       # @rbs rbs: _Content

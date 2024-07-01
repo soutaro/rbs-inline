@@ -7,8 +7,8 @@ class RBS::Inline::WriterTest < Minitest::Test
 
   def translate(src, opt_in: true)
     src = "# rbs_inline: enabled\n\n" + src
-    uses, decls = Parser.parse(Prism.parse(src, filepath: "a.rb"), opt_in: opt_in)
-    Writer.write(uses, decls)
+    uses, decls, rbs_decls = Parser.parse(Prism.parse(src, filepath: "a.rb"), opt_in: opt_in)
+    Writer.write(uses, decls, rbs_decls)
   end
 
   def test_method_type
@@ -797,6 +797,18 @@ class RBS::Inline::WriterTest < Minitest::Test
       module ApplicationController
         def foo: () -> untyped
       end
+    RBS
+  end
+
+  def test_toplevel_rbs!
+    output = translate(<<~RUBY)
+      # @rbs!
+      #   type foo = String
+      #   alias foo bar
+    RUBY
+
+    assert_equal <<~RBS, output
+      type foo = String
     RBS
   end
 end

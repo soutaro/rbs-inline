@@ -43,9 +43,20 @@ module RBS
         @comments = {}
       end
 
+      # Parses the given Prism result to a three tuple
+      #
+      # Returns a three tuple of:
+      #
+      # 1. An array of `use` directives
+      # 2. An array of declarations
+      # 3. An array of RBS declarations given as `@rbs!` annotation at top-level
+      #
+      # Note that only RBS declarations are allowed in the top-level `@rbs!` annotations.
+      # RBS *members* are ignored in the array.
+      #
       # @rbs result: ParseResult
       # @rbs opt_in: bool -- `true` for *opt-out* mode, `false` for *opt-in* mode.
-      # @rbs return: [Array[AST::Annotations::Use], Array[AST::Declarations::t]]?
+      # @rbs return: [Array[AST::Annotations::Use], Array[AST::Declarations::t], Array[RBS::AST::Declarations::t]]?
       def self.parse(result, opt_in:)
         instance = Parser.new()
 
@@ -75,9 +86,30 @@ module RBS
 
         instance.visit(result.value)
 
+        rbs_embeddeds = [] #: Array[AST::Members::RBSEmbedded]
+
+        instance.comments.each_value do |comment|
+          comment.each_annotation do |annotation|
+            if annotation.is_a?(AST::Annotations::Embedded)
+              rbs_embeddeds << AST::Members::RBSEmbedded.new(comment, annotation)
+            end
+          end
+        end
+
+        rbs_decls = rbs_embeddeds.flat_map do |embedded|
+          if (members = embedded.members).is_a?(Array)
+            members.select do |member|
+              member.is_a?(RBS::AST::Declarations::Base)
+            end
+          else
+            []
+          end #: Array[RBS::AST::Declarations::t]
+        end
+
         [
           uses,
-          instance.decls
+          instance.decls,
+          rbs_decls
         ]
       end
 
