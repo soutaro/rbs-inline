@@ -404,6 +404,12 @@ module RBS
               token[1]
             end
           end
+
+          def annotations #: Array[RBS::AST::Annotation]
+            contents.map do |content|
+              RBS::AST::Annotation.new(string: content[3..-2] || raise, location: nil)
+            end
+          end
         end
 
         # `# @rbs skip`

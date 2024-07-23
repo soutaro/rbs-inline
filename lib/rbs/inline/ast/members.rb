@@ -277,12 +277,7 @@ module RBS
             if comments
               comments.each_annotation.flat_map do |annotation|
                 if annotation.is_a?(AST::Annotations::RBSAnnotation)
-                  annotation.contents.map do |string|
-                    RBS::AST::Annotation.new(
-                      string: string[3...-1] || "",
-                      location: nil
-                    )
-                  end
+                  annotation.annotations
                 else
                   []
                 end
