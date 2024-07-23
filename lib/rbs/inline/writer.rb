@@ -79,6 +79,8 @@ module RBS
           translate_constant_decl(decl, rbs)
         when AST::Declarations::DataAssignDecl
           translate_data_assign_decl(decl, rbs)
+        when AST::Declarations::StructAssignDecl
+          translate_struct_assign_decl(decl, rbs)
         when AST::Declarations::BlockDecl
           if decl.module_class_annotation
             case decl.module_class_annotation
@@ -133,7 +135,7 @@ module RBS
             else
               translate_members(member.members, decl, rbs)
             end
-          when AST::Declarations::ClassDecl, AST::Declarations::ModuleDecl, AST::Declarations::ConstantDecl, AST::Declarations::DataAssignDecl
+          when AST::Declarations::ClassDecl, AST::Declarations::ModuleDecl, AST::Declarations::ConstantDecl, AST::Declarations::DataAssignDecl, AST::Declarations::StructAssignDecl
             translate_decl(member, rbs)
           end
         end
@@ -262,6 +264,116 @@ module RBS
           super_class: RBS::AST::Declarations::Class::Super.new(
             name: RBS::TypeName.new(name: :Data, namespace: RBS::Namespace.empty),
             args: [],
+            location: nil
+          ),
+          annotations: decl.class_annotations,
+          location: nil,
+          comment: comment
+        )
+      end
+
+      # @rbs decl: AST::Declarations::StructAssignDecl
+      # @rbs rbs: _Content
+      def translate_struct_assign_decl(decl, rbs) #: void
+        return unless decl.constant_name
+
+        if decl.comments
+          comment = RBS::AST::Comment.new(string: decl.comments.content(trim: true), location: nil)
+        end
+
+        attributes = decl.each_attribute.map do |name, type|
+          if decl.readonly_attributes?
+            RBS::AST::Members::AttrReader.new(
+              name: name,
+              type: type&.type || Types::Bases::Any.new(location: nil),
+              ivar_name: false,
+              comment: nil,
+              kind: :instance,
+              annotations: [],
+              visibility: nil,
+              location: nil
+            )
+          else
+            RBS::AST::Members::AttrAccessor.new(
+              name: name,
+              type: type&.type || Types::Bases::Any.new(location: nil),
+              ivar_name: false,
+              comment: nil,
+              kind: :instance,
+              annotations: [],
+              visibility: nil,
+              location: nil
+            )
+          end
+        end
+
+        init = RBS::AST::Members::MethodDefinition.new(
+          name: :initialize,
+          kind: :instance,
+          overloads: [],
+          annotations: [],
+          location: nil,
+          comment: nil,
+          overloading: false,
+          visibility: nil
+        )
+
+        if decl.positional_init?
+          attr_params = decl.each_attribute.map do |name, attr|
+            RBS::Types::Function::Param.new(
+              type: attr&.type || Types::Bases::Any.new(location: nil),
+              name: name,
+              location: nil
+            )
+          end
+
+          method_type = Types::Function.empty(Types::Bases::Void.new(location: nil))
+          if decl.required_new_args?
+            method_type = method_type.update(required_positionals: attr_params)
+          else
+            method_type = method_type.update(optional_positionals: attr_params)
+          end
+
+          init.overloads <<
+            RBS::AST::Members::MethodDefinition::Overload.new(
+              method_type: RBS::MethodType.new(type_params: [], type: method_type, block: nil, location: nil),
+              annotations: []
+            )
+        end
+
+        if decl.keyword_init?
+          attr_keywords = decl.each_attribute.map do |name, attr|
+            [
+              name,
+              RBS::Types::Function::Param.new(
+                type: attr&.type || Types::Bases::Any.new(location: nil),
+                name: nil,
+                location: nil
+              )
+            ]
+          end.to_h #: Hash[Symbol, RBS::Types::Function::Param]
+
+          method_type = Types::Function.empty(Types::Bases::Void.new(location: nil))
+          if decl.required_new_args?
+            method_type = method_type.update(required_keywords: attr_keywords)
+          else
+            method_type = method_type.update(optional_keywords: attr_keywords)
+          end
+
+          init.overloads <<
+            RBS::AST::Members::MethodDefinition::Overload.new(
+              method_type: RBS::MethodType.new(type_params: [], type: method_type, block: nil, location: nil),
+              annotations: []
+            )
+        end
+
+        rbs << RBS::AST::Declarations::Class.new(
+          name: decl.constant_name,
+          type_params: [],
+          members: [*attributes, init],
+          super_class: RBS::AST::Declarations::Class::Super.new(
+            name: RBS::TypeName.new(name: :Struct, namespace: RBS::Namespace.empty),
+            args: [RBS::Types::Bases::Any.new(location: nil)],
             location: nil
           ),
           annotations: decl.class_annotations,

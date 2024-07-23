@@ -13,7 +13,7 @@ module RBS
           def value_node: (Prism::Node) -> Prism::Node?
         end
 
-        type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl | BlockDecl | DataAssignDecl
+        type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl | BlockDecl | DataAssignDecl | StructAssignDecl
 
         interface _WithComments
           def comments: () -> AnnotationParser::ParsingResult?
@@ -133,8 +133,30 @@ module RBS
           def module_class_annotation: () -> (Annotations::ModuleDecl | Annotations::ClassDecl | nil)
         end
 
+        # @rbs module-self _WithTypeDecls
+        module DataStructUtil : _WithTypeDecls
+          interface _WithTypeDecls
+            def type_decls: () -> Hash[Integer, Annotations::TypeAssertion]
+
+            def each_attribute_argument: () { (Prism::Node) -> void } -> void
+
+            def comments: %a{pure} () -> AnnotationParser::ParsingResult?
+          end
+
+          # @rbs %a{pure}
+          # @rbs () { ([Symbol, Annotations::TypeAssertion?]) -> void } -> void
+          #    | () -> Enumerator[[Symbol, Annotations::TypeAssertion?], void]
+          %a{pure}
+          def each_attribute: () { ([ Symbol, Annotations::TypeAssertion? ]) -> void } -> void
+                            | () -> Enumerator[[ Symbol, Annotations::TypeAssertion? ], void]
+
+          def class_annotations: () -> Array[RBS::AST::Annotation]
+        end
+
         class DataAssignDecl < Base
           extend ConstantUtil
+
+          include DataStructUtil
 
           attr_reader node: Prism::ConstantWriteNode
 
@@ -157,14 +179,62 @@ module RBS
           # @rbs (Prism::ConstantWriteNode) -> Prism::CallNode?
           def self.data_define?: (Prism::ConstantWriteNode) -> Prism::CallNode?
 
-          # @rbs %a{pure}
-          # @rbs () { ([Symbol, Annotations::TypeAssertion?]) -> void } -> void
-          #    | () -> Enumerator[[Symbol, Annotations::TypeAssertion?], void]
-          %a{pure}
-          def each_attribute: () { ([ Symbol, Annotations::TypeAssertion? ]) -> void } -> void
-                            | () -> Enumerator[[ Symbol, Annotations::TypeAssertion? ], void]
+          # @rbs () { (Prism::Node) -> void } -> void
+          def each_attribute_argument: () { (Prism::Node) -> void } -> void
+        end
 
-          def class_annotations: () -> Array[RBS::AST::Annotation]
+        class StructAssignDecl < Base
+          extend ConstantUtil
+
+          include DataStructUtil
+
+          attr_reader node: Prism::ConstantWriteNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          attr_reader type_decls: Hash[Integer, Annotations::TypeAssertion]
+
+          attr_reader struct_new_node: Prism::CallNode
+
+          # @rbs (Prism::ConstantWriteNode, Prism::CallNode, AnnotationParser::ParsingResult?, Hash[Integer, Annotations::TypeAssertion]) -> void
+          def initialize: (Prism::ConstantWriteNode, Prism::CallNode, AnnotationParser::ParsingResult?, Hash[Integer, Annotations::TypeAssertion]) -> void
+
+          def start_line: () -> Integer
+
+          # @rbs %a{pure}
+          # @rbs () -> TypeName?
+          %a{pure}
+          def constant_name: () -> TypeName?
+
+          # @rbs () { (Prism::Node) -> void } -> void
+          def each_attribute_argument: () { (Prism::Node) -> void } -> void
+
+          # @rbs (Prism::ConstantWriteNode) -> Prism::CallNode?
+          def self.struct_new?: (Prism::ConstantWriteNode) -> Prism::CallNode?
+
+          # @rbs %a{pure}
+          %a{pure}
+          def keyword_init?: () -> bool
+
+          # @rbs %a{pure}
+          %a{pure}
+          def positional_init?: () -> bool
+
+          # Returns `true` is annotation is given to make all attributes *readonly*
+          #
+          # Add `# @rbs %a{rbs-inline:readonly-attributes=true}` to the class to make all attributes `attr_reader`, instead of `attr_accessor`.
+          #
+          # @rbs %a{pure}
+          %a{pure}
+          def readonly_attributes?: () -> bool
+
+          # Returns `true` if annotation is given to make all `.new` arguments required
+          #
+          # Add `# @rbs %a{rbs-inline:new-args=required}` to the class to make all of the parameters required.
+          #
+          # @rbs %a{pure}
+          %a{pure}
+          def required_new_args?: () -> bool
         end
       end
     end

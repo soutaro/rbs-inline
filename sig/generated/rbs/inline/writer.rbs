@@ -62,6 +62,10 @@ module RBS
       # @rbs rbs: _Content
       def translate_data_assign_decl: (AST::Declarations::DataAssignDecl decl, _Content rbs) -> void
 
+      # @rbs decl: AST::Declarations::StructAssignDecl
+      # @rbs rbs: _Content
+      def translate_struct_assign_decl: (AST::Declarations::StructAssignDecl decl, _Content rbs) -> void
+
       # @rbs decl: AST::Declarations::SingletonClassDecl
       # @rbs rbs: _Content
       # @rbs return: void
