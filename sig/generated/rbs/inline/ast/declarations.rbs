@@ -8,9 +8,12 @@ module RBS
           # @rbs node: Prism::Node
           # @rbs return: TypeName?
           def type_name: (Prism::Node node) -> TypeName?
+
+          # @rbs (Prism::Node) -> Prism::Node?
+          def value_node: (Prism::Node) -> Prism::Node?
         end
 
-        type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl | BlockDecl
+        type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl | BlockDecl | DataAssignDecl
 
         interface _WithComments
           def comments: () -> AnnotationParser::ParsingResult?
@@ -128,6 +131,40 @@ module RBS
           def start_line: () -> Integer
 
           def module_class_annotation: () -> (Annotations::ModuleDecl | Annotations::ClassDecl | nil)
+        end
+
+        class DataAssignDecl < Base
+          extend ConstantUtil
+
+          attr_reader node: Prism::ConstantWriteNode
+
+          attr_reader comments: AnnotationParser::ParsingResult?
+
+          attr_reader type_decls: Hash[Integer, Annotations::TypeAssertion]
+
+          attr_reader data_define_node: Prism::CallNode
+
+          # @rbs (Prism::ConstantWriteNode, Prism::CallNode, AnnotationParser::ParsingResult?, Hash[Integer, Annotations::TypeAssertion]) -> void
+          def initialize: (Prism::ConstantWriteNode, Prism::CallNode, AnnotationParser::ParsingResult?, Hash[Integer, Annotations::TypeAssertion]) -> void
+
+          def start_line: () -> Integer
+
+          # @rbs %a{pure}
+          # @rbs () -> TypeName?
+          %a{pure}
+          def constant_name: () -> TypeName?
+
+          # @rbs (Prism::ConstantWriteNode) -> Prism::CallNode?
+          def self.data_define?: (Prism::ConstantWriteNode) -> Prism::CallNode?
+
+          # @rbs %a{pure}
+          # @rbs () { ([Symbol, Annotations::TypeAssertion?]) -> void } -> void
+          #    | () -> Enumerator[[Symbol, Annotations::TypeAssertion?], void]
+          %a{pure}
+          def each_attribute: () { ([ Symbol, Annotations::TypeAssertion? ]) -> void } -> void
+                            | () -> Enumerator[[ Symbol, Annotations::TypeAssertion? ], void]
+
+          def class_annotations: () -> Array[RBS::AST::Annotation]
         end
       end
     end

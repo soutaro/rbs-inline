@@ -417,9 +417,25 @@ module RBS
         return if ignored_node?(node)
 
         comment = comments.delete(node.location.start_line - 1)
-        assertion = assertion_annotation(node)
 
-        decl = AST::Declarations::ConstantDecl.new(node, comment, assertion)
+        case
+        when data_node = AST::Declarations::DataAssignDecl.data_define?(node)
+          type_decls = {} #: Hash[Integer, AST::Annotations::TypeAssertion]
+
+          inner_annotations(node.location.start_line, node.location.end_line).flat_map do |comment|
+            comment.each_annotation do |annotation|
+              if annotation.is_a?(AST::Annotations::TypeAssertion)
+                start_line = annotation.source.comments[0].location.start_line
+                type_decls[start_line] = annotation
+              end
+            end
+          end
+
+          decl = AST::Declarations::DataAssignDecl.new(node, data_node, comment, type_decls)
+        else
+          assertion = assertion_annotation(node)
+          decl = AST::Declarations::ConstantDecl.new(node, comment, assertion)
+        end
 
         if current = current_class_module_decl
           current.members << decl

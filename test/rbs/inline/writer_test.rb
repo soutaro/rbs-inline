@@ -855,4 +855,46 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_data_assign_decl
+    output = translate(<<~RUBY)
+      # Account record
+      #
+      # @rbs %a{some-attributes-here}
+      Account = Data.define(
+        :id,    #: Integer
+        :email, #: String
+      )
+
+      class Account
+        Group = _ = Data.define(
+          :name
+        )
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      # Account record
+      #
+      # @rbs %a{some-attributes-here}
+      %a{some-attributes-here}
+      class Account < Data
+        attr_reader id(): Integer
+
+        attr_reader email(): String
+
+        def initialize: (Integer id, String email) -> void
+                      | (id: Integer, email: String) -> void
+      end
+
+      class Account
+        class Group < Data
+          attr_reader name(): untyped
+
+          def initialize: (untyped name) -> void
+                        | (name: untyped) -> void
+        end
+      end
+    RBS
+  end
 end

@@ -13,10 +13,22 @@ module RBS
               TypeName(node.full_name)
             end
           end
+
+          # @rbs (Prism::Node) -> Prism::Node?
+          def value_node(node)
+            case node
+            when Prism::ConstantWriteNode
+              value_node(node.value)
+            when Prism::LocalVariableWriteNode
+              value_node(node.value)
+            else
+              node
+            end
+          end
         end
 
         # @rbs!
-        #   type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl | BlockDecl
+        #   type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl | BlockDecl | DataAssignDecl
         #
         #  interface _WithComments
         #    def comments: () -> AnnotationParser::ParsingResult?
@@ -264,6 +276,83 @@ module RBS
 
               nil
             end
+          end
+        end
+
+        class DataAssignDecl < Base
+          extend ConstantUtil
+
+          attr_reader :node #: Prism::ConstantWriteNode
+
+          attr_reader :comments #: AnnotationParser::ParsingResult?
+
+          attr_reader :type_decls #: Hash[Integer, Annotations::TypeAssertion]
+
+          attr_reader :data_define_node #: Prism::CallNode
+
+          # @rbs (Prism::ConstantWriteNode, Prism::CallNode, AnnotationParser::ParsingResult?, Hash[Integer, Annotations::TypeAssertion]) -> void
+          def initialize(node, data_define_node, comments, type_decls)
+            @node = node
+            @comments = comments
+            @type_decls = type_decls
+            @data_define_node = data_define_node
+          end
+
+          def start_line #: Integer
+            node.location.start_line
+          end
+
+          # @rbs %a{pure}
+          # @rbs () -> TypeName?
+          def constant_name
+            TypeName.new(name: node.name, namespace: Namespace.empty)
+          end
+
+          # @rbs (Prism::ConstantWriteNode) -> Prism::CallNode?
+          def self.data_define?(node)
+            value = value_node(node)
+
+            if value.is_a?(Prism::CallNode)
+              if value.receiver.is_a?(Prism::ConstantReadNode)
+                if value.receiver.full_name.delete_prefix("::") == "Data"
+                  if value.name == :define
+                    return value
+                  end
+                end
+              end
+            end
+          end
+
+          # @rbs %a{pure}
+          # @rbs () { ([Symbol, Annotations::TypeAssertion?]) -> void } -> void
+          #    | () -> Enumerator[[Symbol, Annotations::TypeAssertion?], void]
+          def each_attribute(&block)
+            if block
+              if args = data_define_node.arguments
+                args.arguments.each do |arg|
+                  if arg.is_a?(Prism::SymbolNode)
+                    if name = arg.value
+                      type = type_decls.fetch(arg.location.start_line, nil)
+                      yield [name.to_sym, type]
+                    end
+                  end
+                end
+              end
+            else
+              enum_for :each_attribute
+            end
+          end
+
+          def class_annotations #: Array[RBS::AST::Annotation]
+            annotations = [] #: Array[RBS::AST::Annotation]
+
+            comments&.each_annotation do |annotation|
+              if annotation.is_a?(Annotations::RBSAnnotation)
+                annotations.concat annotation.annotations
+              end
+            end
+
+            annotations
           end
         end
       end
