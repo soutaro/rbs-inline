@@ -855,4 +855,116 @@ class RBS::Inline::WriterTest < Minitest::Test
       end
     RBS
   end
+
+  def test_data_assign_decl
+    output = translate(<<~RUBY)
+      # Account record
+      #
+      # @rbs %a{some-attributes-here}
+      Account = Data.define(
+        :id,    #: Integer
+        :email, #: String
+      )
+
+      class Account
+        Group = _ = Data.define(
+          :name
+        )
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      # Account record
+      #
+      # @rbs %a{some-attributes-here}
+      %a{some-attributes-here}
+      class Account < Data
+        attr_reader id(): Integer
+
+        attr_reader email(): String
+
+        def initialize: (Integer id, String email) -> void
+                      | (id: Integer, email: String) -> void
+      end
+
+      class Account
+        class Group < Data
+          attr_reader name(): untyped
+
+          def initialize: (untyped name) -> void
+                        | (name: untyped) -> void
+        end
+      end
+    RBS
+  end
+
+  def test_struct_assign_decl
+    output = translate(<<~RUBY)
+      # Account record
+      #
+      Account = Struct.new(
+        "Account",
+        :id,    #: Integer
+        :email, #: String
+      )
+
+      class Account
+        Group = _ = Struct.new(
+          :name,
+          keyword_init: true
+        )
+      end
+
+      Item = _ = Struct.new(
+        :sku, #: String
+        :price, #: Integer
+        keyword_init: false
+      )
+
+      # @rbs %a{rbs-inline:new-args=required}
+      # @rbs %a{rbs-inline:readonly-attributes=true}
+      User = Struct.new(
+        :name #: String
+      )
+    RUBY
+
+    assert_equal <<~RBS, output
+      # Account record
+      class Account < Struct[untyped]
+        attr_accessor id(): Integer
+
+        attr_accessor email(): String
+
+        def initialize: (?Integer id, ?String email) -> void
+                      | (?id: Integer, ?email: String) -> void
+      end
+
+      class Account
+        class Group < Struct[untyped]
+          attr_accessor name(): untyped
+
+          def initialize: (?name: untyped) -> void
+        end
+      end
+
+      class Item < Struct[untyped]
+        attr_accessor sku(): String
+
+        attr_accessor price(): Integer
+
+        def initialize: (?String sku, ?Integer price) -> void
+      end
+
+      # @rbs %a{rbs-inline:new-args=required}
+      # @rbs %a{rbs-inline:readonly-attributes=true}
+      %a{rbs-inline:new-args=required}
+      %a{rbs-inline:readonly-attributes=true}
+      class User < Struct[untyped]
+        attr_reader name(): String
+
+        def initialize: (String name) -> void
+                      | (name: String) -> void
+      end
+    RBS
+  end
 end

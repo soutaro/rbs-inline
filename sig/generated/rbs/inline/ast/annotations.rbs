@@ -157,6 +157,8 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          def annotations: () -> Array[RBS::AST::Annotation]
         end
 
         # `# @rbs skip`

@@ -697,7 +697,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
   end
 
-  def test_module_decl_annotation
+  def test_class_decl_annotation
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       # @rbs class Foo
       # @rbs class Foo[A < Integer] < Array[A]

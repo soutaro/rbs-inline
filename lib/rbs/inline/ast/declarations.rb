@@ -13,10 +13,22 @@ module RBS
               TypeName(node.full_name)
             end
           end
+
+          # @rbs (Prism::Node) -> Prism::Node?
+          def value_node(node)
+            case node
+            when Prism::ConstantWriteNode
+              value_node(node.value)
+            when Prism::LocalVariableWriteNode
+              value_node(node.value)
+            else
+              node
+            end
+          end
         end
 
         # @rbs!
-        #   type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl | BlockDecl
+        #   type t = ClassDecl | ModuleDecl | ConstantDecl | SingletonClassDecl | BlockDecl | DataAssignDecl | StructAssignDecl
         #
         #  interface _WithComments
         #    def comments: () -> AnnotationParser::ParsingResult?
@@ -263,6 +275,231 @@ module RBS
               end
 
               nil
+            end
+          end
+        end
+
+        # @rbs module-self _WithTypeDecls
+        module DataStructUtil
+          # @rbs!
+          #   interface _WithTypeDecls
+          #     def type_decls: () -> Hash[Integer, Annotations::TypeAssertion]
+          #
+          #     def each_attribute_argument: () { (Prism::Node) -> void } -> void
+          #
+          #     def comments: %a{pure} () -> AnnotationParser::ParsingResult?
+          #   end
+
+          # @rbs %a{pure}
+          # @rbs () { ([Symbol, Annotations::TypeAssertion?]) -> void } -> void
+          #    | () -> Enumerator[[Symbol, Annotations::TypeAssertion?], void]
+          def each_attribute(&block)
+            if block
+              each_attribute_argument do |arg|
+                if arg.is_a?(Prism::SymbolNode)
+                  if name = arg.value
+                    type = type_decls.fetch(arg.location.start_line, nil)
+                    yield [name.to_sym, type]
+                  end
+                end
+              end
+            else
+              enum_for :each_attribute
+            end
+          end
+
+          def class_annotations #: Array[RBS::AST::Annotation]
+            annotations = [] #: Array[RBS::AST::Annotation]
+
+            comments&.each_annotation do |annotation|
+              if annotation.is_a?(Annotations::RBSAnnotation)
+                annotations.concat annotation.annotations
+              end
+            end
+
+            annotations
+          end
+        end
+
+        class DataAssignDecl < Base
+          extend ConstantUtil
+
+          include DataStructUtil
+
+          attr_reader :node #: Prism::ConstantWriteNode
+
+          attr_reader :comments #: AnnotationParser::ParsingResult?
+
+          attr_reader :type_decls #: Hash[Integer, Annotations::TypeAssertion]
+
+          attr_reader :data_define_node #: Prism::CallNode
+
+          # @rbs (Prism::ConstantWriteNode, Prism::CallNode, AnnotationParser::ParsingResult?, Hash[Integer, Annotations::TypeAssertion]) -> void
+          def initialize(node, data_define_node, comments, type_decls)
+            @node = node
+            @comments = comments
+            @type_decls = type_decls
+            @data_define_node = data_define_node
+          end
+
+          def start_line #: Integer
+            node.location.start_line
+          end
+
+          # @rbs %a{pure}
+          # @rbs () -> TypeName?
+          def constant_name
+            TypeName.new(name: node.name, namespace: Namespace.empty)
+          end
+
+          # @rbs (Prism::ConstantWriteNode) -> Prism::CallNode?
+          def self.data_define?(node)
+            value = value_node(node)
+
+            if value.is_a?(Prism::CallNode)
+              if value.receiver.is_a?(Prism::ConstantReadNode)
+                if value.receiver.full_name.delete_prefix("::") == "Data"
+                  if value.name == :define
+                    return value
+                  end
+                end
+              end
+            end
+          end
+
+          # @rbs () { (Prism::Node) -> void } -> void
+          def each_attribute_argument(&block)
+            if args = data_define_node.arguments
+              args.arguments.each(&block)
+            end
+          end
+        end
+
+        class StructAssignDecl < Base
+          extend ConstantUtil
+
+          include DataStructUtil
+
+          attr_reader :node #: Prism::ConstantWriteNode
+
+          attr_reader :comments #: AnnotationParser::ParsingResult?
+
+          attr_reader :type_decls #: Hash[Integer, Annotations::TypeAssertion]
+
+          attr_reader :struct_new_node #: Prism::CallNode
+
+          # @rbs (Prism::ConstantWriteNode, Prism::CallNode, AnnotationParser::ParsingResult?, Hash[Integer, Annotations::TypeAssertion]) -> void
+          def initialize(node, struct_new_node, comments, type_decls)
+            @node = node
+            @comments = comments
+            @type_decls = type_decls
+            @struct_new_node = struct_new_node
+          end
+
+          def start_line #: Integer
+            node.location.start_line
+          end
+
+          # @rbs %a{pure}
+          # @rbs () -> TypeName?
+          def constant_name
+            TypeName.new(name: node.name, namespace: Namespace.empty)
+          end
+
+          # @rbs () { (Prism::Node) -> void } -> void
+          def each_attribute_argument(&block)
+            if args = struct_new_node.arguments
+              args.arguments.each do |arg|
+                next if arg.is_a?(Prism::KeywordHashNode)
+                next if arg.is_a?(Prism::StringNode)
+
+                yield arg
+              end
+            end
+          end
+
+          # @rbs (Prism::ConstantWriteNode) -> Prism::CallNode?
+          def self.struct_new?(node)
+            value = value_node(node)
+
+            if value.is_a?(Prism::CallNode)
+              if value.receiver.is_a?(Prism::ConstantReadNode)
+                if value.receiver.full_name.delete_prefix("::") == "Struct"
+                  if value.name == :new
+                    return value
+                  end
+                end
+              end
+            end
+          end
+
+          # @rbs %a{pure}
+          def keyword_init? #: bool
+            if args = struct_new_node.arguments
+              args.arguments.each do |arg|
+                if arg.is_a?(Prism::KeywordHashNode)
+                  arg.elements.each do |assoc|
+                    if assoc.is_a?(Prism::AssocNode)
+                      if (key = assoc.key).is_a?(Prism::SymbolNode)
+                        if key.value == "keyword_init"
+                          value = assoc.value
+                          if value.is_a?(Prism::FalseNode)
+                            return false
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end
+
+            true
+          end
+
+          # @rbs %a{pure}
+          def positional_init? #: bool
+            if args = struct_new_node.arguments
+              args.arguments.each do |arg|
+                if arg.is_a?(Prism::KeywordHashNode)
+                  arg.elements.each do |assoc|
+                    if assoc.is_a?(Prism::AssocNode)
+                      if (key = assoc.key).is_a?(Prism::SymbolNode)
+                        if key.value == "keyword_init"
+                          value = assoc.value
+                          if value.is_a?(Prism::TrueNode)
+                            return false
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end
+
+            true
+          end
+
+          # Returns `true` is annotation is given to make all attributes *readonly*
+          #
+          # Add `# @rbs %a{rbs-inline:readonly-attributes=true}` to the class to make all attributes `attr_reader`, instead of `attr_accessor`.
+          #
+          # @rbs %a{pure}
+          def readonly_attributes? #: bool
+            class_annotations.any? do |annotation|
+              annotation.string == "rbs-inline:readonly-attributes=true"
+            end
+          end
+
+          # Returns `true` if annotation is given to make all `.new` arguments required
+          #
+          # Add `# @rbs %a{rbs-inline:new-args=required}` to the class to make all of the parameters required.
+          #
+          # @rbs %a{pure}
+          def required_new_args? #: bool
+            class_annotations.any? do |annotation|
+              annotation.string == "rbs-inline:new-args=required"
             end
           end
         end
