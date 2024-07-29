@@ -208,14 +208,14 @@ module RBS
           )
         end
 
-        init = RBS::AST::Members::MethodDefinition.new(
-          name: :initialize,
-          kind: :instance,
+        new = RBS::AST::Members::MethodDefinition.new(
+          name: :new,
+          kind: :singleton,
           overloads: [
             RBS::AST::Members::MethodDefinition::Overload.new(
               method_type: RBS::MethodType.new(
                 type_params: [],
-                type: Types::Function.empty(Types::Bases::Void.new(location: nil)).update(
+                type: Types::Function.empty(Types::Bases::Instance.new(location: nil)).update(
                   required_positionals: decl.each_attribute.map do |name, attr|
                     RBS::Types::Function::Param.new(
                       type: attr&.type || Types::Bases::Any.new(location: nil),
@@ -232,7 +232,7 @@ module RBS
             RBS::AST::Members::MethodDefinition::Overload.new(
               method_type: RBS::MethodType.new(
                 type_params: [],
-                type: Types::Function.empty(Types::Bases::Void.new(location: nil)).update(
+                type: Types::Function.empty(Types::Bases::Instance.new(location: nil)).update(
                   required_keywords: decl.each_attribute.map do |name, attr|
                     [
                       name,
@@ -260,7 +260,7 @@ module RBS
         rbs << RBS::AST::Declarations::Class.new(
           name: decl.constant_name,
           type_params: [],
-          members: [*attributes, init],
+          members: [*attributes, new],
           super_class: RBS::AST::Declarations::Class::Super.new(
             name: RBS::TypeName.new(name: :Data, namespace: RBS::Namespace.empty),
             args: [],
@@ -307,9 +307,9 @@ module RBS
           end
         end
 
-        init = RBS::AST::Members::MethodDefinition.new(
-          name: :initialize,
-          kind: :instance,
+        new = RBS::AST::Members::MethodDefinition.new(
+          name: :new,
+          kind: :singleton,
           overloads: [],
           annotations: [],
           location: nil,
@@ -327,14 +327,14 @@ module RBS
             )
           end
 
-          method_type = Types::Function.empty(Types::Bases::Void.new(location: nil))
+          method_type = Types::Function.empty(Types::Bases::Instance.new(location: nil))
           if decl.required_new_args?
             method_type = method_type.update(required_positionals: attr_params)
           else
             method_type = method_type.update(optional_positionals: attr_params)
           end
 
-          init.overloads <<
+          new.overloads <<
             RBS::AST::Members::MethodDefinition::Overload.new(
               method_type: RBS::MethodType.new(type_params: [], type: method_type, block: nil, location: nil),
               annotations: []
@@ -353,14 +353,14 @@ module RBS
             ]
           end.to_h #: Hash[Symbol, RBS::Types::Function::Param]
 
-          method_type = Types::Function.empty(Types::Bases::Void.new(location: nil))
+          method_type = Types::Function.empty(Types::Bases::Instance.new(location: nil))
           if decl.required_new_args?
             method_type = method_type.update(required_keywords: attr_keywords)
           else
             method_type = method_type.update(optional_keywords: attr_keywords)
           end
 
-          init.overloads <<
+          new.overloads <<
             RBS::AST::Members::MethodDefinition::Overload.new(
               method_type: RBS::MethodType.new(type_params: [], type: method_type, block: nil, location: nil),
               annotations: []
@@ -370,7 +370,7 @@ module RBS
         rbs << RBS::AST::Declarations::Class.new(
           name: decl.constant_name,
           type_params: [],
-          members: [*attributes, init],
+          members: [*attributes, new],
           super_class: RBS::AST::Declarations::Class::Super.new(
             name: RBS::TypeName.new(name: :Struct, namespace: RBS::Namespace.empty),
             args: [RBS::Types::Bases::Any.new(location: nil)],
