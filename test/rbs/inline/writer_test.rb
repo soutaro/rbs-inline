@@ -883,16 +883,16 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         attr_reader email(): String
 
-        def initialize: (Integer id, String email) -> void
-                      | (id: Integer, email: String) -> void
+        def self.new: (Integer id, String email) -> instance
+                    | (id: Integer, email: String) -> instance
       end
 
       class Account
         class Group < Data
           attr_reader name(): untyped
 
-          def initialize: (untyped name) -> void
-                        | (name: untyped) -> void
+          def self.new: (untyped name) -> instance
+                      | (name: untyped) -> instance
         end
       end
     RBS
@@ -935,15 +935,15 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         attr_accessor email(): String
 
-        def initialize: (?Integer id, ?String email) -> void
-                      | (?id: Integer, ?email: String) -> void
+        def self.new: (?Integer id, ?String email) -> instance
+                    | (?id: Integer, ?email: String) -> instance
       end
 
       class Account
         class Group < Struct[untyped]
           attr_accessor name(): untyped
 
-          def initialize: (?name: untyped) -> void
+          def self.new: (?name: untyped) -> instance
         end
       end
 
@@ -952,7 +952,7 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         attr_accessor price(): Integer
 
-        def initialize: (?String sku, ?Integer price) -> void
+        def self.new: (?String sku, ?Integer price) -> instance
       end
 
       # @rbs %a{rbs-inline:new-args=required}
@@ -962,8 +962,8 @@ class RBS::Inline::WriterTest < Minitest::Test
       class User < Struct[untyped]
         attr_reader name(): String
 
-        def initialize: (String name) -> void
-                      | (name: String) -> void
+        def self.new: (String name) -> instance
+                    | (name: String) -> instance
       end
     RBS
   end
