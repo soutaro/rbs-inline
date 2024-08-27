@@ -656,6 +656,37 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_singleton_class_definition__visibility
+    output = translate(<<~RUBY)
+      class X
+        class << self
+          private
+
+          def foo
+          end
+
+          def bar
+          end
+
+          public
+
+          def buz
+          end
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class X
+        private def self.foo: () -> untyped
+
+        private def self.bar: () -> untyped
+
+        def self.buz: () -> untyped
+      end
+    RBS
+  end
+
   def test_method_type_rbs_dot3
     output = translate(<<~RUBY)
       class X

@@ -421,6 +421,7 @@ module RBS
             return
           end
 
+          visibility = member.visibility || decl&.visibility(member)
           rbs << RBS::AST::Members::MethodDefinition.new(
             name: member.method_name,
             kind: kind,
@@ -429,7 +430,7 @@ module RBS
             location: nil,
             comment: comment,
             overloading: member.overloading?,
-            visibility: member.visibility
+            visibility: visibility
           )
         when AST::Members::RubyAlias
           if member.comments
@@ -453,9 +454,9 @@ module RBS
             rbs.concat m
           end
         when AST::Members::RubyPrivate
-          rbs << RBS::AST::Members::Private.new(location: nil)
+          rbs << RBS::AST::Members::Private.new(location: nil) unless decl
         when AST::Members::RubyPublic
-          rbs << RBS::AST::Members::Public.new(location: nil)
+          rbs << RBS::AST::Members::Public.new(location: nil) unless decl
         when AST::Members::RBSIvar
           if m = member.rbs
             rbs << m
