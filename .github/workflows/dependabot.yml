@@ -13,12 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
     steps:
-      - name: Dependabot metadata
-        uses: dependabot/fetch-metadata@dbb049abf0d677abbd7f7eee0375145b417fdd34 # v2.2.0
-        id: metadata
-      - name: Abort if Dependabot metadata doesn't set
-        run: exit 1
-        if: ${{ !startsWith(steps.metadata.outputs.update-type, 'version-update:') }}
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
