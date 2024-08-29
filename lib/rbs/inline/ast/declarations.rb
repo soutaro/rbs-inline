@@ -241,6 +241,21 @@ module RBS
         end
 
         class SingletonClassDecl < ModuleOrClass #[Prism::SingletonClassNode]
+          # @rbs (AST::Members::RubyDef) -> (:private | nil)
+          def visibility(def_member)
+            current_visibility = nil
+            members.each do |member|
+              case member
+              when AST::Members::RubyPublic
+                current_visibility = nil
+              when AST::Members::RubyPrivate
+                current_visibility = :private
+              end
+
+              break if member == def_member
+            end
+            current_visibility
+          end
         end
 
         class BlockDecl < Base

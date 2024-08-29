@@ -115,6 +115,8 @@ module RBS
         end
 
         class SingletonClassDecl < ModuleOrClass[Prism::SingletonClassNode]
+          # @rbs (AST::Members::RubyDef) -> (:private | nil)
+          def visibility: (AST::Members::RubyDef) -> (:private | nil)
         end
 
         class BlockDecl < Base
