@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rbs-inline (0.7.0)
-      prism (>= 0.29, < 0.31)
+      prism (>= 0.29, < 1.1)
       rbs (~> 3.5.0)
 
 GEM
@@ -41,7 +41,7 @@ GEM
     parser (3.3.5.0)
       ast (~> 2.4.1)
       racc
-    prism (0.30.0)
+    prism (1.0.0)
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.2.1)
