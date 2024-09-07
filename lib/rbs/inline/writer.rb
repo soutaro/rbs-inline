@@ -257,10 +257,40 @@ module RBS
           visibility: nil
         )
 
+        members = [:singleton, :instance].map do |kind|
+          RBS::AST::Members::MethodDefinition.new(
+            name: :members,
+            kind: kind, #: RBS::AST::MethodDefinition::Kind
+            overloads: [
+              RBS::AST::Members::MethodDefinition::Overload.new(
+                method_type: RBS::MethodType.new(
+                  type_params: [],
+                  type: Types::Function.empty(
+                    Types::Tuple.new(
+                      types: decl.each_attribute.map do |name, _|
+                        Types::Literal.new(literal: name, location: nil)
+                      end,
+                      location: nil
+                    )
+                  ),
+                  block: nil,
+                  location: nil
+                ),
+                annotations: []
+              )
+            ],
+            annotations: [],
+            location: nil,
+            comment: nil,
+            overloading: false,
+            visibility: nil
+          )
+        end
+
         rbs << RBS::AST::Declarations::Class.new(
           name: decl.constant_name,
           type_params: [],
-          members: [*attributes, new],
+          members: [*attributes, new, *members],
           super_class: RBS::AST::Declarations::Class::Super.new(
             name: RBS::TypeName.new(name: :Data, namespace: RBS::Namespace.empty),
             args: [],

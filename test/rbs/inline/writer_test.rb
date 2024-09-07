@@ -916,6 +916,10 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         def self.new: (Integer id, String email) -> instance
                     | (id: Integer, email: String) -> instance
+
+        def self.members: () -> [ :id, :email ]
+
+        def members: () -> [ :id, :email ]
       end
 
       class Account
@@ -924,6 +928,10 @@ class RBS::Inline::WriterTest < Minitest::Test
 
           def self.new: (untyped name) -> instance
                       | (name: untyped) -> instance
+
+          def self.members: () -> [ :name ]
+
+          def members: () -> [ :name ]
         end
       end
     RBS
