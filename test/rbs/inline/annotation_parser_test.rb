@@ -401,26 +401,26 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
 
   def test_module_self
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
-        # @rbs module-self BasicObject
+        # @rbs module-self BasicObject, Integer
         # @rbs module-self _Each[String] -- consume something
         # @rbs module-self top
       RUBY
 
     annots[0].annotations[0].tap do |annotation|
       assert_instance_of AST::Annotations::ModuleSelf, annotation
-      assert_equal "BasicObject", annotation.constraint.to_s
+      assert_equal ["BasicObject", "Integer"], annotation.self_types.map(&:to_s)
       assert_nil annotation.comment
     end
 
     annots[0].annotations[1].tap do |annotation|
       assert_instance_of AST::Annotations::ModuleSelf, annotation
-      assert_equal "_Each[String]", annotation.constraint.to_s
+      assert_equal ["_Each[String]"], annotation.self_types.map(&:to_s)
       assert_equal "-- consume something", annotation.comment
     end
 
     annots[0].annotations[2].tap do |annotation|
       assert_instance_of AST::Annotations::ModuleSelf, annotation
-      assert_nil annotation.constraint
+      assert_equal [], annotation.self_types
       assert_nil annotation.comment
     end
   end

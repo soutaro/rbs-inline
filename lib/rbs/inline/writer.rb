@@ -155,7 +155,7 @@ module RBS
 
         translate_members(decl.members, nil, members)
 
-        self_types = decl.module_selfs.map { _1.constraint }.compact
+        self_types = decl.module_selfs.flat_map { _1.self_types }.compact
 
         rbs << RBS::AST::Declarations::Module.new(
           name: decl.module_name,

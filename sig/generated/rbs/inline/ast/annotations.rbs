@@ -195,7 +195,7 @@ module RBS
 
         # `# @rbs module-self [MODULE_SELF]`
         class ModuleSelf < Base
-          attr_reader constraint: RBS::AST::Declarations::Module::Self?
+          attr_reader self_types: Array[RBS::AST::Declarations::Module::Self]
 
           attr_reader comment: String?
 
