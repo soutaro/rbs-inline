@@ -975,6 +975,7 @@ class RBS::Inline::WriterTest < Minitest::Test
           attr_accessor name(): untyped
 
           def self.new: (?name: untyped) -> instance
+                      | ({ ?name: untyped }) -> instance
         end
       end
 

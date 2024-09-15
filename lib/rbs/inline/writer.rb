@@ -365,6 +365,29 @@ module RBS
               method_type: RBS::MethodType.new(type_params: [], type: method_type, block: nil, location: nil),
               annotations: []
             )
+
+          unless decl.positional_init?
+            new.overloads <<
+              RBS::AST::Members::MethodDefinition::Overload.new(
+                method_type: RBS::MethodType.new(
+                  type_params: [],
+                  type: Types::Function.empty(Types::Bases::Instance.new(location: nil)).then do |t|
+                    t.update(required_positionals: [
+                      RBS::Types::Function::Param.new(
+                        type: RBS::Types::Record.new(all_fields: decl.each_attribute.map do |name, attr|
+                          [name, attr&.type || Types::Bases::Any.new(location: nil)]
+                        end.to_h, location: nil),
+                        name: nil,
+                        location: nil
+                      )
+                    ])
+                  end,
+                  block: nil,
+                  location: nil
+                ),
+                annotations:[]
+              )
+          end
         end
 
         rbs << RBS::AST::Declarations::Class.new(
