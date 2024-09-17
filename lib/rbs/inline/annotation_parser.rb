@@ -754,7 +754,14 @@ module RBS
         tree = AST::Tree.new(:module_self)
 
         tokenizer.consume_token!(K_MODULE_SELF, tree: tree)
-        tree << parse_type(tokenizer, tree)
+        while true
+          tree << parse_type(tokenizer, tree)
+          if tokenizer.type?(K_COMMA)
+            tokenizer.advance(tree, eat: true)
+          else
+            break
+          end
+        end
 
         tree << parse_optional(tokenizer, K_MINUS2, tree: tree) do
           parse_comment(tokenizer)

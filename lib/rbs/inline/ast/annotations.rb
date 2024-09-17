@@ -509,7 +509,7 @@ module RBS
 
         # `# @rbs module-self [MODULE_SELF]`
         class ModuleSelf < Base
-          attr_reader :constraint #: RBS::AST::Declarations::Module::Self?
+          attr_reader :self_types #: Array[RBS::AST::Declarations::Module::Self]
 
           attr_reader :comment #: String?
 
@@ -517,20 +517,34 @@ module RBS
           def initialize(tree, source)
             @tree = tree
             @source = source
+            @self_types = []
 
             module_self = tree.nth_tree!(1)
-            type = module_self.nth_type?(1)
+            self_trees = module_self.non_trivia_trees
+            self_trees.shift
 
-            case type
-            when Types::ClassInstance, Types::Interface
-              @constraint = RBS::AST::Declarations::Module::Self.new(
-                name: type.name,
-                args: type.args,
-                location: nil
-              )
+            while true
+              type = self_trees.shift
+              case type
+              when Types::ClassInstance, Types::Interface
+                @self_types << RBS::AST::Declarations::Module::Self.new(
+                  name: type.name,
+                  args: type.args,
+                  location: nil
+                )
+              end
+
+              break if self_trees.empty?
+
+              next_tree = self_trees.first
+              if next_tree.is_a?(Array) && next_tree[0] == :kCOMMA
+                self_trees.shift
+              else
+                break
+              end
             end
 
-            if comment = module_self.nth_tree(2)
+            if comment = self_trees.first
               @comment = comment.to_s
             end
           end
