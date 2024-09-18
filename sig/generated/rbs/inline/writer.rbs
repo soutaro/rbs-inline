@@ -107,6 +107,13 @@ module RBS
       # @rbs rbs: _Content
       # @rbs return: void
       def translate_class_block_decl: (AST::Declarations::BlockDecl block, _Content rbs) -> void
+
+      # @rbs decl: AST::Declarations::ConstantDecl
+      # @rbs return: RBS::Types::t
+      def constant_decl_to_type: (AST::Declarations::ConstantDecl decl) -> RBS::Types::t
+
+      # @rbs return: RBS::Types::Bases::Any
+      def untyped: () -> RBS::Types::Bases::Any
     end
   end
 end

@@ -482,6 +482,20 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_constant__without_decl
+    output = translate(<<~RUBY)
+      TAGS = []
+
+      OPTIONS = {}
+    RUBY
+
+    assert_equal <<~RBS, output
+      TAGS: ::Array[untyped]
+
+      OPTIONS: ::Hash[untyped, untyped]
+    RBS
+  end
+
   def test_generic_class_module
     output = translate(<<~RUBY)
       # @rbs generic T
