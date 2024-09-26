@@ -34,7 +34,7 @@ class Person
   end
 
   # @rbs &block: (String) -> void
-  def each_address(&block) #:: void
+  def each_address(&block) #: void
     addresses.each(&block)
   end
 end
