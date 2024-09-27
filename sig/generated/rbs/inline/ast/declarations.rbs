@@ -73,6 +73,14 @@ module RBS
         class ModuleDecl < ModuleOrClass[Prism::ModuleNode]
           include ConstantUtil
 
+          attr_reader module_self_assertion: Annotations::TypeAssertion | Annotations::MultipleTypeAssertion | nil
+
+          # @rbs node: Prism::ModuleNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs module_self_assertion: Annotations::TypeAssertion | Annotations::MultipleTypeAssertion | nil
+          # @rbs return: void
+          def initialize: (Prism::ModuleNode node, AnnotationParser::ParsingResult? comments, Annotations::TypeAssertion | Annotations::MultipleTypeAssertion | nil module_self_assertion) -> void
+
           # @rbs %a{pure}
           %a{pure}
           def module_name: () -> TypeName?

@@ -12,7 +12,7 @@ module RBS
         #          | Generic
         #          | ModuleSelf
         #          | Skip
-        #          | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion | Dot3Assertion
+        #          | MethodTypeAssertion | TypeAssertion | MultipleTypeAssertion | SyntaxErrorAssertion | Dot3Assertion
         #          | Application
         #          | RBSAnnotation
         #          | Override
@@ -334,6 +334,23 @@ module RBS
 
           def type_source #: String
             type.location&.source || raise
+          end
+        end
+
+        class MultipleTypeAssertion < Base
+          attr_reader :types #: Array[Types::t]
+
+          # @rbs override
+          def initialize(tree, source)
+            @source = source
+            @tree = tree
+
+            @types = []
+            tree.non_trivia_trees.size.times do |i|
+              if tree.nth_type?(i)
+                types << tree.nth_type!(i)
+              end
+            end
           end
         end
 
