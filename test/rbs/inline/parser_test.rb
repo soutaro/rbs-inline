@@ -158,4 +158,18 @@ class RBS::Inline::ParserTest < Minitest::Test
       end
     end
   end
+
+  def test_toplevel__constructs
+    Parser.parse(parse_ruby(<<~RUBY), opt_in: false)
+      include Foo
+      extend Bar
+      prepend Baz
+
+      public
+      private
+
+      def foo
+      end
+    RUBY
+  end
 end
