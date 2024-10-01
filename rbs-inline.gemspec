@@ -29,5 +29,5 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "prism", ">= 0.29", "< 1.1"
-  spec.add_dependency "rbs", "~> 3.5.0"
+  spec.add_dependency "rbs", ">= 3.5.0"
 end
