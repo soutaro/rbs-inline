@@ -180,7 +180,7 @@ module RBS
 
         rbs << RBS::AST::Declarations::Constant.new(
           name: decl.constant_name,
-          type: decl.type,
+          type: constant_decl_to_type(decl),
           comment: comment,
           location: nil
         )
@@ -607,6 +607,28 @@ module RBS
           location: nil,
           comment: comment
         )
+      end
+
+      # @rbs decl: AST::Declarations::ConstantDecl
+      # @rbs return: RBS::Types::t
+      def constant_decl_to_type(decl)
+        type = decl.type
+        return type unless type.is_a?(RBS::Types::ClassInstance)
+        return type if type.args.any?
+
+        case decl.node.value
+        when Prism::ArrayNode
+          RBS::BuiltinNames::Array.instance_type(untyped)
+        when Prism::HashNode
+          RBS::BuiltinNames::Hash.instance_type(untyped, untyped)
+        else
+          type
+        end
+      end
+
+      # @rbs return: RBS::Types::Bases::Any
+      def untyped
+        @untyped ||= RBS::Types::Bases::Any.new(location: nil)
       end
     end
   end
