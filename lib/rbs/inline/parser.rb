@@ -274,6 +274,7 @@ module RBS
       # @rbs override
       def visit_call_node(node)
         return if ignored_node?(node)
+        return super unless current_class_module_decl
 
         case node.name
         when :include, :prepend, :extend
