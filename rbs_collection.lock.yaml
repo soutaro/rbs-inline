@@ -34,7 +34,7 @@ gems:
   source:
     type: stdlib
 - name: prism
-  version: 0.30.0
+  version: 1.0.0
   source:
     type: rubygems
 - name: rake
@@ -42,11 +42,11 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 03121e6bbf2340e3b179edcc351deac45476f4d0
+    revision: 25b8cf2135233e112d93d6b64083ee5e419875b6
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: rbs
-  version: 3.5.3
+  version: 3.6.0
   source:
     type: rubygems
 - name: rdoc
