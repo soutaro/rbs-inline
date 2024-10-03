@@ -172,4 +172,27 @@ class RBS::Inline::ParserTest < Minitest::Test
       end
     RUBY
   end
+
+  def test_def_decl
+    _, decls = Parser.parse(parse_ruby(<<~RUBY), opt_in: false)
+      class Account
+        def foo
+          # Do not parse definitions inside methods
+          def bar; end
+
+          private
+        end
+      end
+    RUBY
+
+    assert_equal 1, decls.size
+    decls[0].tap do |decl|
+      assert_instance_of AST::Declarations::ClassDecl, decl
+      assert_equal 1, decl.members.size
+      decl.members[0].tap do |member|
+        assert_instance_of AST::Members::RubyDef, member
+        assert_equal :foo, member.node.name
+      end
+    end
+  end
 end
