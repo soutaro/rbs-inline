@@ -205,6 +205,34 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_method_type__module_function
+    output = translate(<<~RUBY)
+      module Foo
+        def f()
+        end
+
+        def g()
+        end
+        module_function :g
+
+        module_function
+
+        def h()
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      module Foo
+        def f: () -> untyped
+
+        def self?.g: () -> untyped
+
+        def self?.h: () -> untyped
+      end
+    RBS
+  end
+
   def test_method_type__visibility
     output = translate(<<~RUBY)
       class Foo

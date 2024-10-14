@@ -542,6 +542,7 @@ module RBS
       # @rbs return: RBS::AST::Members::MethodDefinition::kind
       def method_kind(member, decl)
         return :singleton if decl
+        return :singleton_instance if member.singleton_instance
 
         case member.node.receiver
         when Prism::SelfNode

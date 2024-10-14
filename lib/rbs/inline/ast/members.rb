@@ -41,6 +41,10 @@ module RBS
           # ```
           attr_reader :visibility #: RBS::AST::Members::visibility?
 
+          # The function is defined as singleton and instance method (as known as module_function)
+          #
+          attr_accessor :singleton_instance #: bool
+
           # Assertion given at the end of the method name
           #
           attr_reader :assertion #: Annotations::TypeAssertion?
@@ -48,11 +52,13 @@ module RBS
           # @rbs node: Prism::DefNode
           # @rbs comments: AnnotationParser::ParsingResult?
           # @rbs visibility: RBS::AST::Members::visibility?
+          # @rbs singleton_instance: bool
           # @rbs assertion: Annotations::TypeAssertion?
-          def initialize(node, comments, visibility, assertion) #: void
+          def initialize(node, comments, visibility, singleton_instance, assertion) #: void
             @node = node
             @comments = comments
             @visibility = visibility
+            @singleton_instance = singleton_instance
             @assertion = assertion
 
             super(node.location)
