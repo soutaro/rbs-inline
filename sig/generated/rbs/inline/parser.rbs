@@ -30,6 +30,9 @@ module RBS
       # `nil` when the `def` node is not inside `private` or `public` calls.
       attr_reader current_visibility: RBS::AST::Members::visibility?
 
+      # The current module_function applied to single `def` node
+      attr_reader current_module_function: bool
+
       def initialize: () -> void
 
       # Parses the given Prism result to a three tuple
