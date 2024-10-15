@@ -258,8 +258,6 @@ module RBS
           assertion = assertion_annotation(node.rparen_loc || node&.parameters&.location || node.name_loc)
 
           current_decl.members << AST::Members::RubyDef.new(node, associated_comment, current_visibility, current_module_function, assertion)
-
-          super
         end
       end
 
