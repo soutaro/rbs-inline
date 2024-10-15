@@ -37,10 +37,14 @@ module RBS
       #
       attr_reader :current_visibility #: RBS::AST::Members::visibility?
 
+      # The current module_function applied to single `def` node
+      attr_reader :current_module_function #: bool
+
       def initialize() #: void
         @decls = []
         @surrounding_decls = []
         @comments = {}
+        @current_module_function = false
       end
 
       # Parses the given Prism result to a three tuple
@@ -253,7 +257,7 @@ module RBS
 
           assertion = assertion_annotation(node.rparen_loc || node&.parameters&.location || node.name_loc)
 
-          current_decl.members << AST::Members::RubyDef.new(node, associated_comment, current_visibility, assertion)
+          current_decl.members << AST::Members::RubyDef.new(node, associated_comment, current_visibility, current_module_function, assertion)
         end
       end
 
@@ -328,6 +332,30 @@ module RBS
                 return
               end
             end
+          end
+        when :module_function
+          if node.arguments && node.arguments.arguments.size > 0
+            args = node.arguments.arguments.filter_map do |arg|
+              case arg
+              when Prism::SymbolNode
+                arg.unescaped.to_sym
+              end
+            end
+
+            current_decl = current_class_module_decl
+
+            if current_decl
+              node.arguments.arguments.each do |arg|
+                current_decl.members.each do |member|
+                  if member.is_a?(AST::Members::RubyDef) && args.include?(member.node.name)
+                    member.singleton_instance = true
+                    break
+                  end
+                end
+              end
+            end
+          else
+            @current_module_function = true
           end
         end
 

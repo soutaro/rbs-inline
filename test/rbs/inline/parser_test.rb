@@ -167,6 +167,7 @@ class RBS::Inline::ParserTest < Minitest::Test
 
       public
       private
+      module_function
 
       def foo
       end
