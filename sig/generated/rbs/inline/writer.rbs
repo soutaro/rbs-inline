@@ -112,6 +112,18 @@ module RBS
       # @rbs return: RBS::Types::t
       def constant_decl_to_type: (AST::Declarations::ConstantDecl decl) -> RBS::Types::t
 
+      # @rbs member: AST::Members::RubyAttr
+      # @rbs return: Array[RBS::AST::Members::t]
+      def translate_singleton_ruby_attr: (AST::Members::RubyAttr member) -> Array[RBS::AST::Members::t]
+
+      # @rbs member: AST::Members::RubyAttr
+      # @rbs return: Array[RBS::AST::Members::t]?
+      def translate_singleton_ruby_attr_reader: (AST::Members::RubyAttr member) -> Array[RBS::AST::Members::t]?
+
+      # @rbs member: AST::Members::RubyAttr
+      # @rbs return: Array[RBS::AST::Members::t]?
+      def translate_singleton_ruby_attr_writer: (AST::Members::RubyAttr member) -> Array[RBS::AST::Members::t]?
+
       # @rbs return: RBS::Types::Bases::Any
       def untyped: () -> RBS::Types::Bases::Any
     end

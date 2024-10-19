@@ -413,6 +413,73 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_singleton_attributes__unannotated
+    output = translate(<<~RUBY)
+      class Hello
+        class << self
+          attr_reader :foo, :foo2, "hoge".to_sym
+
+          # Attribute of bar
+          attr_writer :bar
+
+          attr_accessor :baz
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Hello
+        %a{pure}
+        def self.foo: () -> untyped
+
+        %a{pure}
+        def self.foo2: () -> untyped
+
+        # Attribute of bar
+        def self.bar=: (untyped) -> untyped
+
+        %a{pure}
+        def self.baz: () -> untyped
+
+        def self.baz=: (untyped) -> untyped
+      end
+    RBS
+  end
+
+  def test_singleton_attributes__typed
+    output = translate(<<~RUBY)
+      class Hello
+        class << self
+          attr_reader :foo, :foo2, "hoge".to_sym #: String
+
+          # Attribute of bar
+          attr_writer :bar #: Array[Integer]
+
+          attr_accessor :baz #: Integer |
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Hello
+        %a{pure}
+        def self.foo: () -> String
+
+        %a{pure}
+        def self.foo2: () -> String
+
+        # Attribute of bar
+        def self.bar=: (Array[Integer]) -> Array[Integer]
+
+        %a{pure}
+        def self.baz: () -> untyped
+
+        def self.baz=: (untyped) -> untyped
+      end
+    RBS
+  end
+
+
   def test_public_private
     output = translate(<<~RUBY)
       class Hello

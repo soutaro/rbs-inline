@@ -503,8 +503,12 @@ module RBS
             rbs << m
           end
         when AST::Members::RubyAttr
-          if m = member.rbs
-            rbs.concat m
+          if decl
+            rbs.concat translate_singleton_ruby_attr(member)
+          else
+            if m = member.rbs
+              rbs.concat m
+            end
           end
         when AST::Members::RubyPrivate
           rbs << RBS::AST::Members::Private.new(location: nil) unless decl
@@ -624,6 +628,122 @@ module RBS
           RBS::BuiltinNames::Hash.instance_type(untyped, untyped)
         else
           type
+        end
+      end
+
+      # @rbs member: AST::Members::RubyAttr
+      # @rbs return: Array[RBS::AST::Members::t]
+      def translate_singleton_ruby_attr(member)
+        rbs = []
+        if %i[attr_accessor attr_reader].include?(member.node.name)
+          if m = translate_singleton_ruby_attr_reader(member)
+            rbs.concat m
+          end
+        end
+        if %i[attr_accessor attr_writer].include?(member.node.name)
+          if m = translate_singleton_ruby_attr_writer(member)
+            rbs.concat m
+          end
+        end
+
+        rbs
+      end
+
+      # @rbs member: AST::Members::RubyAttr
+      # @rbs return: Array[RBS::AST::Members::t]?
+      def translate_singleton_ruby_attr_reader(member)
+        if member.node.arguments
+          if member.comments
+            comment = RBS::AST::Comment.new(string: member.comments.content(trim: true), location: nil)
+          end
+          member.node.arguments.arguments.filter_map do |arg|
+            if arg.is_a?(Prism::SymbolNode)
+              type = RBS::Types::Function.new(
+                required_positionals: [],
+                optional_positionals: [],
+                rest_positionals: nil,
+                trailing_positionals: [],
+                required_keywords: {},
+                optional_keywords: {},
+                rest_keywords: nil,
+                return_type: member.attribute_type,
+              )
+              method_type = RBS::MethodType.new(
+                type_params: [],
+                type: type,
+                block: nil,
+                location: nil
+              )
+              overload = RBS::AST::Members::MethodDefinition::Overload.new(
+                method_type: method_type,
+                annotations: []
+              )
+              annotation = RBS::AST::Annotation.new(string: 'pure', location: nil)
+
+              name = arg.value or raise
+              RBS::AST::Members::MethodDefinition.new(
+                name: name.to_sym,
+                kind: :singleton,
+                overloads: [overload],
+                annotations: [annotation],
+                comment: comment,
+                overloading: false,
+                visibility: nil,
+                location: nil
+              )
+            end
+          end
+        end
+      end
+
+      # @rbs member: AST::Members::RubyAttr
+      # @rbs return: Array[RBS::AST::Members::t]?
+      def translate_singleton_ruby_attr_writer(member)
+        if member.node.arguments
+          if member.comments
+            comment = RBS::AST::Comment.new(string: member.comments.content(trim: true), location: nil)
+          end
+          member.node.arguments.arguments.filter_map do |arg|
+            if arg.is_a?(Prism::SymbolNode)
+              param = RBS::Types::Function::Param.new(
+                type: member.attribute_type,
+                name: nil,
+                location: nil
+              )
+              type = RBS::Types::Function.new(
+                required_positionals: [param],
+                optional_positionals: [],
+                rest_positionals: nil,
+                trailing_positionals: [],
+                required_keywords: {},
+                optional_keywords: {},
+                rest_keywords: nil,
+                return_type: member.attribute_type,
+              )
+              method_type = RBS::MethodType.new(
+                type_params: [],
+                type: type,
+                block: nil,
+                location: nil
+              )
+              overload = RBS::AST::Members::MethodDefinition::Overload.new(
+                method_type: method_type,
+                annotations: []
+              )
+
+              name = arg.value or raise
+              RBS::AST::Members::MethodDefinition.new(
+                name: "#{name}=".to_sym,
+                kind: :singleton,
+                overloads: [overload],
+                annotations: [],
+                comment: comment,
+                overloading: false,
+                visibility: nil,
+                location: nil
+              )
+            end
+          end
         end
       end
 
