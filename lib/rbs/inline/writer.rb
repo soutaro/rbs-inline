@@ -506,7 +506,11 @@ module RBS
           end
         when AST::Members::RubyAttr
           if m = member.rbs
-            rbs.concat m
+            if decl
+              rbs.concat m.map { _1.update(kind: :singleton) }
+            else
+              rbs.concat m
+            end
           end
         when AST::Members::RubyPrivate
           rbs << RBS::AST::Members::Private.new(location: nil) unless decl
