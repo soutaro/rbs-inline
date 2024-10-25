@@ -52,7 +52,7 @@ GEM
     rbs (3.6.1)
       logger
     securerandom (0.3.1)
-    steep (1.8.1)
+    steep (1.8.2)
       activesupport (>= 5.1)
       concurrent-ruby (>= 1.1.10)
       csv (>= 3.0.9)
@@ -84,7 +84,7 @@ DEPENDENCIES
   minitest (~> 5.25)
   rake (~> 13.2)
   rbs-inline!
-  steep (~> 1.8.0.dev)
+  steep (~> 1.8.2)
   strscan
 
 BUNDLED WITH
