@@ -1,5 +1,7 @@
 # rbs_inline: enabled
 
+require 'stringio'
+
 module RBS
   module Inline
     class Writer
