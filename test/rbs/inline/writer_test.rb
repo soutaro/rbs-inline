@@ -524,6 +524,136 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_ivar_decl
+    output = translate(<<~RUBY)
+      class Foo
+        class << self
+          def method
+            @qux = 123 #: Integer
+            @@quux = "str" #: String
+          end
+        end
+
+        def method
+          @bar = 123 #: Integer
+
+          @@baz = "str" #: String
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        def self.method: () -> untyped
+
+        self.@qux: Integer
+
+        @@quux: String
+
+        def method: () -> untyped
+
+        @bar: Integer
+
+        @@baz: String
+      end
+    RBS
+  end
+
+  def test_ivar__without_decl
+    output = translate(<<~RUBY)
+      class Foo
+        class << self
+          def method
+            @qux = 123
+            @@quux = "str"
+          end
+        end
+
+        def method
+          @bar = 123
+
+          @@baz = "str"
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        def self.method: () -> untyped
+
+        self.@qux: untyped
+
+        @@quux: untyped
+
+        def method: () -> untyped
+
+        @bar: untyped
+
+        @@baz: untyped
+      end
+    RBS
+  end
+
+  def test_ivar_decl__duplicated
+    output = translate(<<~RUBY)
+      class Account
+        attr_reader :ivar2
+
+        def foo
+          @ivar1 = 123
+          @ivar1 = 123 #: Integer
+          @ivar1 = 123 #: String
+
+          @ivar2 = "foo" #: String
+
+          @ivar3 = "foo" #: String
+        end
+
+        attr_accessor :ivar3
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Account
+        attr_reader ivar2: untyped
+
+        def foo: () -> untyped
+
+        @ivar1: Integer
+
+        attr_accessor ivar3: untyped
+      end
+    RBS
+  end
+
+  def test_cvar_decl__duplicated
+    output = translate(<<~RUBY)
+      class Account
+        # @rbs! attr_reader self.cvar2: untyped
+
+        @@cvar1 = 123
+        @@cvar1 = 123 #: Integer
+        @@cvar1 = 123 #: String
+
+        @@cvar2 = "foo" #: String
+
+        @@cvar3 = "foo" #: String
+
+        # @rbs! attr_accessor self.cvar3: untyped
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Account
+        attr_reader self.cvar2: untyped
+
+        @@cvar1: Integer
+
+        attr_accessor self.cvar3: untyped
+      end
+    RBS
+  end
+
   def test_generic_class_module
     output = translate(<<~RUBY)
       # @rbs generic T

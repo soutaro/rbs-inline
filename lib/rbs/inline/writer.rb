@@ -108,6 +108,7 @@ module RBS
         members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
 
         translate_members(decl.members, nil, members)
+        unique_members(members, decl)
 
         rbs << RBS::AST::Declarations::Class.new(
           name: decl.class_name,
@@ -143,6 +144,73 @@ module RBS
         end
       end
 
+      # @rbs members: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
+      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl
+      def unique_members(members, decl)
+        parent_name = decl.is_a?(AST::Declarations::ClassDecl) ? decl.class_name : decl.module_name
+
+        chosen_ivars = {} #: Hash[Symbol, { index: Integer, typed: bool }]
+        chosen_cvars = {} #: Hash[Symbol, { index: Integer, typed: bool }]
+        chosen_civars = {} #: Hash[Symbol, { index: Integer, typed: bool }]
+        removals = [] #: Array[Integer]
+        members.each.with_index do |member, i|
+          case member
+          when RBS::AST::Members::InstanceVariable
+            if old = chosen_ivars[member.name]
+              if old[:typed] == false && member.type != untyped
+                removals << old[:index]
+                chosen_ivars[member.name] = { index: i, typed: true }
+              else
+                removals << i
+
+                warn "error: duplicated instance variable definitions #{member.name} in #{parent_name}" if member.type != untyped
+              end
+            else
+              chosen_ivars[member.name] = { index: i, typed: member.type != untyped }
+            end
+          when RBS::AST::Members::ClassVariable
+            if old = chosen_cvars[member.name]
+              if old[:typed] == false && member.type != untyped
+                removals << old[:index]
+                chosen_cvars[member.name] = { index: i, typed: true }
+              else
+                removals << i
+
+                warn "error: duplicated class variable definitions #{member.name} in #{parent_name}" if member.type != untyped
+              end
+            else
+              chosen_cvars[member.name] = { index: i, typed: member.type != untyped }
+            end
+          when RBS::AST::Members::ClassInstanceVariable
+            if old = chosen_civars[member.name]
+              if old[:typed] == false && member.type != untyped
+                removals << old[:index]
+                chosen_civars[member.name] = { index: i, typed: true }
+              else
+                removals << i
+
+                warn "error: duplicated class instance variable definitions #{member.name} in #{parent_name}" if member.type != untyped
+              end
+            else
+              chosen_civars[member.name] = { index: i, typed: member.type != untyped }
+            end
+          when RBS::AST::Members::AttrAccessor, RBS::AST::Members::AttrReader, RBS::AST::Members::AttrWriter
+            case member.kind
+            when :instance
+              key = :"@#{member.name}"
+              removals << chosen_ivars[key][:index] if chosen_ivars[key]
+              chosen_ivars[key] = { index: i, typed: true }
+            when :singleton
+              key = :"@@#{member.name}"
+              removals << chosen_cvars[key][:index] if chosen_cvars[key]
+              chosen_cvars[key] = { index: i, typed: true }
+            end
+          end
+        end
+
+        removals.sort.reverse_each { members.delete_at(_1) }
+      end
+
       # @rbs decl: AST::Declarations::ModuleDecl
       # @rbs rbs: _Content
       # @rbs return: void
@@ -156,6 +224,7 @@ module RBS
         members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
 
         translate_members(decl.members, nil, members)
+        unique_members(members, decl)
 
         self_types = decl.module_selfs.flat_map { _1.self_types }.compact
 
@@ -507,6 +576,10 @@ module RBS
         when AST::Members::RubyAttr
           if m = member.rbs
             rbs.concat m
+          end
+        when AST::Members::RubyIvar
+          if m = member.rbs(decl)
+            rbs << m
           end
         when AST::Members::RubyPrivate
           rbs << RBS::AST::Members::Private.new(location: nil) unless decl

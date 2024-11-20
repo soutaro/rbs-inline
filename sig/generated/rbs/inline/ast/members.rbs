@@ -4,7 +4,7 @@ module RBS
   module Inline
     module AST
       module Members
-        type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
+        type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyIvar | RubyPublic | RubyPrivate
 
         type rbs = RBSIvar | RBSEmbedded
 
@@ -15,6 +15,8 @@ module RBS
 
           # @rbs location: Prism::Location
           def initialize: (Prism::Location location) -> void
+
+          @location: untyped
 
           def start_line: () -> Integer
         end
@@ -49,6 +51,16 @@ module RBS
           # @rbs singleton_instance: bool
           # @rbs assertion: Annotations::TypeAssertion?
           def initialize: (Prism::DefNode node, AnnotationParser::ParsingResult? comments, RBS::AST::Members::visibility? visibility, bool singleton_instance, Annotations::TypeAssertion? assertion) -> void
+
+          @node: untyped
+
+          @comments: untyped
+
+          @visibility: untyped
+
+          @singleton_instance: untyped
+
+          @assertion: untyped
 
           # Returns the name of the method
           def method_name: () -> Symbol
@@ -87,6 +99,10 @@ module RBS
           # @rbs comments: AnnotationParser::ParsingResult?
           def initialize: (Prism::AliasMethodNode node, AnnotationParser::ParsingResult? comments) -> void
 
+          @node: untyped
+
+          @comments: untyped
+
           # @rbs return: Symbol -- the name of *old* method
           def old_name: () -> Symbol
 
@@ -112,6 +128,12 @@ module RBS
           # @rbs return: void
           def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::Application? application) -> void
 
+          @node: untyped
+
+          @comments: untyped
+
+          @application: untyped
+
           # @rbs return: ::RBS::AST::Members::Include
           #            | ::RBS::AST::Members::Extend
           #            | ::RBS::AST::Members::Prepend
@@ -132,6 +154,12 @@ module RBS
           # @rbs return: void
           def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::TypeAssertion? assertion) -> void
 
+          @node: untyped
+
+          @comments: untyped
+
+          @assertion: untyped
+
           # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
           def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
 
@@ -141,12 +169,39 @@ module RBS
           def attribute_type: () -> Types::t
         end
 
+        class RubyIvar < RubyBase
+          type t = Prism::ClassVariableWriteNode | Prism::ClassVariableOrWriteNode | Prism::InstanceVariableWriteNode | Prism::InstanceVariableOrWriteNode
+
+          attr_reader annotation: Annotations::TypeAssertion?
+
+          attr_reader node: t
+
+          attr_reader scope: :class | :method
+
+          # @rbs node: t
+          # @rbs annotation: Annotations::TypeAssertion?
+          # @rbs scope: :class | :method
+          def initialize: (t node, Annotations::TypeAssertion? annotation, scope: :class | :method) -> void
+
+          @node: untyped
+
+          @annotation: untyped
+
+          @scope: untyped
+
+          # @rbs decl: AST::Declarations::SingletonClassDecl?
+          # @rbs return: RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassVariable | RBS::AST::Members::ClassInstanceVariable | nil
+          def rbs: (?AST::Declarations::SingletonClassDecl? decl) -> (RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassVariable | RBS::AST::Members::ClassInstanceVariable | nil)
+        end
+
         # `private` call without arguments
         class RubyPrivate < RubyBase
           attr_reader node: Prism::CallNode
 
           # @rbs node: Prism::CallNode
           def initialize: (Prism::CallNode node) -> void
+
+          @node: untyped
         end
 
         # `public` call without arguments
@@ -155,6 +210,8 @@ module RBS
 
           # @rbs node: Prism::CallNode
           def initialize: (Prism::CallNode node) -> void
+
+          @node: untyped
         end
 
         class RBSBase < Base
@@ -169,6 +226,10 @@ module RBS
           # @rbs annotation: Annotations::IvarType
           def initialize: (AnnotationParser::ParsingResult comment, Annotations::IvarType annotation) -> void
 
+          @comment: untyped
+
+          @annotation: untyped
+
           def rbs: () -> (RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassInstanceVariable | nil)
         end
 
@@ -180,6 +241,10 @@ module RBS
           # @rbs comment: AnnotationParser::ParsingResult
           # @rbs annotation: Annotations::Embedded
           def initialize: (AnnotationParser::ParsingResult comment, Annotations::Embedded annotation) -> void
+
+          @comment: untyped
+
+          @annotation: untyped
 
           # Returns the array of `RBS::AST` members
           #

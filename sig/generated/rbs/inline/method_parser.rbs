@@ -1,0 +1,39 @@
+# Generated from lib/rbs/inline/method_parser.rb with RBS::Inline
+
+module RBS
+  module Inline
+    class MethodParser < Prism::Visitor
+      # @rbs parser: Parser
+      # @rbs node: Prism::DefNode
+      # @rbs return: Array[AST::Members::RubyIvar]
+      def self.parse: (Parser parser, Prism::DefNode node) -> Array[AST::Members::RubyIvar]
+
+      attr_reader parser: Parser
+
+      attr_reader instance_variables: Array[AST::Members::RubyIvar]
+
+      # @rbs parser: Parser
+      def initialize: (Parser parser) -> untyped
+
+      # @rbs override
+      def visit_instance_variable_or_write_node: ...
+
+      # @rbs override
+      def visit_instance_variable_write_node: ...
+
+      # @rbs override
+      def visit_class_variable_or_write_node: ...
+
+      # @rbs override
+      def visit_class_variable_write_node: ...
+
+      # Fetch TypeAssertion annotation which is associated to `node`
+      #
+      # The assertion annotation is removed from `comments`.
+      #
+      # @rbs node: Prism::Node | Prism::Location
+      # @rbs return: AST::Annotations::TypeAssertion?
+      def assertion_annotation: (Prism::Node | Prism::Location node) -> AST::Annotations::TypeAssertion?
+    end
+  end
+end

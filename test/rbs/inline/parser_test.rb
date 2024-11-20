@@ -196,4 +196,116 @@ class RBS::Inline::ParserTest < Minitest::Test
       end
     end
   end
+
+  def test_ivar_decl
+    _, decls = Parser.parse(parse_ruby(<<~RUBY), opt_in: false)
+      class Account
+        @civar1 = 123
+        @civar2 = 123.0 #: Float
+        @civar3 ||= "foo" #: String
+
+        def foo
+          @ivar1 = 123
+          @ivar2 = 123.0 #: Float
+          @ivar3 ||= "foo" #: String
+        end
+      end
+    RUBY
+
+    assert_equal 1, decls.size
+    decls[0].tap do |decl|
+      assert_instance_of AST::Declarations::ClassDecl, decl
+      assert_equal 7, decl.members.size
+      decl.members[0].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@civar1, member.node.name
+        assert_equal "untyped", member.rbs.type.to_s
+      end
+      decl.members[1].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@civar2, member.node.name
+        assert_equal "Float", member.rbs.type.to_s
+      end
+      decl.members[2].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@civar3, member.node.name
+        assert_equal "String", member.rbs.type.to_s
+      end
+      decl.members[3].tap do |member|
+        assert_instance_of AST::Members::RubyDef, member
+        assert_equal :foo, member.node.name
+      end
+      decl.members[4].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@ivar1, member.node.name
+        assert_equal "untyped", member.rbs(nil).type.to_s
+      end
+      decl.members[5].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@ivar2, member.node.name
+        assert_equal "Float", member.rbs.type.to_s
+      end
+      decl.members[6].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@ivar3, member.node.name
+        assert_equal "String", member.rbs.type.to_s
+      end
+    end
+  end
+
+  def test_cvar_decl
+    _, decls = Parser.parse(parse_ruby(<<~RUBY), opt_in: false)
+      class Account
+        @@cvar1 = 123
+        @@cvar2 = 123.0 #: Float
+        @@cvar3 ||= "foo" #: String
+
+        def foo
+          @@cvar4 = 123
+          @@cvar5 = 123.0 #: Float
+          @@cvar6 ||= "foo" #: String
+        end
+      end
+    RUBY
+
+    assert_equal 1, decls.size
+    decls[0].tap do |decl|
+      assert_instance_of AST::Declarations::ClassDecl, decl
+      assert_equal 7, decl.members.size
+      decl.members[0].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@@cvar1, member.node.name
+        assert_equal "untyped", member.rbs.type.to_s
+      end
+      decl.members[1].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@@cvar2, member.node.name
+        assert_equal "Float", member.rbs.type.to_s
+      end
+      decl.members[2].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@@cvar3, member.node.name
+        assert_equal "String", member.rbs.type.to_s
+      end
+      decl.members[3].tap do |member|
+        assert_instance_of AST::Members::RubyDef, member
+        assert_equal :foo, member.node.name
+      end
+      decl.members[4].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@@cvar4, member.node.name
+        assert_equal "untyped", member.rbs.type.to_s
+      end
+      decl.members[5].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@@cvar5, member.node.name
+        assert_equal "Float", member.rbs.type.to_s
+      end
+      decl.members[6].tap do |member|
+        assert_instance_of AST::Members::RubyIvar, member
+        assert_equal :@@cvar6, member.node.name
+        assert_equal "String", member.rbs.type.to_s
+      end
+    end
+  end
 end

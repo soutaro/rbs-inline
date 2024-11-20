@@ -35,6 +35,14 @@ module RBS
 
       def initialize: () -> void
 
+      @decls: untyped
+
+      @surrounding_decls: untyped
+
+      @comments: untyped
+
+      @current_module_function: untyped
+
       # Parses the given Prism result to a three tuple
       #
       # Returns a three tuple of:
@@ -102,10 +110,16 @@ module RBS
       # @rbs override
       def visit_call_node: ...
 
+      @current_module_function: untyped
+
       # @rbs new_visibility: RBS::AST::Members::visibility?
       # @rbs &block: () -> void
       # @rbs return: void
       def push_visibility: (RBS::AST::Members::visibility? new_visibility) { () -> void } -> void
+
+      @current_visibility: untyped
+
+      @current_visibility: untyped
 
       # @rbs [A] (Node) { () -> A } -> A?
       def process_nesting_node: [A] (Node) { () -> A } -> A?
@@ -132,6 +146,18 @@ module RBS
 
       # @rbs override
       def visit_constant_write_node: ...
+
+      # @rbs override
+      def visit_instance_variable_or_write_node: ...
+
+      # @rbs override
+      def visit_instance_variable_write_node: ...
+
+      # @rbs override
+      def visit_class_variable_or_write_node: ...
+
+      # @rbs override
+      def visit_class_variable_write_node: ...
 
       # @rbs override
       def visit_block_node: ...

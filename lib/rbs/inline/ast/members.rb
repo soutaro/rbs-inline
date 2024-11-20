@@ -5,7 +5,7 @@ module RBS
     module AST
       module Members
         # @rbs!
-        #   type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
+        #   type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyIvar | RubyPublic | RubyPrivate
         #
         #   type rbs = RBSIvar | RBSEmbedded
         #
@@ -481,6 +481,57 @@ module RBS
             raise if type.is_a?(MethodType)
 
             type || Types::Bases::Any.new(location: nil)
+          end
+        end
+
+        class RubyIvar < RubyBase
+          # @rbs! type t = Prism::ClassVariableWriteNode | Prism::ClassVariableOrWriteNode
+          #              | Prism::InstanceVariableWriteNode | Prism::InstanceVariableOrWriteNode
+
+          attr_reader :annotation #:Annotations::TypeAssertion?
+
+          attr_reader :node #: t
+
+          attr_reader :scope #: :class | :method
+
+          # @rbs node: t
+          # @rbs annotation: Annotations::TypeAssertion?
+          # @rbs scope: :class | :method
+          def initialize(node, annotation, scope:) #: void
+            super(node.location)
+            @node = node
+            @annotation = annotation
+            @scope = scope
+          end
+
+          # @rbs decl: AST::Declarations::SingletonClassDecl?
+          # @rbs return: RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassVariable | RBS::AST::Members::ClassInstanceVariable | nil
+          def rbs(decl = nil)
+            case node
+            when Prism::ClassVariableWriteNode, Prism::ClassVariableOrWriteNode
+              RBS::AST::Members::ClassVariable.new(
+                name: node.name,
+                type: annotation&.type || Types::Bases::Any.new(location: nil),
+                location: nil,
+                comment: nil
+              )
+            when Prism::InstanceVariableWriteNode, Prism::InstanceVariableOrWriteNode
+              if decl || scope == :class
+                RBS::AST::Members::ClassInstanceVariable.new(
+                  name: node.name,
+                  type: annotation&.type || Types::Bases::Any.new(location: nil),
+                  location: nil,
+                  comment: nil
+                )
+              else
+                RBS::AST::Members::InstanceVariable.new(
+                  name: node.name,
+                  type: annotation&.type || Types::Bases::Any.new(location: nil),
+                  location: nil,
+                  comment: nil
+                )
+              end
+            end
           end
         end
 
