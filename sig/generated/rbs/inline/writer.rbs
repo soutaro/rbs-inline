@@ -112,6 +112,8 @@ module RBS
       # @rbs return: RBS::Types::t
       def constant_decl_to_type: (AST::Declarations::ConstantDecl decl) -> RBS::Types::t
 
+      @untyped: RBS::Types::Bases::Any
+
       # @rbs return: RBS::Types::Bases::Any
       def untyped: () -> RBS::Types::Bases::Any
     end
