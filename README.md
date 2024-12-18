@@ -15,12 +15,9 @@ Here is a quick example of embedded declarations.
 
 class Person
   attr_reader :name #: String
-
   attr_reader :addresses #: Array[String]
 
-  # @rbs name: String
-  # @rbs addresses: Array[String]
-  # @rbs return: void
+  #: (name: String, addresses: Array[String]) -> void
   def initialize(name:, addresses:)
     @name = name
     @addresses = addresses
