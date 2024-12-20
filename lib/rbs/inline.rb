@@ -15,6 +15,7 @@ require "rbs/inline/ast/comment_lines"
 require "rbs/inline/ast/tree"
 require "rbs/inline/ast/declarations"
 require "rbs/inline/ast/members"
+require "rbs/inline/method_parser"
 require "rbs/inline/parser"
 require "rbs/inline/writer"
 
