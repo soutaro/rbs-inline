@@ -8,15 +8,18 @@ on:
   pull_request:
 
 jobs:
+  ruby-versions:
+    uses: ruby/actions/.github/workflows/ruby_versions.yml@master
+    with:
+      engine: cruby
+      min_version: 3.1
   build:
+    needs: ruby-versions
     runs-on: ubuntu-latest
     name: Ruby ${{ matrix.ruby }}
     strategy:
       matrix:
-        ruby:
-          - '3.3'
-          - '3.2'
-          - '3.1'
+        ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
 
     steps:
     - uses: actions/checkout@v4
