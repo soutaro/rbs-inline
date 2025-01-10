@@ -1011,7 +1011,7 @@ class RBS::Inline::WriterTest < Minitest::Test
 
     assert_equal <<~RBS, output
       # Account record
-      class Account < Struct[untyped]
+      class Account < Struct[Integer | String]
         attr_accessor id(): Integer
 
         attr_accessor email(): String
@@ -1029,7 +1029,7 @@ class RBS::Inline::WriterTest < Minitest::Test
         end
       end
 
-      class Item < Struct[untyped]
+      class Item < Struct[String | Integer]
         attr_accessor sku(): String
 
         attr_accessor price(): Integer
@@ -1041,7 +1041,7 @@ class RBS::Inline::WriterTest < Minitest::Test
       # @rbs %a{rbs-inline:readonly-attributes=true}
       %a{rbs-inline:new-args=required}
       %a{rbs-inline:readonly-attributes=true}
-      class User < Struct[untyped]
+      class User < Struct[String]
         attr_reader name(): String
 
         def self.new: (String name) -> instance
