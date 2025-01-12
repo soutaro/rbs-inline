@@ -88,9 +88,21 @@ class RBS::Inline::ParserTest < Minitest::Test
           :name,  #: String
         )
       end
+
+      Measure = Data.define(
+        :amount, #: Integer
+        :unit #: Integer
+      ) do
+        def <=>(other)
+          return unless other.is_a?(self.class) && other.unit == unit
+          amount <=> other.amount
+        end
+
+        include Comparable
+      end
     RUBY
 
-    assert_equal 2, decls.size
+    assert_equal 3, decls.size
     decls[0].tap do |decl|
       assert_instance_of AST::Declarations::DataAssignDecl, decl
       attrs = decl.each_attribute.to_h
@@ -100,6 +112,7 @@ class RBS::Inline::ParserTest < Minitest::Test
       attrs[:email].tap do |type|
         assert_nil type
       end
+      assert_equal [], decl.members
     end
     decls[1].tap do |decl|
       assert_instance_of AST::Declarations::ClassDecl, decl
@@ -110,6 +123,27 @@ class RBS::Inline::ParserTest < Minitest::Test
         attrs[:name].tap do |type|
           assert_equal "String", type.type.to_s
         end
+        assert_equal [], decl.members
+      end
+    end
+    decls[2].tap do |decl|
+      assert_instance_of AST::Declarations::DataAssignDecl, decl
+      attrs = decl.each_attribute.to_h
+      attrs[:amount].tap do |type|
+        assert_equal "Integer", type.type.to_s
+      end
+      attrs[:unit].tap do |type|
+        assert_equal "Integer", type.type.to_s
+      end
+
+      assert_equal 2, decl.members.size
+      decl.members[0].tap do |member|
+        assert_instance_of AST::Members::RubyDef, member
+        assert_equal :<=>, member.node.name
+      end
+      decl.members[1].tap do |member|
+        assert_instance_of AST::Members::RubyMixin, member
+        assert_equal :include, member.node.name
       end
     end
   end

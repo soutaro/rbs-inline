@@ -9,6 +9,7 @@ module RBS
       #                         | AST::Declarations::ClassDecl
       #                         | AST::Declarations::SingletonClassDecl
       #                         | AST::Declarations::BlockDecl
+      #                         | AST::Declarations::DataAssignDecl
 
       # The top level declarations
       #
@@ -449,7 +450,9 @@ module RBS
         when data_node = AST::Declarations::DataAssignDecl.data_define?(node)
           type_decls = {} #: Hash[Integer, AST::Annotations::TypeAssertion]
 
-          inner_annotations(node.location.start_line, node.location.end_line).flat_map do |comment|
+          opening_loc = data_node.opening_loc || data_node.arguments&.location || data_node.location
+          closing_loc = data_node.closing_loc || data_node.arguments&.location || data_node.location
+          inner_annotations(opening_loc.start_line, closing_loc.end_line).flat_map do |comment|
             comment.each_annotation do |annotation|
               if annotation.is_a?(AST::Annotations::TypeAssertion)
                 start_line = annotation.source.comments[0].location.start_line
@@ -459,6 +462,14 @@ module RBS
           end
 
           decl = AST::Declarations::DataAssignDecl.new(node, data_node, comment, type_decls)
+          push_class_module_decl(decl) do
+            case data_node.block
+            when Prism::BlockNode
+              visit data_node.block.body
+            end
+          end
+
+          return
         when struct_node = AST::Declarations::StructAssignDecl.struct_new?(node)
           type_decls = {} #: Hash[Integer, AST::Annotations::TypeAssertion]
 
