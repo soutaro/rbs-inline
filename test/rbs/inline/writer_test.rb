@@ -949,6 +949,8 @@ class RBS::Inline::WriterTest < Minitest::Test
         :amount, #: Integer
         :unit #: Integer
       ) do
+        UNITS = [:meter, :inch]
+
         def <=>(other) #: bool
           return unless other.is_a?(self.class) && other.unit == unit
           amount <=> other.amount
@@ -1004,6 +1006,8 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         include Comparable
       end
+
+      UNITS: ::Array[untyped]
     RBS
   end
 
@@ -1040,6 +1044,8 @@ class RBS::Inline::WriterTest < Minitest::Test
         :amount, #: Integer
         :unit #: Integer
       ) do
+        UNITS = [:meter, :inch]
+
         def <=>(other) #: bool
           return unless other.is_a?(self.class) && other.unit == unit
           amount <=> other.amount
@@ -1100,6 +1106,8 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         include Comparable
       end
+
+      UNITS: ::Array[untyped]
     RBS
   end
 end

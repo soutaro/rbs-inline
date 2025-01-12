@@ -494,7 +494,15 @@ module RBS
           assertion = assertion_annotation(node)
           decl = AST::Declarations::ConstantDecl.new(node, comment, assertion)
 
-          if current = current_class_module_decl
+          current = current_class_module_decl
+          case current
+          when AST::Declarations::DataAssignDecl, AST::Declarations::StructAssignDecl
+            # The constant defined inside Data or Struct is evaluated as defined outside of them.
+            # ref: https://bugs.ruby-lang.org/issues/20943
+            current = surrounding_decls[-2]
+          end
+
+          if current
             current.members << decl
           else
             decls << decl

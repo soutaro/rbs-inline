@@ -93,6 +93,8 @@ class RBS::Inline::ParserTest < Minitest::Test
         :amount, #: Integer
         :unit #: Integer
       ) do
+        UNITS = [:meter, :inch]
+
         def <=>(other)
           return unless other.is_a?(self.class) && other.unit == unit
           amount <=> other.amount
@@ -102,7 +104,7 @@ class RBS::Inline::ParserTest < Minitest::Test
       end
     RUBY
 
-    assert_equal 3, decls.size
+    assert_equal 4, decls.size
     decls[0].tap do |decl|
       assert_instance_of AST::Declarations::DataAssignDecl, decl
       attrs = decl.each_attribute.to_h
@@ -146,6 +148,10 @@ class RBS::Inline::ParserTest < Minitest::Test
         assert_equal :include, member.node.name
       end
     end
+    decls[3].tap do |decl|
+      assert_instance_of AST::Declarations::ConstantDecl, decl
+      assert_equal :UNITS, decl.node.name
+    end
   end
 
   def test_struct_assign_decl
@@ -168,6 +174,8 @@ class RBS::Inline::ParserTest < Minitest::Test
         :amount, #: Integer
         :unit #: Integer
       ) do
+        UNITS = [:meter, :inch]
+
         def <=>(other) #: bool
           return unless other.is_a?(self.class) && other.unit == unit
           amount <=> other.amount
@@ -177,7 +185,7 @@ class RBS::Inline::ParserTest < Minitest::Test
       end
     RUBY
 
-    assert_equal 3, decls.size
+    assert_equal 4, decls.size
     decls[0].tap do |decl|
       assert_instance_of AST::Declarations::StructAssignDecl, decl
       attrs = decl.each_attribute.to_h
@@ -224,6 +232,10 @@ class RBS::Inline::ParserTest < Minitest::Test
         assert_instance_of AST::Members::RubyMixin, member
         assert_equal :include, member.node.name
       end
+    end
+    decls[3].tap do |decl|
+      assert_instance_of AST::Declarations::ConstantDecl, decl
+      assert_equal :UNITS, decl.node.name
     end
   end
 
