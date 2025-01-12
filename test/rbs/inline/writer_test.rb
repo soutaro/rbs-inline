@@ -1035,6 +1035,18 @@ class RBS::Inline::WriterTest < Minitest::Test
       User = Struct.new(
         :name #: String
       )
+
+      Measure = Struct.new(
+        :amount, #: Integer
+        :unit #: Integer
+      ) do
+        def <=>(other) #: bool
+          return unless other.is_a?(self.class) && other.unit == unit
+          amount <=> other.amount
+        end
+
+        include Comparable
+      end
     RUBY
 
     assert_equal <<~RBS, output
@@ -1074,6 +1086,19 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         def self.new: (String name) -> instance
                     | (name: String) -> instance
+      end
+
+      class Measure < Struct[untyped]
+        attr_accessor amount(): Integer
+
+        attr_accessor unit(): Integer
+
+        def self.new: (?Integer amount, ?Integer unit) -> instance
+                    | (?amount: Integer, ?unit: Integer) -> instance
+
+        def <=>: (untyped other) -> bool
+
+        include Comparable
       end
     RBS
   end

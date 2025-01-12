@@ -382,14 +382,10 @@ module RBS
           end
         end
 
-        class StructAssignDecl < Base
+        class StructAssignDecl < ModuleOrClass #[Prism::ConstantWriteNode]
           extend ConstantUtil
 
           include DataStructUtil
-
-          attr_reader :node #: Prism::ConstantWriteNode
-
-          attr_reader :comments #: AnnotationParser::ParsingResult?
 
           attr_reader :type_decls #: Hash[Integer, Annotations::TypeAssertion]
 
@@ -397,14 +393,9 @@ module RBS
 
           # @rbs (Prism::ConstantWriteNode, Prism::CallNode, AnnotationParser::ParsingResult?, Hash[Integer, Annotations::TypeAssertion]) -> void
           def initialize(node, struct_new_node, comments, type_decls)
-            @node = node
-            @comments = comments
+            super(node, comments)
             @type_decls = type_decls
             @struct_new_node = struct_new_node
-          end
-
-          def start_line #: Integer
-            node.location.start_line
           end
 
           # @rbs %a{pure}

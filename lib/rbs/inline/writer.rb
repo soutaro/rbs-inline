@@ -425,10 +425,13 @@ module RBS
           end
         end
 
+        members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
+        translate_members(decl.members, nil, members)
+
         rbs << RBS::AST::Declarations::Class.new(
           name: decl.constant_name,
           type_params: [],
-          members: [*attributes, new],
+          members: [*attributes, new, *members],
           super_class: RBS::AST::Declarations::Class::Super.new(
             name: RBS::TypeName.new(name: :Struct, namespace: RBS::Namespace.empty),
             args: [RBS::Types::Bases::Any.new(location: nil)],

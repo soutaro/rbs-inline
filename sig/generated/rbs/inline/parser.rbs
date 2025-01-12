@@ -5,7 +5,7 @@ use Prism::*
 module RBS
   module Inline
     class Parser < Prism::Visitor
-      type with_members = AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl | AST::Declarations::BlockDecl | AST::Declarations::DataAssignDecl
+      type with_members = AST::Declarations::ModuleDecl | AST::Declarations::ClassDecl | AST::Declarations::SingletonClassDecl | AST::Declarations::BlockDecl | AST::Declarations::DataAssignDecl | AST::Declarations::StructAssignDecl
 
       # The top level declarations
       attr_reader decls: Array[AST::Declarations::t]
