@@ -428,7 +428,12 @@ module RBS
           members: [*attributes, new],
           super_class: RBS::AST::Declarations::Class::Super.new(
             name: RBS::TypeName.new(name: :Struct, namespace: RBS::Namespace.empty),
-            args: [RBS::Types::Bases::Any.new(location: nil)],
+            args: [
+              RBS::Types::Union.new(
+                types: decl.each_attribute.map { |_, attr| attr&.type || RBS::Types::Bases::Any.new(location: nil) }.uniq,
+                location: nil
+              )
+            ],
             location: nil
           ),
           annotations: decl.class_annotations,
