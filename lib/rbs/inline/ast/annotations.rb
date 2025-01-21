@@ -482,7 +482,7 @@ module RBS
                   case last_token
                   when Array
                     # `*` clause
-                    namespace = Namespace(token_strs.join)
+                    namespace = RBS::Namespace.parse(token_strs.join)
                     @clauses << RBS::AST::Directives::Use::WildcardClause.new(
                       namespace: namespace,
                       location: nil
