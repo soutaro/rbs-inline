@@ -15,17 +15,22 @@ module RBS
       attr_reader :output #: String
       attr_reader :writer #: RBS::Writer
 
+      attr_accessor :default_type #: Types::t
+
       # @rbs buffer: String
       def initialize(buffer = +"") #: void
         @output = buffer
         @writer = RBS::Writer.new(out: StringIO.new(buffer))
+        @default_type = Types::Bases::Any.new(location: nil)
       end
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
       # @rbs rbs_decls: Array[RBS::AST::Declarations::t]
-      def self.write(uses, decls, rbs_decls) #: void
+      # @rbs &: ? (Writer) -> void
+      def self.write(uses, decls, rbs_decls, &) #: void
         writer = Writer.new()
+        yield writer if block_given?
         writer.write(uses, decls, rbs_decls)
         writer.output
       end
@@ -200,7 +205,7 @@ module RBS
         attributes = decl.each_attribute.map do |name, type|
           RBS::AST::Members::AttrReader.new(
             name: name,
-            type: type&.type || Types::Bases::Any.new(location: nil),
+            type: type&.type || default_type,
             ivar_name: false,
             comment: nil,
             kind: :instance,
@@ -220,7 +225,7 @@ module RBS
                 type: Types::Function.empty(Types::Bases::Instance.new(location: nil)).update(
                   required_positionals: decl.each_attribute.map do |name, attr|
                     RBS::Types::Function::Param.new(
-                      type: attr&.type || Types::Bases::Any.new(location: nil),
+                      type: attr&.type || default_type,
                       name: name,
                       location: nil
                     )
@@ -239,7 +244,7 @@ module RBS
                     [
                       name,
                       RBS::Types::Function::Param.new(
-                        type: attr&.type || Types::Bases::Any.new(location: nil),
+                        type: attr&.type || default_type,
                         name: nil,
                         location: nil
                       )
@@ -317,7 +322,7 @@ module RBS
           if decl.readonly_attributes?
             RBS::AST::Members::AttrReader.new(
               name: name,
-              type: type&.type || Types::Bases::Any.new(location: nil),
+              type: type&.type || default_type,
               ivar_name: false,
               comment: nil,
               kind: :instance,
@@ -328,7 +333,7 @@ module RBS
           else
             RBS::AST::Members::AttrAccessor.new(
               name: name,
-              type: type&.type || Types::Bases::Any.new(location: nil),
+              type: type&.type || default_type,
               ivar_name: false,
               comment: nil,
               kind: :instance,
@@ -353,7 +358,7 @@ module RBS
         if decl.positional_init?
           attr_params = decl.each_attribute.map do |name, attr|
             RBS::Types::Function::Param.new(
-              type: attr&.type || Types::Bases::Any.new(location: nil),
+              type: attr&.type || default_type,
               name: name,
               location: nil
             )
@@ -378,7 +383,7 @@ module RBS
             [
               name,
               RBS::Types::Function::Param.new(
-                type: attr&.type || Types::Bases::Any.new(location: nil),
+                type: attr&.type || default_type,
                 name: nil,
                 location: nil
               )
@@ -407,7 +412,7 @@ module RBS
                     t.update(required_positionals: [
                       RBS::Types::Function::Param.new(
                         type: RBS::Types::Record.new(all_fields: decl.each_attribute.map do |name, attr|
-                          [name, attr&.type || Types::Bases::Any.new(location: nil)]
+                          [name, attr&.type || default_type]
                         end.to_h, location: nil),
                         name: nil,
                         location: nil
@@ -430,7 +435,7 @@ module RBS
             name: RBS::TypeName.new(name: :Struct, namespace: RBS::Namespace.empty),
             args: [
               RBS::Types::Union.new(
-                types: decl.each_attribute.map { |_, attr| attr&.type || RBS::Types::Bases::Any.new(location: nil) }.uniq,
+                types: decl.each_attribute.map { |_, attr| attr&.type || default_type }.uniq,
                 location: nil
               )
             ],
@@ -485,7 +490,7 @@ module RBS
           rbs << RBS::AST::Members::MethodDefinition.new(
             name: member.method_name,
             kind: kind,
-            overloads: member.method_overloads,
+            overloads: member.method_overloads(default_type),
             annotations: member.method_annotations,
             location: nil,
             comment: comment,
@@ -510,7 +515,7 @@ module RBS
             rbs << m
           end
         when AST::Members::RubyAttr
-          if m = member.rbs
+          if m = member.rbs(default_type)
             rbs.concat m
           end
         when AST::Members::RubyPrivate
@@ -620,23 +625,18 @@ module RBS
       # @rbs decl: AST::Declarations::ConstantDecl
       # @rbs return: RBS::Types::t
       def constant_decl_to_type(decl)
-        type = decl.type
+        type = decl.type(default_type)
         return type unless type.is_a?(RBS::Types::ClassInstance)
         return type if type.args.any?
 
         case decl.node.value
         when Prism::ArrayNode
-          RBS::BuiltinNames::Array.instance_type(untyped)
+          RBS::BuiltinNames::Array.instance_type(default_type)
         when Prism::HashNode
-          RBS::BuiltinNames::Hash.instance_type(untyped, untyped)
+          RBS::BuiltinNames::Hash.instance_type(default_type, default_type)
         else
           type
         end
-      end
-
-      # @rbs return: RBS::Types::Bases::Any
-      def untyped
-        @untyped ||= RBS::Types::Bases::Any.new(location: nil)
       end
     end
   end

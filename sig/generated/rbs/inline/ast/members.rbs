@@ -68,7 +68,8 @@ module RBS
 
           def overloading?: () -> bool
 
-          def method_overloads: () -> Array[RBS::AST::Members::MethodDefinition::Overload]
+          # @rbs (::RBS::Types::t default_type) -> Array[RBS::AST::Members::MethodDefinition::Overload]
+          def method_overloads: (::RBS::Types::t default_type) -> Array[RBS::AST::Members::MethodDefinition::Overload]
 
           def method_annotations: () -> Array[RBS::AST::Annotation]
 
@@ -133,12 +134,11 @@ module RBS
           def initialize: (Prism::CallNode node, AnnotationParser::ParsingResult? comments, Annotations::TypeAssertion? assertion) -> void
 
           # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
-          def rbs: () -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
+          # @rbs default_type: RBS::Types::t
+          def rbs: (RBS::Types::t default_type) -> Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
 
           # Returns the type of the attribute
-          #
-          # Returns `untyped` when not annotated.
-          def attribute_type: () -> Types::t
+          def attribute_type: () -> Types::t?
         end
 
         # `private` call without arguments
