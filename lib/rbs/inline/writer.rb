@@ -634,6 +634,8 @@ module RBS
         end
       end
 
+      # @rbs @untyped: RBS::Types::Bases::Any
+
       # @rbs return: RBS::Types::Bases::Any
       def untyped
         @untyped ||= RBS::Types::Bases::Any.new(location: nil)
