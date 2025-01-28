@@ -944,6 +944,19 @@ class RBS::Inline::WriterTest < Minitest::Test
           :name
         )
       end
+
+      Measure = Data.define(
+        :amount, #: Integer
+        :unit #: Integer
+      ) do
+        UNITS = [:meter, :inch]
+
+        def <=>(other) #: bool
+          return unless other.is_a?(self.class) && other.unit == unit
+          amount <=> other.amount
+        end
+        include Comparable
+      end
     RUBY
 
     assert_equal <<~RBS, output
@@ -976,6 +989,25 @@ class RBS::Inline::WriterTest < Minitest::Test
           def members: () -> [ :name ]
         end
       end
+
+      class Measure < Data
+        attr_reader amount(): Integer
+
+        attr_reader unit(): Integer
+
+        def self.new: (Integer amount, Integer unit) -> instance
+                    | (amount: Integer, unit: Integer) -> instance
+
+        def self.members: () -> [ :amount, :unit ]
+
+        def members: () -> [ :amount, :unit ]
+
+        def <=>: (untyped other) -> bool
+
+        include Comparable
+      end
+
+      UNITS: ::Array[untyped]
     RBS
   end
 
@@ -1007,6 +1039,20 @@ class RBS::Inline::WriterTest < Minitest::Test
       User = Struct.new(
         :name #: String
       )
+
+      Measure = Struct.new(
+        :amount, #: Integer
+        :unit #: Integer
+      ) do
+        UNITS = [:meter, :inch]
+
+        def <=>(other) #: bool
+          return unless other.is_a?(self.class) && other.unit == unit
+          amount <=> other.amount
+        end
+
+        include Comparable
+      end
     RUBY
 
     assert_equal <<~RBS, output
@@ -1047,6 +1093,21 @@ class RBS::Inline::WriterTest < Minitest::Test
         def self.new: (String name) -> instance
                     | (name: String) -> instance
       end
+
+      class Measure < Struct[untyped]
+        attr_accessor amount(): Integer
+
+        attr_accessor unit(): Integer
+
+        def self.new: (?Integer amount, ?Integer unit) -> instance
+                    | (?amount: Integer, ?unit: Integer) -> instance
+
+        def <=>: (untyped other) -> bool
+
+        include Comparable
+      end
+
+      UNITS: ::Array[untyped]
     RBS
   end
 end

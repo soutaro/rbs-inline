@@ -259,8 +259,9 @@ module RBS
           visibility: nil
         )
 
-        members = [:singleton, :instance].map do |kind|
-          RBS::AST::Members::MethodDefinition.new(
+        members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
+        [:singleton, :instance].each do |kind|
+          members << RBS::AST::Members::MethodDefinition.new(
             name: :members,
             kind: kind, #: RBS::AST::MethodDefinition::Kind
             overloads: [
@@ -288,6 +289,8 @@ module RBS
             visibility: nil
           )
         end
+
+        translate_members(decl.members, nil, members)
 
         rbs << RBS::AST::Declarations::Class.new(
           name: decl.constant_name,
@@ -422,10 +425,13 @@ module RBS
           end
         end
 
+        members = [] #: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
+        translate_members(decl.members, nil, members)
+
         rbs << RBS::AST::Declarations::Class.new(
           name: decl.constant_name,
           type_params: [],
-          members: [*attributes, new],
+          members: [*attributes, new, *members],
           super_class: RBS::AST::Declarations::Class::Super.new(
             name: RBS::TypeName.new(name: :Struct, namespace: RBS::Namespace.empty),
             args: [
