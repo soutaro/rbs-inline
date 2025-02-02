@@ -257,6 +257,11 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         # foo is an alias of bar
         alias :foo :bar
+
+        class << self
+          # self.baz is an alias of self.qux
+          alias baz qux
+        end
       end
     RUBY
 
@@ -266,6 +271,9 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         # foo is an alias of bar
         alias foo bar
+
+        # self.baz is an alias of self.qux
+        alias self.baz self.qux
       end
     RBS
   end
