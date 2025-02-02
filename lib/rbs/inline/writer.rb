@@ -497,10 +497,11 @@ module RBS
             comment = RBS::AST::Comment.new(string: member.comments.content(trim: true), location: nil)
           end
 
+          kind = decl ? :singleton : :instance #: RBS::AST::Members::Alias::kind
           rbs << RBS::AST::Members::Alias.new(
             new_name: member.new_name,
             old_name: member.old_name,
-            kind: :instance,
+            kind: kind,
             annotations: [],
             location: nil,
             comment: comment
