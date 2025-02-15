@@ -99,7 +99,7 @@ module RBS
           # @rbs %a{pure}
           # @rbs return: Types::t
           %a{pure}
-          def type: () -> Types::t
+          def type: (untyped default_type) -> Types::t
 
           # @rbs %a{pure}
           # @rbs return Types::t?

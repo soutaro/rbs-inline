@@ -5,10 +5,10 @@ require "test_helper"
 class RBS::Inline::WriterTest < Minitest::Test
   include RBS::Inline
 
-  def translate(src, opt_in: true)
+  def translate(src, opt_in: true, &block)
     src = "# rbs_inline: enabled\n\n" + src
     uses, decls, rbs_decls = Parser.parse(Prism.parse(src, filepath: "a.rb"), opt_in: opt_in)
-    Writer.write(uses, decls, rbs_decls)
+    Writer.write(uses, decls, rbs_decls, &block)
   end
 
   def test_method_type
@@ -1047,6 +1047,123 @@ class RBS::Inline::WriterTest < Minitest::Test
         def self.new: (String name) -> instance
                     | (name: String) -> instance
       end
+    RBS
+  end
+
+  def test_method_type__untyped_customize
+    output = translate(<<~RUBY) do
+      class Foo
+        def f
+        end
+
+        attr_reader :foo
+      end
+    RUBY
+      _1.default_type = RBS::Parser::parse_type("__todo__")
+    end
+
+    assert_equal <<~RBS, output
+      class Foo
+        def f: () -> __todo__
+
+        attr_reader foo: __todo__
+      end
+    RBS
+  end
+
+  def test_data_type__untyped_customize
+    output = translate(<<~RUBY) do
+      Foo = Data.define(
+        :bar
+      )
+    RUBY
+      _1.default_type = RBS::Parser::parse_type("__todo__")
+    end
+
+    assert_equal <<~RBS, output
+      class Foo < Data
+        attr_reader bar(): __todo__
+
+        def self.new: (__todo__ bar) -> instance
+                    | (bar: __todo__) -> instance
+
+        def self.members: () -> [ :bar ]
+
+        def members: () -> [ :bar ]
+      end
+    RBS
+  end
+
+  def test_struct_type__untyped_customize
+    output = translate(<<~RUBY) do
+      class Foo
+        Bar = Struct.new(:foo, :bar)
+        Baz = Struct.new(:foo, :bar, keyword_init: true)
+        Qux = Struct.new(:foo, :bar, keyword_init: false)
+        # @rbs %a{rbs-inline:readonly-attributes=true}
+        Quux = Struct.new(:foo, :bar)
+      end
+    RUBY
+      _1.default_type = RBS::Parser::parse_type("__todo__")
+    end
+
+    assert_equal <<~RBS, output
+      class Foo
+        class Bar < Struct[__todo__]
+          attr_accessor foo(): __todo__
+
+          attr_accessor bar(): __todo__
+
+          def self.new: (?__todo__ foo, ?__todo__ bar) -> instance
+                      | (?foo: __todo__, ?bar: __todo__) -> instance
+        end
+
+        class Baz < Struct[__todo__]
+          attr_accessor foo(): __todo__
+
+          attr_accessor bar(): __todo__
+
+          def self.new: (?foo: __todo__, ?bar: __todo__) -> instance
+                      | ({ ?foo: __todo__, ?bar: __todo__ }) -> instance
+        end
+
+        class Qux < Struct[__todo__]
+          attr_accessor foo(): __todo__
+
+          attr_accessor bar(): __todo__
+
+          def self.new: (?__todo__ foo, ?__todo__ bar) -> instance
+        end
+
+        # @rbs %a{rbs-inline:readonly-attributes=true}
+        %a{rbs-inline:readonly-attributes=true}
+        class Quux < Struct[__todo__]
+          attr_reader foo(): __todo__
+
+          attr_reader bar(): __todo__
+
+          def self.new: (?__todo__ foo, ?__todo__ bar) -> instance
+                      | (?foo: __todo__, ?bar: __todo__) -> instance
+        end
+      end
+    RBS
+  end
+
+  def test_constant_type__untyped_customize
+    output = translate(<<~RUBY) do
+      FOO = []
+      BAR = {}
+      BAZ = object
+    RUBY
+      _1.default_type = RBS::Parser::parse_type("__todo__")
+    end
+
+    assert_equal <<~RBS, output
+      FOO: ::Array[__todo__]
+
+      BAR: ::Hash[__todo__, __todo__]
+
+      BAZ: __todo__
     RBS
   end
 end

@@ -189,7 +189,7 @@ module RBS
 
           # @rbs %a{pure}
           # @rbs return: Types::t
-          def type
+          def type(default_type)
             if assertion
               case assertion.type
               when MethodType, nil
@@ -203,7 +203,7 @@ module RBS
               return literal
             end
 
-            Types::Bases::Any.new(location: nil)
+            default_type
           end
 
           # @rbs %a{pure}

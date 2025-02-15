@@ -73,6 +73,7 @@ module RBS
         base_paths = [Pathname("lib"), Pathname("app")]
         output_path = nil #: Pathname?
         opt_in = true
+        unknown_type = nil #: String?
 
         OptionParser.new do |opts|
           opts.on("--base=BASE", "The path to calculate relative path of files (defaults to #{base_paths.join(File::PATH_SEPARATOR)})") do |str|
@@ -94,6 +95,10 @@ module RBS
 
           opts.on("--opt-in", "Generates RBS files only for files with `# rbs_inline: enabled` comment (default)") do
             opt_in = true
+          end
+
+          opts.on("--unknown-type=TYPE", "Use given type instead of untyped for unknown types (default: untyped)") do
+            unknown_type = _1
           end
 
           opts.on("--verbose") do
@@ -141,6 +146,12 @@ module RBS
 
           if (uses, decls, rbs_decls = Parser.parse(Prism.parse_file(target.to_s), opt_in: opt_in))
             writer = Writer.new()
+
+            if unknown_type
+              type = RBS::Parser.parse_type(unknown_type, require_eof: true)
+              type && writer.default_type = type
+            end
+
             writer.header("Generated from #{target.relative? ? target : target.relative_path_from(Pathname.pwd)} with RBS::Inline")
             writer.write(uses, decls, rbs_decls)
 
