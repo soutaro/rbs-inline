@@ -158,7 +158,8 @@ module RBS
             end
           end
 
-          def method_overloads #: Array[RBS::AST::Members::MethodDefinition::Overload]
+          # @rbs (::RBS::Types::t default_type) -> Array[RBS::AST::Members::MethodDefinition::Overload]
+          def method_overloads(default_type)
             case
             when method_types = annotated_method_types
               method_types.map do |method_type|
@@ -182,7 +183,7 @@ module RBS
                   when Prism::RequiredParameterNode
                     required_positionals << Types::Function::Param.new(
                       name: param.name,
-                      type: var_type_hash[param.name] || Types::Bases::Any.new(location: nil),
+                      type: var_type_hash[param.name] || default_type,
                       location: nil
                     )
                   end
@@ -193,7 +194,7 @@ module RBS
                   when Prism::OptionalParameterNode
                     optional_positionals << Types::Function::Param.new(
                       name: param.name,
-                      type: var_type_hash[param.name] || Types::Bases::Any.new(location: nil),
+                      type: var_type_hash[param.name] || default_type,
                       location: nil
                     )
                   end
@@ -208,7 +209,7 @@ module RBS
 
                   rest_positionals = Types::Function::Param.new(
                     name: rest.name,
-                    type: splat_type || Types::Bases::Any.new(location: nil),
+                    type: splat_type || default_type,
                     location: nil
                   )
                 end
@@ -217,7 +218,7 @@ module RBS
                   if node.is_a?(Prism::RequiredKeywordParameterNode)
                     required_keywords[node.name] = Types::Function::Param.new(
                       name: nil,
-                      type: var_type_hash[node.name] || Types::Bases::Any.new(location: nil),
+                      type: var_type_hash[node.name] || default_type,
                       location: nil
                     )
                   end
@@ -225,7 +226,7 @@ module RBS
                   if node.is_a?(Prism::OptionalKeywordParameterNode)
                     optional_keywords[node.name] = Types::Function::Param.new(
                       name: nil,
-                      type: var_type_hash[node.name] || Types::Bases::Any.new(location: nil),
+                      type: var_type_hash[node.name] || default_type,
                       location: nil
                     )
                   end
@@ -241,7 +242,7 @@ module RBS
 
                   rest_keywords = Types::Function::Param.new(
                     name: node.parameters.keyword_rest.name,
-                    type: double_splat_type || Types::Bases::Any.new(location: nil),
+                    type: double_splat_type || default_type,
                     location: nil)
                 when Prism::ForwardingParameterNode
                   forwarding_parameter = true
@@ -249,7 +250,7 @@ module RBS
 
                 if node.parameters.block
                   block = Types::Block.new(
-                    type: Types::UntypedFunction.new(return_type: Types::Bases::Any.new(location: nil)),
+                    type: Types::UntypedFunction.new(return_type: default_type),
                     required: false,
                     self_type: nil
                   )
@@ -265,7 +266,7 @@ module RBS
                   RBS::AST::Members::MethodDefinition::Overload.new(
                     method_type: RBS::MethodType.new(
                       type_params: [],
-                      type: Types::UntypedFunction.new(return_type: return_type || Types::Bases::Any.new(location: nil)),
+                      type: Types::UntypedFunction.new(return_type: return_type || default_type),
                       block: nil,
                       location: nil
                     ),
@@ -285,7 +286,7 @@ module RBS
                         required_keywords: required_keywords,
                         optional_keywords: optional_keywords,
                         rest_keywords: rest_keywords,
-                        return_type: return_type || Types::Bases::Any.new(location: nil)
+                        return_type: return_type || default_type
                       ),
                       block: block,
                       location: nil
@@ -432,22 +433,26 @@ module RBS
         class RubyAttr < RubyBase
           attr_reader :node #: Prism::CallNode
           attr_reader :comments #: AnnotationParser::ParsingResult?
+          attr_reader :visibility #: RBS::AST::Members::visibility?
           attr_reader :assertion #: Annotations::TypeAssertion?
 
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs visibility: RBS::AST::Members::visibility?
           # @rbs assertion: Annotations::TypeAssertion?
           # @rbs return: void
-          def initialize(node, comments, assertion)
+          def initialize(node, comments, visibility, assertion)
             super(node.location)
 
             @node = node
             @comments = comments
+            @visibility = visibility
             @assertion = assertion
           end
 
           # @rbs return Array[RBS::AST::Members::AttrReader | RBS::AST::Members::AttrWriter | RBS::AST::Members::AttrAccessor]?
-          def rbs
+          # @rbs default_type: RBS::Types::t
+          def rbs(default_type)
             if comments
               comment = RBS::AST::Comment.new(string: comments.content(trim: true), location: nil)
             end
@@ -478,13 +483,13 @@ module RBS
               args.map do |arg|
                 klass.new(
                   name: arg,
-                  type: attribute_type,
+                  type: attribute_type || default_type,
                   ivar_name: nil,
                   kind: :instance,
                   annotations: [],
                   location: nil,
                   comment: comment,
-                  visibility: nil
+                  visibility: visibility
                 )
               end
             end
@@ -492,13 +497,11 @@ module RBS
 
           # Returns the type of the attribute
           #
-          # Returns `untyped` when not annotated.
-          #
-          def attribute_type #: Types::t
+          def attribute_type #: Types::t?
             type = assertion&.type
             raise if type.is_a?(MethodType)
 
-            type || Types::Bases::Any.new(location: nil)
+            type
           end
         end
 
