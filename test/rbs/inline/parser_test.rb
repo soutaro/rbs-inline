@@ -212,6 +212,8 @@ class RBS::Inline::ParserTest < Minitest::Test
       end
     RUBY
 
+    default_type = RBS::Types::Bases::Any.new(location: nil)
+
     assert_equal 1, decls.size
     decls[0].tap do |decl|
       assert_instance_of AST::Declarations::ClassDecl, decl
@@ -219,17 +221,17 @@ class RBS::Inline::ParserTest < Minitest::Test
       decl.members[0].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@civar1, member.node.name
-        assert_equal "untyped", member.rbs.type.to_s
+        assert_equal "untyped", member.rbs(default_type).type.to_s
       end
       decl.members[1].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@civar2, member.node.name
-        assert_equal "Float", member.rbs.type.to_s
+        assert_equal "Float", member.rbs(default_type).type.to_s
       end
       decl.members[2].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@civar3, member.node.name
-        assert_equal "String", member.rbs.type.to_s
+        assert_equal "String", member.rbs(default_type).type.to_s
       end
       decl.members[3].tap do |member|
         assert_instance_of AST::Members::RubyDef, member
@@ -238,17 +240,17 @@ class RBS::Inline::ParserTest < Minitest::Test
       decl.members[4].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@ivar1, member.node.name
-        assert_equal "untyped", member.rbs(nil).type.to_s
+        assert_equal "untyped", member.rbs(default_type, nil).type.to_s
       end
       decl.members[5].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@ivar2, member.node.name
-        assert_equal "Float", member.rbs.type.to_s
+        assert_equal "Float", member.rbs(default_type).type.to_s
       end
       decl.members[6].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@ivar3, member.node.name
-        assert_equal "String", member.rbs.type.to_s
+        assert_equal "String", member.rbs(default_type).type.to_s
       end
     end
   end
@@ -268,6 +270,8 @@ class RBS::Inline::ParserTest < Minitest::Test
       end
     RUBY
 
+    default_type = RBS::Types::Bases::Any.new(location: nil)
+
     assert_equal 1, decls.size
     decls[0].tap do |decl|
       assert_instance_of AST::Declarations::ClassDecl, decl
@@ -275,17 +279,17 @@ class RBS::Inline::ParserTest < Minitest::Test
       decl.members[0].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@@cvar1, member.node.name
-        assert_equal "untyped", member.rbs.type.to_s
+        assert_equal "untyped", member.rbs(default_type).type.to_s
       end
       decl.members[1].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@@cvar2, member.node.name
-        assert_equal "Float", member.rbs.type.to_s
+        assert_equal "Float", member.rbs(default_type).type.to_s
       end
       decl.members[2].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@@cvar3, member.node.name
-        assert_equal "String", member.rbs.type.to_s
+        assert_equal "String", member.rbs(default_type).type.to_s
       end
       decl.members[3].tap do |member|
         assert_instance_of AST::Members::RubyDef, member
@@ -294,17 +298,17 @@ class RBS::Inline::ParserTest < Minitest::Test
       decl.members[4].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@@cvar4, member.node.name
-        assert_equal "untyped", member.rbs.type.to_s
+        assert_equal "untyped", member.rbs(default_type).type.to_s
       end
       decl.members[5].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@@cvar5, member.node.name
-        assert_equal "Float", member.rbs.type.to_s
+        assert_equal "Float", member.rbs(default_type).type.to_s
       end
       decl.members[6].tap do |member|
         assert_instance_of AST::Members::RubyIvar, member
         assert_equal :@@cvar6, member.node.name
-        assert_equal "String", member.rbs.type.to_s
+        assert_equal "String", member.rbs(default_type).type.to_s
       end
     end
   end

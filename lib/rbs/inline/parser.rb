@@ -307,7 +307,7 @@ module RBS
               end #: AST::Annotations::TypeAssertion?
             end
 
-            current_class_module_decl!.members << AST::Members::RubyAttr.new(node, comment, assertion)
+            current_class_module_decl!.members << AST::Members::RubyAttr.new(node, comment, current_visibility, assertion)
 
             return
           end
