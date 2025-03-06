@@ -415,17 +415,20 @@ module RBS
         class RubyAttr < RubyBase
           attr_reader :node #: Prism::CallNode
           attr_reader :comments #: AnnotationParser::ParsingResult?
+          attr_reader :visibility #: RBS::AST::Members::visibility?
           attr_reader :assertion #: Annotations::TypeAssertion?
 
           # @rbs node: Prism::CallNode
           # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs visibility: RBS::AST::Members::visibility?
           # @rbs assertion: Annotations::TypeAssertion?
           # @rbs return: void
-          def initialize(node, comments, assertion)
+          def initialize(node, comments, visibility, assertion)
             super(node.location)
 
             @node = node
             @comments = comments
+            @visibility = visibility
             @assertion = assertion
           end
 
@@ -468,7 +471,7 @@ module RBS
                   annotations: [],
                   location: nil,
                   comment: comment,
-                  visibility: nil
+                  visibility: visibility
                 )
               end
             end

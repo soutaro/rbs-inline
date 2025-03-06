@@ -373,11 +373,14 @@ class RBS::Inline::WriterTest < Minitest::Test
     output = translate(<<~RUBY)
       class Hello
         attr_reader :foo, :foo2, "hoge".to_sym
+        private attr_reader :foo3
 
         # Attribute of bar
         attr_writer :bar
+        private attr_writer :bar2
 
         attr_accessor :baz
+        private attr_accessor :baz2
       end
     RUBY
 
@@ -387,10 +390,16 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         attr_reader foo2: untyped
 
+        private attr_reader foo3: untyped
+
         # Attribute of bar
         attr_writer bar: untyped
 
+        private attr_writer bar2: untyped
+
         attr_accessor baz: untyped
+
+        private attr_accessor baz2: untyped
       end
     RBS
   end
@@ -399,11 +408,14 @@ class RBS::Inline::WriterTest < Minitest::Test
     output = translate(<<~RUBY)
       class Hello
         attr_reader :foo, :foo2, "hoge".to_sym #: String
+        private attr_reader :foo3 #: String
 
         # Attribute of bar
         attr_writer :bar #: Array[Integer]
+        private attr_writer :bar2 #: Array[Integer]
 
         attr_accessor :baz #: Integer |
+        private attr_accessor :baz2 #: Integer
       end
     RUBY
 
@@ -413,10 +425,16 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         attr_reader foo2: String
 
+        private attr_reader foo3: String
+
         # Attribute of bar
         attr_writer bar: Array[Integer]
 
+        private attr_writer bar2: Array[Integer]
+
         attr_accessor baz: untyped
+
+        private attr_accessor baz2: Integer
       end
     RBS
   end
