@@ -4,7 +4,7 @@ module RBS
   module Inline
     module AST
       module Members
-        type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyPublic | RubyPrivate
+        type ruby = RubyDef | RubyAlias | RubyMixin | RubyAttr | RubyIvar | RubyPublic | RubyPrivate
 
         type rbs = RBSIvar | RBSEmbedded
 
@@ -142,6 +142,26 @@ module RBS
 
           # Returns the type of the attribute
           def attribute_type: () -> Types::t?
+        end
+
+        class RubyIvar < RubyBase
+          type t = Prism::ClassVariableWriteNode | Prism::ClassVariableOrWriteNode | Prism::InstanceVariableWriteNode | Prism::InstanceVariableOrWriteNode
+
+          attr_reader annotation: Annotations::TypeAssertion?
+
+          attr_reader node: t
+
+          attr_reader scope: :class | :method
+
+          # @rbs node: t
+          # @rbs annotation: Annotations::TypeAssertion?
+          # @rbs scope: :class | :method
+          def initialize: (t node, Annotations::TypeAssertion? annotation, scope: :class | :method) -> void
+
+          # @rbs decl: AST::Declarations::SingletonClassDecl?
+          # @rbs default_type: RBS::Types::t
+          # @rbs return: RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassVariable | RBS::AST::Members::ClassInstanceVariable | nil
+          def rbs: (RBS::Types::t default_type, ?AST::Declarations::SingletonClassDecl? decl) -> (RBS::AST::Members::InstanceVariable | RBS::AST::Members::ClassVariable | RBS::AST::Members::ClassInstanceVariable | nil)
         end
 
         # `private` call without arguments
