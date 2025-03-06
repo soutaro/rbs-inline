@@ -9,9 +9,6 @@ RBS::Inline allows embedding RBS type declarations into Ruby code as comments. Y
 > [!IMPORTANT]
 > This gem is a prototype for testing. We plan to merge this feature to rbs-gem and deprecate rbs-inline gem after that.
 
-> [!NOTE]
-> Use Steep >= `1.8.0.dev` to avoid the conflicts on `#:` syntax.
-
 Here is a quick example of embedded declarations.
 
 ```rb
