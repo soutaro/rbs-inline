@@ -5,10 +5,10 @@ require "test_helper"
 class RBS::Inline::WriterTest < Minitest::Test
   include RBS::Inline
 
-  def translate(src, opt_in: true)
+  def translate(src, opt_in: true, &block)
     src = "# rbs_inline: enabled\n\n" + src
     uses, decls, rbs_decls = Parser.parse(Prism.parse(src, filepath: "a.rb"), opt_in: opt_in)
-    Writer.write(uses, decls, rbs_decls)
+    Writer.write(uses, decls, rbs_decls, &block)
   end
 
   def test_method_type
@@ -257,6 +257,11 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         # foo is an alias of bar
         alias :foo :bar
+
+        class << self
+          # self.baz is an alias of self.qux
+          alias baz qux
+        end
       end
     RUBY
 
@@ -266,6 +271,9 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         # foo is an alias of bar
         alias foo bar
+
+        # self.baz is an alias of self.qux
+        alias self.baz self.qux
       end
     RBS
   end
@@ -365,11 +373,14 @@ class RBS::Inline::WriterTest < Minitest::Test
     output = translate(<<~RUBY)
       class Hello
         attr_reader :foo, :foo2, "hoge".to_sym
+        private attr_reader :foo3
 
         # Attribute of bar
         attr_writer :bar
+        private attr_writer :bar2
 
         attr_accessor :baz
+        private attr_accessor :baz2
       end
     RUBY
 
@@ -379,10 +390,16 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         attr_reader foo2: untyped
 
+        private attr_reader foo3: untyped
+
         # Attribute of bar
         attr_writer bar: untyped
 
+        private attr_writer bar2: untyped
+
         attr_accessor baz: untyped
+
+        private attr_accessor baz2: untyped
       end
     RBS
   end
@@ -391,11 +408,14 @@ class RBS::Inline::WriterTest < Minitest::Test
     output = translate(<<~RUBY)
       class Hello
         attr_reader :foo, :foo2, "hoge".to_sym #: String
+        private attr_reader :foo3 #: String
 
         # Attribute of bar
         attr_writer :bar #: Array[Integer]
+        private attr_writer :bar2 #: Array[Integer]
 
         attr_accessor :baz #: Integer |
+        private attr_accessor :baz2 #: Integer
       end
     RUBY
 
@@ -405,10 +425,16 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         attr_reader foo2: String
 
+        private attr_reader foo3: String
+
         # Attribute of bar
         attr_writer bar: Array[Integer]
 
+        private attr_writer bar2: Array[Integer]
+
         attr_accessor baz: untyped
+
+        private attr_accessor baz2: Integer
       end
     RBS
   end
@@ -1011,7 +1037,7 @@ class RBS::Inline::WriterTest < Minitest::Test
 
     assert_equal <<~RBS, output
       # Account record
-      class Account < Struct[untyped]
+      class Account < Struct[Integer | String]
         attr_accessor id(): Integer
 
         attr_accessor email(): String
@@ -1029,7 +1055,7 @@ class RBS::Inline::WriterTest < Minitest::Test
         end
       end
 
-      class Item < Struct[untyped]
+      class Item < Struct[String | Integer]
         attr_accessor sku(): String
 
         attr_accessor price(): Integer
@@ -1041,12 +1067,129 @@ class RBS::Inline::WriterTest < Minitest::Test
       # @rbs %a{rbs-inline:readonly-attributes=true}
       %a{rbs-inline:new-args=required}
       %a{rbs-inline:readonly-attributes=true}
-      class User < Struct[untyped]
+      class User < Struct[String]
         attr_reader name(): String
 
         def self.new: (String name) -> instance
                     | (name: String) -> instance
       end
+    RBS
+  end
+
+  def test_method_type__untyped_customize
+    output = translate(<<~RUBY) do
+      class Foo
+        def f
+        end
+
+        attr_reader :foo
+      end
+    RUBY
+      _1.default_type = RBS::Parser::parse_type("__todo__")
+    end
+
+    assert_equal <<~RBS, output
+      class Foo
+        def f: () -> __todo__
+
+        attr_reader foo: __todo__
+      end
+    RBS
+  end
+
+  def test_data_type__untyped_customize
+    output = translate(<<~RUBY) do
+      Foo = Data.define(
+        :bar
+      )
+    RUBY
+      _1.default_type = RBS::Parser::parse_type("__todo__")
+    end
+
+    assert_equal <<~RBS, output
+      class Foo < Data
+        attr_reader bar(): __todo__
+
+        def self.new: (__todo__ bar) -> instance
+                    | (bar: __todo__) -> instance
+
+        def self.members: () -> [ :bar ]
+
+        def members: () -> [ :bar ]
+      end
+    RBS
+  end
+
+  def test_struct_type__untyped_customize
+    output = translate(<<~RUBY) do
+      class Foo
+        Bar = Struct.new(:foo, :bar)
+        Baz = Struct.new(:foo, :bar, keyword_init: true)
+        Qux = Struct.new(:foo, :bar, keyword_init: false)
+        # @rbs %a{rbs-inline:readonly-attributes=true}
+        Quux = Struct.new(:foo, :bar)
+      end
+    RUBY
+      _1.default_type = RBS::Parser::parse_type("__todo__")
+    end
+
+    assert_equal <<~RBS, output
+      class Foo
+        class Bar < Struct[__todo__]
+          attr_accessor foo(): __todo__
+
+          attr_accessor bar(): __todo__
+
+          def self.new: (?__todo__ foo, ?__todo__ bar) -> instance
+                      | (?foo: __todo__, ?bar: __todo__) -> instance
+        end
+
+        class Baz < Struct[__todo__]
+          attr_accessor foo(): __todo__
+
+          attr_accessor bar(): __todo__
+
+          def self.new: (?foo: __todo__, ?bar: __todo__) -> instance
+                      | ({ ?foo: __todo__, ?bar: __todo__ }) -> instance
+        end
+
+        class Qux < Struct[__todo__]
+          attr_accessor foo(): __todo__
+
+          attr_accessor bar(): __todo__
+
+          def self.new: (?__todo__ foo, ?__todo__ bar) -> instance
+        end
+
+        # @rbs %a{rbs-inline:readonly-attributes=true}
+        %a{rbs-inline:readonly-attributes=true}
+        class Quux < Struct[__todo__]
+          attr_reader foo(): __todo__
+
+          attr_reader bar(): __todo__
+
+          def self.new: (?__todo__ foo, ?__todo__ bar) -> instance
+                      | (?foo: __todo__, ?bar: __todo__) -> instance
+        end
+      end
+    RBS
+  end
+
+  def test_constant_type__untyped_customize
+    output = translate(<<~RUBY) do
+      FOO = []
+      BAR = {}
+      BAZ = object
+    RUBY
+      _1.default_type = RBS::Parser::parse_type("__todo__")
+    end
+
+    assert_equal <<~RBS, output
+      FOO: ::Array[__todo__]
+
+      BAR: ::Hash[__todo__, __todo__]
+
+      BAZ: __todo__
     RBS
   end
 end
