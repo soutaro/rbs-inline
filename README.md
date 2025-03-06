@@ -18,6 +18,8 @@ class Person
 
   attr_reader :addresses #: Array[String]
 
+  # You can write the type of parameters and return types.
+  #
   # @rbs name: String
   # @rbs addresses: Array[String]
   # @rbs return: void
@@ -26,8 +28,18 @@ class Person
     @addresses = addresses
   end
 
-  def to_s #: String
+  # Or write the type of the method just after `@rbs` keyword.
+  #
+  # @rbs () -> String
+  def to_s
     "Person(name = #{name}, addresses = #{addresses.join(", ")})"
+  end
+
+  # The `:` syntax is the shortest one.
+  #
+  #: () -> String
+  def hash
+    [name, addresses].hash
   end
 
   # @rbs &block: (String) -> void
