@@ -193,4 +193,31 @@ class RBS::Inline::CLITest < Minitest::Test
       end
     end
   end
+
+  def test_cli__unknown_type_option
+    with_tmpdir do |pwd|
+      Dir.chdir(pwd.to_s) do
+        cli = CLI.new(stdout: stdout, stderr: stderr)
+
+        (pwd + "foo.rb").write(<<~RUBY)
+          # rbs_inline: enabled
+
+          class Hello
+            def foo(bar, baz:); end
+          end
+        RUBY
+
+        cli.run(%w(foo.rb -v --unknown-type=__todo__))
+
+        assert_equal <<~RBS, stdout.string
+          # Generated from foo.rb with RBS::Inline
+
+          class Hello
+            def foo: (__todo__ bar, baz: __todo__) -> __todo__
+          end
+
+        RBS
+      end
+    end
+  end
 end
