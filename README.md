@@ -3,6 +3,10 @@
 RBS::Inline allows embedding RBS type declarations into Ruby code as comments. You can declare types, write the implementation, and verifies they are consistent without leaving the editor opening the Ruby code.
 
 > [!IMPORTANT]
+> The maintainer is working to implement the inline RBS syntax to rbs-gem itself.
+> This repository is not actively updated.
+
+> [!IMPORTANT]
 > This gem is a prototype for testing. We plan to merge this feature to rbs-gem and deprecate rbs-inline gem after that.
 
 > [!NOTE]
