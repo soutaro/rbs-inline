@@ -378,7 +378,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::Use, annotation
 
       annotation.clauses[0].tap do |clause|
-        assert_equal Namespace("Foo::"), clause.namespace
+        assert_equal RBS::Namespace.parse("Foo::"), clause.namespace
       end
     end
     annots[0].annotations[6].tap do |annotation|
