@@ -13,13 +13,16 @@ module RBS
 
       attr_reader writer: RBS::Writer
 
+      attr_accessor default_type: Types::t
+
       # @rbs buffer: String
       def initialize: (?String buffer) -> void
 
       # @rbs uses: Array[AST::Annotations::Use]
       # @rbs decls: Array[AST::Declarations::t]
       # @rbs rbs_decls: Array[RBS::AST::Declarations::t]
-      def self.write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls, Array[RBS::AST::Declarations::t] rbs_decls) -> void
+      # @rbs &: ? (Writer) -> void
+      def self.write: (Array[AST::Annotations::Use] uses, Array[AST::Declarations::t] decls, Array[RBS::AST::Declarations::t] rbs_decls) ?{ (Writer) -> void } -> void
 
       # @rbs *lines: String
       # @rbs return: void
@@ -111,9 +114,6 @@ module RBS
       # @rbs decl: AST::Declarations::ConstantDecl
       # @rbs return: RBS::Types::t
       def constant_decl_to_type: (AST::Declarations::ConstantDecl decl) -> RBS::Types::t
-
-      # @rbs return: RBS::Types::Bases::Any
-      def untyped: () -> RBS::Types::Bases::Any
     end
   end
 end
