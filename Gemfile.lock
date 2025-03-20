@@ -20,7 +20,7 @@ GEM
       minitest (>= 5.1)
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
-    ast (2.4.2)
+    ast (2.4.3)
     base64 (0.2.0)
     benchmark (0.4.0)
     bigdecimal (3.1.9)
@@ -41,7 +41,7 @@ GEM
       rb-inotify (~> 0.9, >= 0.9.10)
     logger (1.6.5)
     minitest (5.25.4)
-    parser (3.3.7.0)
+    parser (3.3.7.2)
       ast (~> 2.4.1)
       racc
     prism (1.2.0)
