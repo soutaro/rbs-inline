@@ -175,6 +175,7 @@ module RBS
               required_keywords = {} #: Hash[Symbol, Types::Function::Param]
               optional_keywords = {} #: Hash[Symbol, Types::Function::Param]
               rest_keywords = nil #: Types::Function::Param?
+              forwarding_parameter = false
 
               if node.parameters
                 node.parameters.requireds.each do |param|
@@ -231,7 +232,8 @@ module RBS
                   end
                 end
 
-                if (kw_rest = node.parameters.keyword_rest).is_a?(Prism::KeywordRestParameterNode)
+                case node.parameters.keyword_rest
+                when Prism::KeywordRestParameterNode
                   double_splat_param_type = double_splat_param_type_annotation
 
                   if double_splat_param_type && double_splat_param_type.type
@@ -239,9 +241,11 @@ module RBS
                   end
 
                   rest_keywords = Types::Function::Param.new(
-                    name: kw_rest.name,
+                    name: node.parameters.keyword_rest.name,
                     type: double_splat_type || default_type,
                     location: nil)
+                when Prism::ForwardingParameterNode
+                  forwarding_parameter = true
                 end
 
                 if node.parameters.block
@@ -257,26 +261,40 @@ module RBS
                 block = type
               end
 
-              [
-                RBS::AST::Members::MethodDefinition::Overload.new(
-                  method_type: RBS::MethodType.new(
-                    type_params: [],
-                    type: Types::Function.new(
-                      required_positionals: required_positionals,
-                      optional_positionals: optional_positionals,
-                      rest_positionals: rest_positionals,
-                      trailing_positionals: [],
-                      required_keywords: required_keywords,
-                      optional_keywords: optional_keywords,
-                      rest_keywords: rest_keywords,
-                      return_type: return_type || default_type
+              if forwarding_parameter
+                [
+                  RBS::AST::Members::MethodDefinition::Overload.new(
+                    method_type: RBS::MethodType.new(
+                      type_params: [],
+                      type: Types::UntypedFunction.new(return_type: return_type || default_type),
+                      block: nil,
+                      location: nil
                     ),
-                    block: block,
-                    location: nil
-                  ),
-                  annotations: []
-                )
-              ]
+                    annotations: []
+                  )
+                ]
+              else
+                [
+                  RBS::AST::Members::MethodDefinition::Overload.new(
+                    method_type: RBS::MethodType.new(
+                      type_params: [],
+                      type: Types::Function.new(
+                        required_positionals: required_positionals,
+                        optional_positionals: optional_positionals,
+                        rest_positionals: rest_positionals,
+                        trailing_positionals: [],
+                        required_keywords: required_keywords,
+                        optional_keywords: optional_keywords,
+                        rest_keywords: rest_keywords,
+                        return_type: return_type || default_type
+                      ),
+                      block: block,
+                      location: nil
+                    ),
+                    annotations: []
+                  )
+                ]
+              end
             end
           end
 
