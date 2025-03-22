@@ -9,6 +9,8 @@ module RBS
       #                         | AST::Declarations::ClassDecl
       #                         | AST::Declarations::SingletonClassDecl
       #                         | AST::Declarations::BlockDecl
+      #                         | AST::Declarations::DataAssignDecl
+      #                         | AST::Declarations::StructAssignDecl
 
       # The top level declarations
       #
@@ -449,7 +451,9 @@ module RBS
         when data_node = AST::Declarations::DataAssignDecl.data_define?(node)
           type_decls = {} #: Hash[Integer, AST::Annotations::TypeAssertion]
 
-          inner_annotations(node.location.start_line, node.location.end_line).flat_map do |comment|
+          opening_loc = data_node.opening_loc || data_node.arguments&.location || data_node.location
+          closing_loc = data_node.closing_loc || data_node.arguments&.location || data_node.location
+          inner_annotations(opening_loc.start_line, closing_loc.end_line).flat_map do |comment|
             comment.each_annotation do |annotation|
               if annotation.is_a?(AST::Annotations::TypeAssertion)
                 start_line = annotation.source.comments[0].location.start_line
@@ -459,10 +463,18 @@ module RBS
           end
 
           decl = AST::Declarations::DataAssignDecl.new(node, data_node, comment, type_decls)
+          push_class_module_decl(decl) do
+            case data_node.block
+            when Prism::BlockNode
+              visit data_node.block.body
+            end
+          end
         when struct_node = AST::Declarations::StructAssignDecl.struct_new?(node)
           type_decls = {} #: Hash[Integer, AST::Annotations::TypeAssertion]
 
-          inner_annotations(node.location.start_line, node.location.end_line).flat_map do |comment|
+          opening_loc = struct_node.opening_loc || struct_node.arguments&.location || struct_node.location
+          closing_loc = struct_node.closing_loc || struct_node.arguments&.location || struct_node.location
+          inner_annotations(opening_loc.start_line, closing_loc.end_line).flat_map do |comment|
             comment.each_annotation do |annotation|
               if annotation.is_a?(AST::Annotations::TypeAssertion)
                 start_line = annotation.source.comments[0].location.start_line
@@ -472,15 +484,29 @@ module RBS
           end
 
           decl = AST::Declarations::StructAssignDecl.new(node, struct_node, comment, type_decls)
+          push_class_module_decl(decl) do
+            case struct_node.block
+            when Prism::BlockNode
+              visit struct_node.block.body
+            end
+          end
         else
           assertion = assertion_annotation(node)
           decl = AST::Declarations::ConstantDecl.new(node, comment, assertion)
-        end
 
-        if current = current_class_module_decl
-          current.members << decl
-        else
-          decls << decl
+          current = current_class_module_decl
+          case current
+          when AST::Declarations::DataAssignDecl, AST::Declarations::StructAssignDecl
+            # The constant defined inside Data or Struct is evaluated as defined outside of them.
+            # ref: https://bugs.ruby-lang.org/issues/20943
+            current = surrounding_decls[-2]
+          end
+
+          if current
+            current.members << decl
+          else
+            decls << decl
+          end
         end
       end
 
