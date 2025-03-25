@@ -51,6 +51,10 @@ module RBS
       # @rbs return: void
       def translate_members: (Array[AST::Declarations::t | AST::Members::t] members, AST::Declarations::SingletonClassDecl? decl, _Content rbs) -> void
 
+      # @rbs members: Array[RBS::AST::Members::t | RBS::AST::Declarations::t]
+      # @rbs decl: AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl
+      def unique_members: (Array[RBS::AST::Members::t | RBS::AST::Declarations::t] members, AST::Declarations::ClassDecl | AST::Declarations::ModuleDecl decl) -> untyped
+
       # @rbs decl: AST::Declarations::ModuleDecl
       # @rbs rbs: _Content
       # @rbs return: void
