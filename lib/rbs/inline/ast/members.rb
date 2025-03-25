@@ -172,6 +172,7 @@ module RBS
               required_positionals = [] #: Array[Types::Function::Param]
               optional_positionals = [] #: Array[Types::Function::Param]
               rest_positionals = nil #: Types::Function::Param?
+              trailing_positionals = [] #: Array[Types::Function::Param]
               required_keywords = {} #: Hash[Symbol, Types::Function::Param]
               optional_keywords = {} #: Hash[Symbol, Types::Function::Param]
               rest_keywords = nil #: Types::Function::Param?
@@ -211,6 +212,17 @@ module RBS
                     type: splat_type || default_type,
                     location: nil
                   )
+                end
+
+                node.parameters.posts.each do |param|
+                  case param
+                  when Prism::RequiredParameterNode
+                    trailing_positionals << Types::Function::Param.new(
+                      name: param.name,
+                      type: var_type_hash[param.name] || Types::Bases::Any.new(location: nil),
+                      location: nil
+                    )
+                  end
                 end
 
                 node.parameters.keywords.each do |node|
@@ -265,7 +277,7 @@ module RBS
                       required_positionals: required_positionals,
                       optional_positionals: optional_positionals,
                       rest_positionals: rest_positionals,
-                      trailing_positionals: [],
+                      trailing_positionals: trailing_positionals,
                       required_keywords: required_keywords,
                       optional_keywords: optional_keywords,
                       rest_keywords: rest_keywords,
