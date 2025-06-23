@@ -3,6 +3,7 @@
 require "test_helper"
 
 class RBS::Inline::AnnotationParserTest < Minitest::Test
+  include RBS
   include RBS::Inline
 
   def parse_comments(src)
@@ -289,11 +290,11 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       RUBY
 
     annots[0].annotations[0].tap do |annotation|
-      assert_equal TypeName("Object"), annotation.super_name
+      assert_equal TypeName.parse("Object"), annotation.super_name
       assert_equal [], annotation.args.map(&:to_s)
     end
     annots[0].annotations[1].tap do |annotation|
-      assert_equal TypeName("Array"), annotation.super_name
+      assert_equal TypeName.parse("Array"), annotation.super_name
       assert_equal ["String"], annotation.args.map(&:to_s)
     end
     annots[0].annotations[2].tap do |annotation|
@@ -338,7 +339,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::Use, annotation
 
       annotation.clauses[0].tap do |clause|
-        assert_equal TypeName("::Foo"), clause.type_name
+        assert_equal TypeName.parse("::Foo"), clause.type_name
         assert_nil clause.new_name
       end
     end
@@ -346,7 +347,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::Use, annotation
 
       annotation.clauses[0].tap do |clause|
-        assert_equal TypeName("Foo"), clause.type_name
+        assert_equal TypeName.parse("Foo"), clause.type_name
         assert_nil clause.new_name
       end
     end
@@ -354,7 +355,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::Use, annotation
 
       annotation.clauses[0].tap do |clause|
-        assert_equal TypeName("Foo::Bar"), clause.type_name
+        assert_equal TypeName.parse("Foo::Bar"), clause.type_name
         assert_nil clause.new_name
       end
     end
@@ -362,7 +363,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::Use, annotation
 
       annotation.clauses[0].tap do |clause|
-        assert_equal TypeName("Foo::bar"), clause.type_name
+        assert_equal TypeName.parse("Foo::bar"), clause.type_name
         assert_nil clause.new_name
       end
     end
@@ -370,7 +371,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::Use, annotation
 
       annotation.clauses[0].tap do |clause|
-        assert_equal TypeName("Foo::_Bar"), clause.type_name
+        assert_equal TypeName.parse("Foo::_Bar"), clause.type_name
         assert_nil clause.new_name
       end
     end
@@ -385,15 +386,15 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_instance_of AST::Annotations::Use, annotation
 
       annotation.clauses[0].tap do |clause|
-        assert_equal TypeName("Foo::Bar"), clause.type_name
+        assert_equal TypeName.parse("Foo::Bar"), clause.type_name
         assert_equal :Bar2, clause.new_name
       end
       annotation.clauses[1].tap do |clause|
-        assert_equal TypeName("Foo::bar"), clause.type_name
+        assert_equal TypeName.parse("Foo::bar"), clause.type_name
         assert_equal :bar2, clause.new_name
       end
       annotation.clauses[2].tap do |clause|
-        assert_equal TypeName("Foo::_Bar"), clause.type_name
+        assert_equal TypeName.parse("Foo::_Bar"), clause.type_name
         assert_equal :_Bar2, clause.new_name
       end
     end
@@ -663,29 +664,29 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
 
     annots[0].annotations[0].tap do |annotation|
       assert_instance_of AST::Annotations::ModuleDecl, annotation
-      assert_equal TypeName("Foo"), annotation.name
+      assert_equal TypeName.parse("Foo"), annotation.name
       assert_empty annotation.type_params
       assert_empty annotation.self_types
     end
     annots[0].annotations[1].tap do |annotation|
       assert_instance_of AST::Annotations::ModuleDecl, annotation
-      assert_equal TypeName("::Foo::Bar"), annotation.name
+      assert_equal TypeName.parse("::Foo::Bar"), annotation.name
       assert_empty annotation.type_params
       assert_empty annotation.self_types
     end
     annots[0].annotations[2].tap do |annotation|
       assert_instance_of AST::Annotations::ModuleDecl, annotation
-      assert_equal TypeName("Foo"), annotation.name
+      assert_equal TypeName.parse("Foo"), annotation.name
       annotation.type_params[0].tap do |param|
         assert_equal :A, param.name
         assert_equal "Integer", param.upper_bound.to_s
       end
       annotation.self_types[0].tap do |self_type|
-        assert_equal TypeName("BasicObject"), self_type.name
+        assert_equal TypeName.parse("BasicObject"), self_type.name
         assert_empty self_type.args
       end
       annotation.self_types[1].tap do |self_type|
-        assert_equal TypeName("_Each"), self_type.name
+        assert_equal TypeName.parse("_Each"), self_type.name
         assert_equal ["String"], self_type.args.map(&:to_s)
       end
     end
@@ -705,18 +706,18 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
 
     annots[0].annotations[0].tap do |annotation|
       assert_instance_of AST::Annotations::ClassDecl, annotation
-      assert_equal TypeName("Foo"), annotation.name
+      assert_equal TypeName.parse("Foo"), annotation.name
       assert_empty annotation.type_params
       assert_nil annotation.super_class
     end
     annots[0].annotations[1].tap do |annotation|
       assert_instance_of AST::Annotations::ClassDecl, annotation
-      assert_equal TypeName("Foo"), annotation.name
+      assert_equal TypeName.parse("Foo"), annotation.name
       annotation.type_params[0].tap do |param|
         assert_equal :A, param.name
         assert_equal "Integer", param.upper_bound.to_s
       end
-      assert_equal TypeName("Array"), annotation.super_class.name
+      assert_equal TypeName.parse("Array"), annotation.super_class.name
       assert_equal ["A"], annotation.super_class.args.map(&:to_s)
     end
   end

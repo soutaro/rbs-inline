@@ -267,7 +267,7 @@ module RBS
         members = [:singleton, :instance].map do |kind|
           RBS::AST::Members::MethodDefinition.new(
             name: :members,
-            kind: kind, #: RBS::AST::MethodDefinition::Kind
+            kind: kind, #: RBS::AST::Members::MethodDefinition::kind
             overloads: [
               RBS::AST::Members::MethodDefinition::Overload.new(
                 method_type: RBS::MethodType.new(

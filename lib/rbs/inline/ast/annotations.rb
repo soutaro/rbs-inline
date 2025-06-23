@@ -494,7 +494,7 @@ module RBS
                       end
                     end
 
-                    typename = TypeName(token_strs.join)
+                    typename = TypeName.parse(token_strs.join)
                     @clauses << RBS::AST::Directives::Use::SingleClause.new(
                       type_name: typename,
                       new_name: new_name,

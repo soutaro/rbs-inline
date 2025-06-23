@@ -3,6 +3,7 @@
 require "test_helper"
 
 class RBS::Inline::AST::Declarations::ConstantUtilTest < Minitest::Test
+  include RBS
   include RBS::Inline
 
   def parse_ruby(src)
@@ -12,14 +13,14 @@ class RBS::Inline::AST::Declarations::ConstantUtilTest < Minitest::Test
   include RBS::Inline::AST::Declarations::ConstantUtil
 
   def test_read_constant_node
-    assert_equal TypeName("Foo"), type_name(parse_ruby("Foo"))
+    assert_equal TypeName.parse("Foo"), type_name(parse_ruby("Foo"))
   end
 
   def test_read_constant_path_node
-    assert_equal TypeName("Foo::Bar"), type_name(parse_ruby("Foo::Bar"))
+    assert_equal TypeName.parse("Foo::Bar"), type_name(parse_ruby("Foo::Bar"))
   end
 
   def test_read_constant_path_node_root
-    assert_equal TypeName("::Foo::Bar"), type_name(parse_ruby("::Foo::Bar"))
+    assert_equal TypeName.parse("::Foo::Bar"), type_name(parse_ruby("::Foo::Bar"))
   end
 end
