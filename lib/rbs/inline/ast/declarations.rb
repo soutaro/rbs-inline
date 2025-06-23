@@ -10,7 +10,7 @@ module RBS
           def type_name(node)
             case node
             when Prism::ConstantReadNode, Prism::ConstantPathNode
-              TypeName(node.full_name)
+              TypeName.parse(node.full_name)
             end
           end
 

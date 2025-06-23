@@ -14,14 +14,14 @@ gems:
   source:
     type: stdlib
 - name: minitest
-  version: '0'
+  version: '5.25'
   source:
-    type: stdlib
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 43b158b1fc209960643ca6baf5f883b186997e8d
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
 - name: monitor
-  version: '0'
-  source:
-    type: stdlib
-- name: mutex_m
   version: '0'
   source:
     type: stdlib
@@ -42,11 +42,11 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 218cf130d31f63e110e350efc3fa265311b0f238
+    revision: 43b158b1fc209960643ca6baf5f883b186997e8d
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: rbs
-  version: 3.6.1
+  version: 3.9.4
   source:
     type: rubygems
 - name: rdoc
