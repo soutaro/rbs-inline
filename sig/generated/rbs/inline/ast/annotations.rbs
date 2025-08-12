@@ -4,7 +4,7 @@ module RBS
   module Inline
     module AST
       module Annotations
-        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | MethodTypeAssertion | TypeAssertion | SyntaxErrorAssertion | Dot3Assertion | Application | RBSAnnotation | Override | IvarType | Embedded | Method | SplatParamType | DoubleSplatParamType | BlockType | ModuleDecl | ClassDecl
+        type t = VarType | ReturnType | Use | Inherits | Generic | ModuleSelf | Skip | MethodTypeAssertion | TypeAssertion | MultipleTypeAssertion | SyntaxErrorAssertion | Dot3Assertion | Application | RBSAnnotation | Override | IvarType | Embedded | Method | SplatParamType | DoubleSplatParamType | BlockType | ModuleDecl | ClassDecl
 
         module Utils
           # @rbs (Tree) -> RBS::AST::TypeParam?
@@ -126,6 +126,13 @@ module RBS
           def initialize: ...
 
           def type_source: () -> String
+        end
+
+        class MultipleTypeAssertion < Base
+          attr_reader types: Array[Types::t]
+
+          # @rbs override
+          def initialize: ...
         end
 
         class SyntaxErrorAssertion < Base
