@@ -3,7 +3,7 @@ PATH
   specs:
     rbs-inline (0.11.0)
       prism (>= 0.29)
-      rbs (>= 3.5.0)
+      rbs (>= 3.8.0)
 
 GEM
   remote: https://rubygems.org/
