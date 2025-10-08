@@ -7,7 +7,7 @@ gemspec
 
 gem "rake", "~> 13.2"
 
-gem "minitest", "~> 5.25"
+gem "minitest", "~> 5.26"
 
 gem "steep", "~> 1.9.0", require: false
 gem "strscan"
