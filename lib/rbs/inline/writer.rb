@@ -460,7 +460,7 @@ module RBS
 
       # @rbs member: AST::Members::t
       # @rbs decl: AST::Declarations::SingletonClassDecl? --
-      #   The surrouding singleton class definition
+      #   The surrounding singleton class definition
       # @rbs rbs: _Content
       # @rbs return void
       def translate_member(member, decl, rbs)
