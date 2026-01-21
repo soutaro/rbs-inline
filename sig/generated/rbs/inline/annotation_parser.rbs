@@ -155,8 +155,8 @@ module RBS
       #
       # @rbs tokenizer: Tokenizer
       # @rbs parent_tree: AST::Tree
-      # @rbs return: MethodType | AST::Tree | Types::t | nil
-      def parse_type_method_type: (Tokenizer tokenizer, AST::Tree parent_tree) -> (MethodType | AST::Tree | Types::t | nil)
+      # @rbs return: MethodType | AST::Tree | Types::t | Array[Types::t | token] | nil
+      def parse_type_method_type: (Tokenizer tokenizer, AST::Tree parent_tree) -> (MethodType | AST::Tree | Types::t | Array[Types::t | token] | nil)
 
       # Parse a RBS method type
       #
