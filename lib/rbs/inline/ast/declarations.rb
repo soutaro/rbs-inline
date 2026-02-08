@@ -207,9 +207,27 @@ module RBS
           end
 
           # @rbs %a{pure}
-          # @rbs return Types::t?
+          # @rbs return: Types::t?
           def literal_type
-            case node.value
+            infer_type_from_node(node.value)
+          end
+
+          # @rbs %a{pure}
+          # @rbs return: TypeName?
+          def constant_name
+            TypeName.new(name: node.name, namespace: Namespace.empty)
+          end
+
+          def start_line #: Integer
+            node.location.start_line
+          end
+
+          private
+
+          # @rbs node: Prism::Node
+          # @rbs return: Types::t?
+          def infer_type_from_node(node)
+            case node
             when Prism::StringNode, Prism::InterpolatedStringNode
               BuiltinNames::String.instance_type
             when Prism::SymbolNode, Prism::InterpolatedSymbolNode
@@ -221,22 +239,79 @@ module RBS
             when Prism::FloatNode
               BuiltinNames::Float.instance_type
             when Prism::ArrayNode
-              BuiltinNames::Array.instance_type
+              infer_array_element_type(node)
             when Prism::HashNode
-              BuiltinNames::Hash.instance_type
+              infer_hash_element_type(node)
             when Prism::TrueNode, Prism::FalseNode
               Types::Bases::Bool.new(location: nil)
             end
           end
 
-          # @rbs %a{pure}
-          # @rbs return: TypeName?
-          def constant_name
-            TypeName.new(name: node.name, namespace: Namespace.empty)
+          # @rbs node: Prism::ArrayNode
+          # @rbs return: Types::t
+          def infer_array_element_type(node)
+            return BuiltinNames::Array.instance_type if node.elements.empty?
+
+            element_types = [] #: Array[Types::t]
+            node.elements.each do |elem|
+              type = infer_type_from_node(elem)
+              return BuiltinNames::Array.instance_type unless type
+              element_types << type
+            end
+
+            element_types.uniq!(&:to_s)
+
+            # Union types are not currently supported.
+            case element_types.size
+            when 1
+              BuiltinNames::Array.instance_type(element_types.first || raise)
+            else
+              BuiltinNames::Array.instance_type(
+                Types::Bases::Any.new(location: nil)
+              )
+            end
           end
 
-          def start_line #: Integer
-            node.location.start_line
+          # @rbs node: Prism::HashNode
+          # @rbs return: Types::t
+          def infer_hash_element_type(node)
+            return BuiltinNames::Hash.instance_type if node.elements.empty?
+
+            key_types = [] #: Array[Types::t]
+            value_types = [] #: Array[Types::t]
+
+            node.elements.each do |elem|
+              case elem
+              when Prism::AssocNode
+                key_type = infer_type_from_node(elem.key)
+                value_type = infer_type_from_node(elem.value)
+                return BuiltinNames::Hash.instance_type unless key_type && value_type
+                key_types << key_type
+                value_types << value_type
+              else
+                return BuiltinNames::Hash.instance_type
+              end
+            end
+
+            key_types.uniq!(&:to_s)
+            value_types.uniq!(&:to_s)
+
+            # Union types are not currently supported.
+            key_type = case key_types.size
+                       when 1
+                         key_types.first || raise
+                       else
+                         Types::Bases::Any.new(location: nil)
+                       end
+
+            value_type = case value_types.size
+                         when 1
+                           value_types.first || raise
+                         else
+                           Types::Bases::Any.new(location: nil)
+                         end
+
+            BuiltinNames::Hash.instance_type(key_type, value_type)
           end
         end
 
