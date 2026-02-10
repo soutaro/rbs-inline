@@ -69,8 +69,8 @@ module RBS
           instance.comments[result.line_range.end] = result
         end
 
-        with_enable_magic_comment = result.comments.any? {|comment| comment.location.slice =~ /\A# rbs_inline: enabled\Z/}
-        with_disable_magic_comment = result.comments.any? {|comment| comment.location.slice =~ /\A# rbs_inline: disabled\Z/}
+        with_enable_magic_comment = result.comments.any? {|comment| comment.location.slice =~ /\A# rbs_inline: enabled\R?\z/}
+        with_disable_magic_comment = result.comments.any? {|comment| comment.location.slice =~ /\A# rbs_inline: disabled\R?\z/}
 
         return if with_disable_magic_comment # Skips if `rbs_inline: disabled`
 
