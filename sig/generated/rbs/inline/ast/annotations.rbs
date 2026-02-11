@@ -44,6 +44,10 @@ module RBS
           # @rbs override
           def initialize: ...
 
+          @tree: untyped
+
+          @source: untyped
+
           # : () -> bool
           def complete?: () -> bool
         end
@@ -59,6 +63,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `@rbs *x: T`
@@ -81,6 +89,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `@rbs return: T`
@@ -91,6 +103,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
 
           # @rbs return: bool
           def complete?: () -> bool
@@ -108,6 +124,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         class MethodTypeAssertion < Base
@@ -115,6 +135,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @source: untyped
+
+          @tree: untyped
 
           def type_source: () -> String
         end
@@ -125,6 +149,10 @@ module RBS
           # @rbs override
           def initialize: ...
 
+          @source: untyped
+
+          @tree: untyped
+
           def type_source: () -> String
         end
 
@@ -133,11 +161,19 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         class Dot3Assertion < Base
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `#[TYPE, ..., TYPE]`
@@ -146,6 +182,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
 
           # @rbs return: bool
           def complete?: () -> bool
@@ -158,6 +198,10 @@ module RBS
           # @rbs override
           def initialize: ...
 
+          @source: untyped
+
+          @tree: untyped
+
           def annotations: () -> Array[RBS::AST::Annotation]
         end
 
@@ -165,6 +209,10 @@ module RBS
         class Skip < Base
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `# @rbs inherits T`
@@ -175,6 +223,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `# @rbs override`
@@ -183,6 +235,10 @@ module RBS
         class Override < Base
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `# @rbs use [USES]`
@@ -191,6 +247,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `# @rbs module-self [MODULE_SELF]`
@@ -201,6 +261,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `# @rbs generic [type param]`
@@ -220,6 +284,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `# @rbs!` annotation
@@ -228,6 +296,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `@rbs METHOD-TYPE``
@@ -245,6 +317,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
 
           # : (Array[tree]) -> method_type?
           def construct_method_types: (Array[tree]) -> method_type?
@@ -272,6 +348,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
 
         # `@rbs class Foo`
@@ -286,6 +366,10 @@ module RBS
 
           # @rbs override
           def initialize: ...
+
+          @tree: untyped
+
+          @source: untyped
         end
       end
     end

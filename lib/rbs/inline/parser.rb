@@ -258,6 +258,9 @@ module RBS
           assertion = assertion_annotation(node.rparen_loc || node&.parameters&.location || node.name_loc)
 
           current_decl.members << AST::Members::RubyDef.new(node, associated_comment, current_visibility, current_module_function, assertion)
+
+          instance_variables = MethodParser.parse(self, node)
+          current_decl.members.concat(instance_variables)
         end
       end
 
@@ -482,6 +485,30 @@ module RBS
         else
           decls << decl
         end
+      end
+
+      # @rbs override
+      def visit_instance_variable_or_write_node(node)
+        assertion = assertion_annotation(node)
+        current_class_module_decl!.members << AST::Members::RubyIvar.new(node, assertion, scope: :class)
+      end
+
+      # @rbs override
+      def visit_instance_variable_write_node(node)
+        assertion = assertion_annotation(node)
+        current_class_module_decl!.members << AST::Members::RubyIvar.new(node, assertion, scope: :class)
+      end
+
+      # @rbs override
+      def visit_class_variable_or_write_node(node)
+        assertion = assertion_annotation(node)
+        current_class_module_decl!.members << AST::Members::RubyIvar.new(node, assertion, scope: :class)
+      end
+
+      # @rbs override
+      def visit_class_variable_write_node(node)
+        assertion = assertion_annotation(node)
+        current_class_module_decl!.members << AST::Members::RubyIvar.new(node, assertion, scope: :class)
       end
 
       # @rbs override
