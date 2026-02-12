@@ -18,7 +18,7 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 43b158b1fc209960643ca6baf5f883b186997e8d
+    revision: d70d634c6e848dc5e93cea0163cc8206448be048
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: monitor
@@ -29,12 +29,8 @@ gems:
   version: '0'
   source:
     type: stdlib
-- name: pathname
-  version: '0'
-  source:
-    type: stdlib
 - name: prism
-  version: 1.2.0
+  version: 1.9.0
   source:
     type: rubygems
 - name: rake
@@ -42,11 +38,11 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 43b158b1fc209960643ca6baf5f883b186997e8d
+    revision: d70d634c6e848dc5e93cea0163cc8206448be048
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: rbs
-  version: 3.9.4
+  version: 3.10.3
   source:
     type: rubygems
 - name: rdoc
