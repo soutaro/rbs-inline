@@ -550,6 +550,198 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_constant_decl_with_array_element_type_inference
+    output = translate(<<~RUBY)
+      STRINGS = ["a", "b", "c"]
+
+      INTEGERS = [1, 2, 3]
+
+      NESTED = [[1, 2], [3, 4]]
+
+      WORDS_ONE = %w(foo bar baz)
+
+      WORDS_TWO = %W(foo bar baz)
+
+      WORDS_THREE = %w[foo bar baz]
+
+      WORDS_FOUR = %W[foo bar baz]
+
+      SYMBOLS_ONE = %i(foo bar baz)
+
+      SYMBOLS_TWO = %I(foo bar baz)
+
+      SYMBOLS_THREE = %i[foo bar baz]
+
+      SYMBOLS_FOUR = %I[foo bar baz]
+    RUBY
+
+    assert_equal <<~RBS, output
+      STRINGS: ::Array[::String]
+
+      INTEGERS: ::Array[::Integer]
+
+      NESTED: ::Array[::Array[::Integer]]
+
+      WORDS_ONE: ::Array[::String]
+
+      WORDS_TWO: ::Array[::String]
+
+      WORDS_THREE: ::Array[::String]
+
+      WORDS_FOUR: ::Array[::String]
+
+      SYMBOLS_ONE: ::Array[::Symbol]
+
+      SYMBOLS_TWO: ::Array[::Symbol]
+
+      SYMBOLS_THREE: ::Array[::Symbol]
+
+      SYMBOLS_FOUR: ::Array[::Symbol]
+    RBS
+  end
+
+  def test_constant_decl_with_array_element_untyped_inference
+    output = translate(<<~RUBY)
+      EMPTY = []
+
+      MIXED = [1, "two", :three]
+
+      ARRAY_SPLAT = [*other]
+
+      SPLAT_RANGE = [*(1..5)]
+
+      SPLAT_ARRAY = [*[1, 2, 3]]
+
+      ARRAY_WITH_VARS = [x, y, z]
+
+      ARRAY_WITH_CONSTS = [FOO, BAR, BAZ]
+    RUBY
+
+    assert_equal <<~RBS, output
+      EMPTY: ::Array[untyped]
+
+      MIXED: ::Array[untyped]
+
+      ARRAY_SPLAT: ::Array[untyped]
+
+      SPLAT_RANGE: ::Array[untyped]
+
+      SPLAT_ARRAY: ::Array[untyped]
+
+      ARRAY_WITH_VARS: ::Array[untyped]
+
+      ARRAY_WITH_CONSTS: ::Array[untyped]
+    RBS
+  end
+
+  def test_constant_decl_with_unsupported_array_element_type_inference
+    output = translate(<<~RUBY)
+      ARRAY_NEW = Array.new
+
+      ARRAY_NEW_SIZED = Array.new(3)
+
+      ARRAY_NEW_BLOCK = Array.new(3) { |i| i }
+
+      ARRAY_NEW_DEFAULT = Array.new(3, "Ruby")
+
+      ARRAY_BRACKET = Array[1, 2, 3]
+
+      RANGE_TO_A = (1..5).to_a
+
+      RANGE_STR_TO_A = ("a".."e").to_a
+
+      KERNEL_ARRAY_INT = Array(1)
+
+      KERNEL_ARRAY_ARRAY = Array([1, 2, 3])
+
+      KERNEL_ARRAY_RANGE = Array(1..5)
+    RUBY
+
+    assert_equal <<~RBS, output
+      ARRAY_NEW: untyped
+
+      ARRAY_NEW_SIZED: untyped
+
+      ARRAY_NEW_BLOCK: untyped
+
+      ARRAY_NEW_DEFAULT: untyped
+
+      ARRAY_BRACKET: untyped
+
+      RANGE_TO_A: untyped
+
+      RANGE_STR_TO_A: untyped
+
+      KERNEL_ARRAY_INT: untyped
+
+      KERNEL_ARRAY_ARRAY: untyped
+
+      KERNEL_ARRAY_RANGE: untyped
+    RBS
+  end
+
+  def test_constant_decl_with_hash_element_type_inference
+    output = translate(<<~RUBY)
+      SYMBOL_KEY = { a: 1, b: 2 }
+
+      STRING_KEY = { "a" => 1, "b" => 2 }
+
+      NESTED = { a: { b: 1 }, c: { d: 2 } }
+    RUBY
+
+    assert_equal <<~RBS, output
+      SYMBOL_KEY: ::Hash[::Symbol, ::Integer]
+
+      STRING_KEY: ::Hash[::String, ::Integer]
+
+      NESTED: ::Hash[::Symbol, ::Hash[::Symbol, ::Integer]]
+    RBS
+  end
+
+  def test_constant_decl_with_hash_element_untyped_inference
+    output = translate(<<~RUBY)
+      EMPTY = {}
+
+      MIXED = { a: 1, "b" => :two, 3 => "three" }
+
+      HASH_SPLAT = {**other}
+
+      HASH_WITH_VARS = { x => y }
+
+      HASH_WITH_CONSTS = { FOO => BAR }
+    RUBY
+
+    assert_equal <<~RBS, output
+      EMPTY: ::Hash[untyped, untyped]
+
+      MIXED: ::Hash[untyped, untyped]
+
+      HASH_SPLAT: ::Hash[untyped, untyped]
+
+      HASH_WITH_VARS: ::Hash[untyped, untyped]
+
+      HASH_WITH_CONSTS: ::Hash[untyped, untyped]
+    RBS
+  end
+  
+  def test_constant_decl_with_unsupported_hash_element_type_inference
+    output = translate(<<~RUBY)
+      HASH_NEW = Hash.new
+
+      HASH_NEW_DEFAULT = Hash.new(0)
+
+      HASH_BRACKET = Hash["a", 1, "b", 2]
+    RUBY
+
+    assert_equal <<~RBS, output
+      HASH_NEW: untyped
+
+      HASH_NEW_DEFAULT: untyped
+
+      HASH_BRACKET: untyped
+    RBS
+  end
+
   def test_generic_class_module
     output = translate(<<~RUBY)
       # @rbs generic T
