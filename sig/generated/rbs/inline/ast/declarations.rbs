@@ -102,7 +102,7 @@ module RBS
           def type: (untyped default_type) -> Types::t
 
           # @rbs %a{pure}
-          # @rbs return Types::t?
+          # @rbs return: Types::t?
           %a{pure}
           def literal_type: () -> Types::t?
 
@@ -112,6 +112,20 @@ module RBS
           def constant_name: () -> TypeName?
 
           def start_line: () -> Integer
+
+          private
+
+          # @rbs node: Prism::Node
+          # @rbs return: Types::t?
+          def infer_type_from_node: (Prism::Node node) -> Types::t?
+
+          # @rbs node: Prism::ArrayNode
+          # @rbs return: Types::t
+          def infer_array_element_type: (Prism::ArrayNode node) -> Types::t
+
+          # @rbs node: Prism::HashNode
+          # @rbs return: Types::t
+          def infer_hash_element_type: (Prism::HashNode node) -> Types::t
         end
 
         class SingletonClassDecl < ModuleOrClass[Prism::SingletonClassNode]
