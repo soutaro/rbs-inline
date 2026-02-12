@@ -189,7 +189,8 @@ module RBS
           name: decl.constant_name,
           type: constant_decl_to_type(decl),
           comment: comment,
-          location: nil
+          location: nil,
+          annotations: []
         )
       end
 
