@@ -219,6 +219,16 @@ class RBS::Inline::WriterTest < Minitest::Test
 
         def h()
         end
+
+        module Bar
+          def i()
+          end
+        end
+      end
+
+      module Baz
+        def j()
+        end
       end
     RUBY
 
@@ -229,6 +239,14 @@ class RBS::Inline::WriterTest < Minitest::Test
         def self?.g: () -> untyped
 
         def self?.h: () -> untyped
+
+        module Bar
+          def i: () -> untyped
+        end
+      end
+
+      module Baz
+        def j: () -> untyped
       end
     RBS
   end
