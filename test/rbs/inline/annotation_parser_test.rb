@@ -154,6 +154,7 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
   def test_type_assertion
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       #: [Integer, String]
+      #: Integer, String
       #: [Integer
       # : String
       RUBY
@@ -163,6 +164,12 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
       assert_equal "[ Integer, String ]", annotation.type.to_s
     end
     annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::MultipleTypeAssertion, annotation
+      assert_equal 2, annotation.types.size
+      assert_equal "Integer", annotation.types[0].to_s
+      assert_equal "String", annotation.types[1].to_s
+    end
+    annots[0].annotations[2].tap do |annotation|
       assert_instance_of AST::Annotations::SyntaxErrorAssertion, annotation
       assert_equal "[Integer\n : String", annotation.error_string
     end

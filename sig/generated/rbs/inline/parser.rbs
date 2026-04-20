@@ -130,6 +130,14 @@ module RBS
       # @rbs return: AST::Annotations::TypeAssertion?
       def assertion_annotation: (Node | Location node) -> AST::Annotations::TypeAssertion?
 
+      # Fetch TypeAssertion or MultipleTypeAssertion annotation which is associated to `node`
+      #
+      # The assertion annotation is removed from `comments`.
+      #
+      # @rbs node: Node | Location
+      # @rbs return: AST::Annotations::TypeAssertion | AST::Annotations::MultipleTypeAssertion | nil
+      def module_self_annotation: (Node | Location node) -> (AST::Annotations::TypeAssertion | AST::Annotations::MultipleTypeAssertion | nil)
+
       # @rbs override
       def visit_constant_write_node: ...
 
