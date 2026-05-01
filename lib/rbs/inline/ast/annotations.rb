@@ -59,6 +59,7 @@ module RBS
                 name: name.to_sym,
                 variance: inout,
                 upper_bound: upper_bound,
+                lower_bound: nil,
                 location: nil
               ).unchecked!(unchecked)
             end

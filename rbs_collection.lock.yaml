@@ -10,15 +10,19 @@ gems:
   source:
     type: stdlib
 - name: logger
-  version: '0'
+  version: '1.7'
   source:
-    type: stdlib
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 0c952bbd8da015cef73934ccb02ff60b48aee124
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
 - name: minitest
   version: '5.25'
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: d70d634c6e848dc5e93cea0163cc8206448be048
+    revision: 0c952bbd8da015cef73934ccb02ff60b48aee124
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: monitor
@@ -38,11 +42,11 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: d70d634c6e848dc5e93cea0163cc8206448be048
+    revision: 0c952bbd8da015cef73934ccb02ff60b48aee124
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: rbs
-  version: 3.10.3
+  version: 4.0.2
   source:
     type: rubygems
 - name: rdoc

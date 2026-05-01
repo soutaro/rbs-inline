@@ -527,10 +527,10 @@ module RBS
       # @rbs return: MethodType | AST::Tree | Types::t | nil
       def parse_type_method_type(tokenizer, parent_tree)
         tokenizer.consume_trivias(parent_tree)
-        buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
-        range = (tokenizer.current_position..)
+        buffer = RBS::Buffer.new(name: Pathname.new(""), content: tokenizer.scanner.string)
+        byte_range = (tokenizer.current_position..)
         begin
-          if type = RBS::Parser.parse_method_type(buffer, range: range, require_eof: false)
+          if type = RBS::Parser.parse_method_type(buffer, byte_range: byte_range, require_eof: false)
             loc = type.location or raise
             tokenizer.reset(loc.end_pos, parent_tree)
             type
@@ -539,7 +539,7 @@ module RBS
           end
         rescue RBS::ParsingError
           begin
-            if type = RBS::Parser.parse_type(buffer, range: range, require_eof: false)
+            if type = RBS::Parser.parse_type(buffer, byte_range: byte_range, require_eof: false)
               loc = type.location or raise
               tokenizer.reset(loc.end_pos, parent_tree)
               type
@@ -566,10 +566,10 @@ module RBS
       # @rbs return: MethodType | AST::Tree
       def parse_method_type(tokenizer, parent_tree)
         tokenizer.consume_trivias(parent_tree)
-        buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
-        range = (tokenizer.current_position..)
+        buffer = RBS::Buffer.new(name: Pathname.new(""), content: tokenizer.scanner.string)
+        byte_range = (tokenizer.current_position..)
         begin
-          if type = RBS::Parser.parse_method_type(buffer, range: range, require_eof: false)
+          if type = RBS::Parser.parse_method_type(buffer, byte_range: byte_range, require_eof: false)
             loc = type.location or raise
             tokenizer.reset(loc.end_pos, parent_tree)
             type
@@ -605,9 +605,9 @@ module RBS
       # @rbs return: Types::t | AST::Tree | nil
       def parse_type(tokenizer, parent_tree)
         tokenizer.consume_trivias(parent_tree)
-        buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
-        range = (tokenizer.current_position..)
-        if type = RBS::Parser.parse_type(buffer, range: range, require_eof: false)
+        buffer = RBS::Buffer.new(name: Pathname.new(""), content: tokenizer.scanner.string)
+        byte_range = (tokenizer.current_position..)
+        if type = RBS::Parser.parse_type(buffer, byte_range: byte_range, require_eof: false)
           loc = type.location or raise
           tokenizer.reset(loc.end_pos, parent_tree)
           type
