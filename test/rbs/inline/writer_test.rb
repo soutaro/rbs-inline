@@ -83,6 +83,38 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_method_type__forwarding_parameter
+    output = translate(<<~RUBY)
+      class Foo
+        def f(...)
+        end
+
+        # @rbs return: Integer
+        def g(...)
+        end
+
+        def h(x, y, ...)
+        end
+
+        def i(kw1:, kw2:, ...)
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        def f: (?) -> untyped
+
+        # @rbs return: Integer
+        def g: (?) -> Integer
+
+        def h: (?) -> untyped
+
+        def i: (?) -> untyped
+      end
+    RBS
+  end
+
   def test_method_type__double_splat
     output = translate(<<~RUBY)
       class Foo
