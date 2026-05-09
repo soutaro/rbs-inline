@@ -377,14 +377,21 @@ module RBS
             AST::Annotations::Dot3Assertion.new(tree, comments)
           else
             type = parse_type_method_type(tokenizer, tree)
-            tree << type
 
             case type
             when MethodType
+              tree << type
               AST::Annotations::MethodTypeAssertion.new(tree, comments)
             when AST::Tree, nil
+              tree << type
               AST::Annotations::SyntaxErrorAssertion.new(tree, comments)
+            when Array
+              type.each do |t|
+                tree << t
+              end
+              AST::Annotations::MultipleTypeAssertion.new(tree, comments)
             else
+              tree << type
               AST::Annotations::TypeAssertion.new(tree, comments)
             end
           end
@@ -524,7 +531,7 @@ module RBS
       #
       # @rbs tokenizer: Tokenizer
       # @rbs parent_tree: AST::Tree
-      # @rbs return: MethodType | AST::Tree | Types::t | nil
+      # @rbs return: MethodType | AST::Tree | Types::t | Array[Types::t | token] | nil
       def parse_type_method_type(tokenizer, parent_tree)
         tokenizer.consume_trivias(parent_tree)
         buffer = RBS::Buffer.new(name: "", content: tokenizer.scanner.string)
@@ -542,7 +549,27 @@ module RBS
             if type = RBS::Parser.parse_type(buffer, range: range, require_eof: false)
               loc = type.location or raise
               tokenizer.reset(loc.end_pos, parent_tree)
-              type
+
+              if tokenizer.type?(K_COMMA)
+                types = [] #: Array[Types::t | token]
+                types << type
+
+                while tokenizer.type?(K_COMMA)
+                  types << (tokenizer.lookahead1 or raise)
+                  tokenizer.advance(parent_tree)
+                  range = (tokenizer.current_position..)
+                  if type2 = RBS::Parser.parse_type(buffer, range: range, require_eof: false)
+                    loc = type2.location or raise
+                    tokenizer.reset(loc.end_pos, parent_tree)
+                    types << type2
+                  else
+                    break
+                  end
+                end
+                types
+              else
+                type
+              end
             else
               nil
             end

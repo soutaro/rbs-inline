@@ -152,6 +152,18 @@ module RBS
         class ModuleDecl  < ModuleOrClass #[Prism::ModuleNode]
           include ConstantUtil
 
+          attr_reader :module_self_assertion #: Annotations::TypeAssertion | Annotations::MultipleTypeAssertion | nil
+
+          # @rbs node: Prism::ModuleNode
+          # @rbs comments: AnnotationParser::ParsingResult?
+          # @rbs module_self_assertion: Annotations::TypeAssertion | Annotations::MultipleTypeAssertion | nil
+          # @rbs return: void
+          def initialize(node, comments, module_self_assertion)
+            super(node, comments)
+
+            @module_self_assertion = module_self_assertion
+          end
+
           # @rbs %a{pure}
           def module_name #: TypeName?
             type_name(node.constant_path)
@@ -159,15 +171,21 @@ module RBS
 
           # @rbs %a{pure}
           def module_selfs #: Array[Annotations::ModuleSelf]
+            module_selfs = [] #: Array[Annotations::ModuleSelf]
             if comments
               comments.each_annotation.filter_map do |ann|
                 if ann.is_a?(AST::Annotations::ModuleSelf)
-                  ann
+                  module_selfs << ann
                 end
               end
-            else
-              []
             end
+            if module_self_assertion
+              tree = AST::Tree.new(:module_self)
+              tree << AST::Tree.new(:dummy)
+              tree << module_self_assertion.tree
+              module_selfs << AST::Annotations::ModuleSelf.new(tree, module_self_assertion.source)
+            end
+            module_selfs
           end
         end
 
