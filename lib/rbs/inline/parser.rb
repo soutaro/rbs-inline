@@ -37,14 +37,14 @@ module RBS
       #
       attr_reader :current_visibility #: RBS::AST::Members::visibility?
 
-      # The current module_function applied to single `def` node
-      attr_reader :current_module_function #: bool
+      # The module_function state for the current class/module context.
+      attr_reader :module_function_stack #: Array[bool]
 
       def initialize() #: void
         @decls = []
         @surrounding_decls = []
         @comments = {}
-        @current_module_function = false
+        @module_function_stack = [false]
       end
 
       # Parses the given Prism result to a three tuple
@@ -127,6 +127,11 @@ module RBS
         current_class_module_decl or raise
       end
 
+      # @rbs return: bool
+      def current_module_function
+        module_function_stack.last
+      end
+
       #: (with_members) { () -> void } -> void
       def push_class_module_decl(decl)
         if current = current_class_module_decl
@@ -137,10 +142,12 @@ module RBS
 
         if block_given?
           surrounding_decls.push(decl)
+          module_function_stack.push(false)
           begin
             yield
           ensure
             surrounding_decls.pop()
+            module_function_stack.pop()
           end
         end
       end
@@ -355,7 +362,7 @@ module RBS
               end
             end
           else
-            @current_module_function = true
+            module_function_stack[-1] = true
           end
         end
 
