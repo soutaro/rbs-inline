@@ -67,6 +67,12 @@ module RBS
         logger.level = :ERROR
       end
 
+      # @rbs path: Pathname
+      # @rbs return: String
+      def generated_header(path)
+        "Generated from #{path.relative? ? path : path.relative_path_from(Pathname.pwd)} with RBS::Inline"
+      end
+
       # @rbs args: Array[String]
       # @rbs return: Integer
       def run(args)
@@ -152,7 +158,7 @@ module RBS
               type && writer.default_type = type
             end
 
-            writer.header("Generated from #{target.relative? ? target : target.relative_path_from(Pathname.pwd)} with RBS::Inline")
+            writer.header(generated_header(target))
             writer.write(uses, decls, rbs_decls)
 
             if output
