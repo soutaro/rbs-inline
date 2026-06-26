@@ -515,6 +515,36 @@ class RBS::Inline::WriterTest < Minitest::Test
     RBS
   end
 
+  def test_module_self__type_assertion
+    output = translate(<<~RUBY)
+      module Foo #: BasicObject
+        def foo
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      module Foo : BasicObject
+        def foo: () -> untyped
+      end
+    RBS
+  end
+
+  def test_module_self__multiple_type_assertions
+    output = translate(<<~RUBY)
+      module Foo #: BasicObject, Integer
+        def foo
+        end
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      module Foo : BasicObject, Integer
+        def foo: () -> untyped
+      end
+    RBS
+  end
+
   def test_constant_decl
     output = translate(<<~RUBY)
       VERSION = "hogehoge"

@@ -212,8 +212,9 @@ module RBS
           visit node.constant_path
 
           associated_comment = comments.delete(node.location.start_line - 1)
+          module_self_assertion = module_self_annotation(node.module_keyword_loc)
 
-          module_decl = AST::Declarations::ModuleDecl.new(node, associated_comment)
+          module_decl = AST::Declarations::ModuleDecl.new(node, associated_comment, module_self_assertion)
           push_class_module_decl(module_decl) do
             visit node.body
           end
@@ -436,6 +437,30 @@ module RBS
           app_comment.each_annotation.find do |annotation|
             annotation.is_a?(AST::Annotations::TypeAssertion)
           end #: AST::Annotations::TypeAssertion?
+        end
+      end
+
+      # Fetch TypeAssertion or MultipleTypeAssertion annotation which is associated to `node`
+      #
+      # The assertion annotation is removed from `comments`.
+      #
+      # @rbs node: Node | Location
+      # @rbs return: AST::Annotations::TypeAssertion | AST::Annotations::MultipleTypeAssertion | nil
+      def module_self_annotation(node)
+        if node.is_a?(Prism::Location)
+          location = node
+        else
+          location = node.location
+        end
+        comment_line, app_comment = comments.find do |_, comment|
+          comment.line_range.begin == location.end_line
+        end
+
+        if app_comment && comment_line
+          comments.delete(comment_line)
+          app_comment.each_annotation.find do |annotation|
+            annotation.is_a?(AST::Annotations::TypeAssertion) || annotation.is_a?(AST::Annotations::MultipleTypeAssertion)
+          end #: AST::Annotations::TypeAssertion | AST::Annotations::MultipleTypeAssertion | nil
         end
       end
 
