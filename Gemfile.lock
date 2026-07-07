@@ -4,6 +4,7 @@ PATH
     rbs-inline (0.14.0)
       prism (>= 0.29)
       rbs (~> 4.0)
+      strscan
 
 GEM
   remote: https://rubygems.org/
@@ -77,7 +78,6 @@ DEPENDENCIES
   rake (~> 13.2)
   rbs-inline!
   steep (~> 2.0.0)
-  strscan
 
 BUNDLED WITH
   4.0.6

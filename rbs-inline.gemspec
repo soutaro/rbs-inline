@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "prism", ">= 0.29"
   spec.add_dependency "rbs", "~> 4.0"
+  spec.add_dependency "strscan"
 end

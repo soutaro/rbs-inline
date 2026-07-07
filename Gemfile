@@ -10,4 +10,3 @@ gem "rake", "~> 13.2"
 gem "minitest", "~> 5.25"
 
 gem "steep", "~> 2.0.0", require: false
-gem "strscan"
