@@ -1384,4 +1384,27 @@ class RBS::Inline::WriterTest < Minitest::Test
       BAZ: __todo__
     RBS
   end
+
+  def test_rdoc_directive
+    output = translate(<<~RUBY)
+      class Foo
+        def f(x) #:nodoc:
+        end
+
+        attr_reader :n #:nodoc:
+
+        BAR = 1 #:nodoc:
+      end
+    RUBY
+
+    assert_equal <<~RBS, output
+      class Foo
+        def f: (untyped x) -> untyped
+
+        attr_reader n: untyped
+
+        BAR: ::Integer
+      end
+    RBS
+  end
 end
