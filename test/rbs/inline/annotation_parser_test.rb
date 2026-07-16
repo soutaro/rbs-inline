@@ -197,6 +197,38 @@ class RBS::Inline::AnnotationParserTest < Minitest::Test
     end
   end
 
+  def test_rdoc_directive
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      #:nodoc:
+      #:nodoc: all
+      #:call-seq:
+      #:include: filename
+      RUBY
+
+    assert_equal 1, annots[0].annotations.size
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::CommentLines, annotation
+      assert_equal ["#:nodoc:", "#:nodoc: all", "#:call-seq:", "#:include: filename"], annotation.lines
+    end
+  end
+
+  def test_rdoc_directive__assertion
+    annots = AnnotationParser.parse(parse_comments(<<~RUBY))
+      #: (String) -> Integer
+      #: my_alias
+      RUBY
+
+    assert_equal 2, annots[0].annotations.size
+    annots[0].annotations[0].tap do |annotation|
+      assert_instance_of AST::Annotations::MethodTypeAssertion, annotation
+      assert_equal "(String) -> Integer", annotation.method_type.to_s
+    end
+    annots[0].annotations[1].tap do |annotation|
+      assert_instance_of AST::Annotations::TypeAssertion, annotation
+      assert_equal "my_alias", annotation.type.to_s
+    end
+  end
+
   def test_type_application
     annots = AnnotationParser.parse(parse_comments(<<~RUBY))
       #[String, Integer]

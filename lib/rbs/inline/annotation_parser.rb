@@ -149,6 +149,11 @@ module RBS
 
       private
 
+      # RDoc directives (`:nodoc:`, `:call-seq:`, ...) have the same shape as a `#: TYPE` assertion when written
+      # without a space, and RDoc predates this syntax. A directive is a bare word, optionally hyphenated, closed by
+      # a colon; no RBS type starts that way.
+      RDOC_DIRECTIVE = /\A#:[a-z_][\w-]*:/
+
       # Test if the comment is an annotation comment
       #
       # - Returns `nil` if the comment is not an annotation.
@@ -158,6 +163,9 @@ module RBS
       #: (Prism::Comment) -> (Integer | true | nil)
       def annotation_comment?(comment)
         line = comment.location.slice
+
+        # RDoc directives are not annotations
+        return nil if RDOC_DIRECTIVE.match?(line)
 
         # No leading whitespace is allowed
         return true if line.start_with?("#:")
